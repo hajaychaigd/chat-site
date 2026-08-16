@@ -182,33 +182,34 @@
       }
     });
 
-    // جلب وعرض الرسائل لحظياً دون التأثير على رسالة الترحيب أو حدوث وميض مزعج
+    // جلب وعرض الرسائل بدون أي مسح للشاشة لتجنب الوميض
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     
     onSnapshot(q, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
-      
-      // نحافظ على رسالة الترحيب إذا كانت لا تزال موجودة، ونزيل فقط الرسائل القديمة المضافة مسبقاً لإعادة رسمها بشكل صحيح
-      const welcomeMsg = document.getElementById("welcomeMessage");
-      messagesContainer.innerHTML = '';
-      if (welcomeMsg) {
-        messagesContainer.appendChild(welcomeMsg);
-      }
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const messageDiv = document.createElement("div");
-        
-        if (data.senderId === myId) {
-          messageDiv.className = "message";
-        } else {
-          messageDiv.className = "message other";
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const data = change.doc.data();
+          
+          // نتأكد إن الرسالة مش قديمة أكتر من 30 ثانية وقت التحميل
+          const now = Date.now();
+          if (now - data.createdAt <= 30000) {
+            const messageDiv = document.createElement("div");
+            
+            if (data.senderId === myId) {
+              messageDiv.className = "message";
+            } else {
+              messageDiv.className = "message other";
+            }
+
+            messageDiv.textContent = data.text;
+            messageDiv.dataset.createdAt = data.createdAt;
+            messageDiv.dataset.id = change.doc.id; // حفظ معرف المستند لسهولة حذفه لاحقاً
+            
+            messagesContainer.appendChild(messageDiv);
+          }
         }
-
-        messageDiv.textContent = data.text;
-        messageDiv.dataset.createdAt = data.createdAt;
-        
-        messagesContainer.appendChild(messageDiv);
       });
 
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
