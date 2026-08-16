@@ -150,6 +150,27 @@
       });
 
   </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
+  const firebaseConfig = {
+    apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
+    authDomain: "chat-site-2911b.firebaseapp.com",
+    projectId: "chat-site-2911b",
+    storageBucket: "chat-site-2911b.firebasestorage.app",
+    messagingSenderId: "7306613696",
+    appId: "1:7306613696:web:5479f7634c7e903bbdae25",
+    measurementId: "G-KZ4L2JHQN4"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  export const db = getFirestore(app);
+  
+  console.log("Firebase & Firestore connected!");
+</script>
+
+
+  
 </body>
 </html>
