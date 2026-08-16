@@ -11,14 +11,17 @@
       font-family: Arial, sans-serif;
     }
 
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
       background: #f2f2f2;
+      overflow: hidden; /* لمنع ظهور سكرول إضافي للصفحة بالكامل */
     }
 
     .app {
       max-width: 400px;
-      height: 100vh;
+      height: 100%;
       margin: auto;
       background: white;
       display: flex;
@@ -32,12 +35,13 @@
       text-align: center;
       font-size: 20px;
       font-weight: bold;
+      flex-shrink: 0;
     }
 
     .messages {
       flex: 1;
       padding: 15px;
-      overflow-y: auto;
+      overflow-y: auto; /* السكرول يكون خاص بالرسائل فقط */
       display: flex;
       flex-direction: column;
     }
@@ -66,6 +70,8 @@
       padding: 10px;
       border-top: 1px solid #ddd;
       gap: 8px;
+      background: white;
+      flex-shrink: 0; /* منع انكماش خانة الإرسال وثباتها أسفل الشاشة */
     }
 
     input {
@@ -192,7 +198,6 @@
         if (change.type === "added") {
           const data = change.doc.data();
           
-          // نتأكد إن الرسالة مش قديمة أكتر من 30 ثانية وقت التحميل
           const now = Date.now();
           if (now - data.createdAt <= 30000) {
             const messageDiv = document.createElement("div");
@@ -205,7 +210,6 @@
 
             messageDiv.textContent = data.text;
             messageDiv.dataset.createdAt = data.createdAt;
-            messageDiv.dataset.id = change.doc.id; // حفظ معرف المستند لسهولة حذفه لاحقاً
             
             messagesContainer.appendChild(messageDiv);
           }
