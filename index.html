@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>محادثتي</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f2f2f2;
+    }
+
+    .app {
+      max-width: 600px;
+      height: 100vh;
+      margin: auto;
+      background: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: #075e54;
+      color: white;
+      padding: 18px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .message {
+      background: #dcf8c6;
+      padding: 10px 14px;
+      margin: 8px 0;
+      border-radius: 12px;
+      width: fit-content;
+      max-width: 80%;
+      margin-right: auto;
+    }
+
+    .message.other {
+      background: #eeeeee;
+      margin-right: 0;
+      margin-left: auto;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      gap: 8px;
+    }
+
+    input {
+      flex: 1;
+      padding: 13px;
+      border: 1px solid #ccc;
+      border-radius: 25px;
+      outline: none;
+      font-size: 16px;
+    }
+
+    button {
+      border: none;
+      background: #075e54;
+      color: white;
+      padding: 0 20px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #064e46;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <div class="header">
+      💬 محادثتي
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="message other">
+        أهلاً 👋
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input
+        type="text"
+        id="messageInput"
+        placeholder="اكتب رسالتك..."
+      >
+
+      <button onclick="sendMessage()">
+        إرسال
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+
+    function sendMessage() {
+
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+
+      if (text === "") {
+        return;
+      }
+
+      const messages = document.getElementById("messages");
+
+      const message = document.createElement("div");
+      message.className = "message";
+      message.textContent = text;
+
+      messages.appendChild(message);
+
+      input.value = "";
+
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    document.getElementById("messageInput")
+      .addEventListener("keypress", function(event) {
+
+        if (event.key === "Enter") {
+          sendMessage();
+        }
+
+      });
+
+  </script>
+
+</body>
+</html>
