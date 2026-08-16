@@ -17,7 +17,7 @@
     }
 
     .app {
-      max-width: 400px; /* تم تصغير عرض الشاشة هنا */
+      max-width: 400px;
       height: 100vh;
       margin: auto;
       background: white;
@@ -146,13 +146,13 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // إخفاء رسالة 💜💜💜 بعد 4 ثواني تماماً
+    // إخفاء رسالة 💜💜💜 بعد 5 ثواني تماماً
     setTimeout(() => {
       const welcomeMsg = document.getElementById("welcomeMessage");
       if (welcomeMsg) {
         welcomeMsg.remove();
       }
-    }, 4000);
+    }, 5000);
 
     // دالة الإرسال
     window.sendMessage = async function() {
@@ -182,14 +182,18 @@
       }
     });
 
-    // جلب وعرض الرسائل لحظياً
+    // جلب وعرض الرسائل لحظياً دون التأثير على رسالة الترحيب أو حدوث وميض مزعج
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     
     onSnapshot(q, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
       
-      // تفريغ الحاوية وإعادة بناء الرسائل القادمة من قاعدة البيانات فقط
+      // نحافظ على رسالة الترحيب إذا كانت لا تزال موجودة، ونزيل فقط الرسائل القديمة المضافة مسبقاً لإعادة رسمها بشكل صحيح
+      const welcomeMsg = document.getElementById("welcomeMessage");
       messagesContainer.innerHTML = '';
+      if (welcomeMsg) {
+        messagesContainer.appendChild(welcomeMsg);
+      }
 
       snapshot.forEach((doc) => {
         const data = doc.data();
@@ -212,7 +216,7 @@
 
     // فحص كل ثانية لمسح الرسائل التي مر عليها 30 ثانية تلقائياً
     setInterval(() => {
-      const messageDivs = document.querySelectorAll(".messages .message");
+      const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
 
       messageDivs.forEach(div => {
