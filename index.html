@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🕋صلي علي النبي🕋</title>
+  <title>🕋صلي علي النبي</title>
 
   <style>
     * {
@@ -102,7 +102,7 @@
   <div class="app">
 
     <div class="header">
-      🕋صلي علي النبي 🕋
+      صلي علي النبي 🕋
     </div>
 
     <div class="messages" id="messages">
@@ -125,6 +125,9 @@
 
   </div>
 
+  <!-- عنصر صوت التنبيه الجاهز للاستخدام -->
+  <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
@@ -142,11 +145,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // التحقق من الرابط السري لتفعيل جهازك كمدير للإشعارات
+    // التحقق من الرابط السري لتفعيل هذا الجهاز كمدير
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'mysecret123') {
       localStorage.setItem("is_admin", "true");
-      alert("تم تفعيل هذا الجهاز كجهاز أساسي للإشعارات بنجاح! 🔔");
+      alert("تم تفعيل هذا الجهاز كجهاز أساسي للتنبيهات بنجاح! 🔔");
     }
 
     let myId = localStorage.getItem("chat_user_id");
@@ -155,15 +158,8 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // طلب إذن الإشعارات من المتصفح
-    if ("Notification" in window && Notification.permission !== "granted") {
-      Notification.requestPermission();
-    }
-
-    // حفظ وقت فتح الصفحة لتحديد الرسائل الجديدة الواردة
     const pageLoadTime = Date.now();
 
-    // إخفاء رسالة 💜💜💜 بعد 5 ثواني
     setTimeout(() => {
       const welcomeMsg = document.getElementById("welcomeMessage");
       if (welcomeMsg) {
@@ -217,13 +213,11 @@
             } else {
               messageDiv.className = "message other";
               
-              // إرسال الإشعار فوراً إذا كانت الرسالة جديدة بعد فتح الصفحة وأنت المدير
+              // إذا وصلت رسالة جديدة بعد فتح الصفحة وأنت المدير، شغل صوت التنبيه فوراً!
               if (data.createdAt > pageLoadTime && data.senderId !== myId && localStorage.getItem("is_admin") === "true") {
-                if ("Notification" in window && Notification.permission === "granted") {
-                  new Notification("🕋رسالة جديدة 🕋", {
-                    body: data.text,
-                    icon: "https://cdn-icons-png.flaticon.com/512/3233/3233483.png"
-                  });
+                const sound = document.getElementById("notificationSound");
+                if (sound) {
+                  sound.play().catch(e => console.log("الصوت بحاجة لتفاعل المستخدم", e));
                 }
               }
             }
