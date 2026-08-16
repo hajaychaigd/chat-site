@@ -48,6 +48,7 @@
       width: fit-content;
       max-width: 80%;
       margin-right: auto;
+      word-break: break-word;
     }
 
     .message.other {
@@ -116,10 +117,25 @@
 
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-    function sendMessage() {
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
+      authDomain: "chat-site-2911b.firebaseapp.com",
+      projectId: "chat-site-2911b",
+      storageBucket: "chat-site-2911b.firebasestorage.app",
+      messagingSenderId: "7306613696",
+      appId: "1:7306613696:web:5479f7634c7e903bbdae25",
+      measurementId: "G-KZ4L2JHQN4"
+    };
 
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // دالة الإرسال المتوافقة مع القاعدة
+    window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
 
@@ -127,50 +143,41 @@
         return;
       }
 
-      const messages = document.getElementById("messages");
+      try {
+        await addDoc(collection(db, "messages"), {
+          text: text,
+          createdAt: Date.now()
+        });
+        input.value = "";
+      } catch (error) {
+        console.error("خطأ في الإرسال: ", error);
+      }
+    };
 
-      const message = document.createElement("div");
-      message.className = "message";
-      message.textContent = text;
+    // دعم زر Enter
+    document.getElementById("messageInput").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        sendMessage();
+      }
+    });
 
-      messages.appendChild(message);
+    // جلب وعرض الرسائل لحظياً
+    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+    onSnapshot(q, (snapshot) => {
+      const messagesContainer = document.getElementById("messages");
+      messagesContainer.innerHTML = '<div class="message other">أهلاً 👋</div>';
 
-      input.value = "";
-
-      messages.scrollTop = messages.scrollHeight;
-    }
-
-    document.getElementById("messageInput")
-      .addEventListener("keypress", function(event) {
-
-        if (event.key === "Enter") {
-          sendMessage();
-        }
-
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message";
+        messageDiv.textContent = data.text;
+        messagesContainer.appendChild(messageDiv);
       });
 
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
   </script>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
-    authDomain: "chat-site-2911b.firebaseapp.com",
-    projectId: "chat-site-2911b",
-    storageBucket: "chat-site-2911b.firebasestorage.app",
-    messagingSenderId: "7306613696",
-    appId: "1:7306613696:web:5479f7634c7e903bbdae25",
-    measurementId: "G-KZ4L2JHQN4"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  export const db = getFirestore(app);
-  
-  console.log("Firebase & Firestore connected!");
-</script>
-
-
-  
 </body>
 </html>
