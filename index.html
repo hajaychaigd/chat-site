@@ -170,6 +170,17 @@
       }
     }, 5000);
 
+    // دالة لعرض الرسالة محلياً فوراً لحظة الضغط على إرسال
+    function appendMessageLocally(text, timestamp) {
+      const messagesContainer = document.getElementById("messages");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = "message"; // رسائلك تكون دائماً في اليمين
+      messageDiv.textContent = text;
+      messageDiv.dataset.createdAt = timestamp;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
@@ -178,13 +189,18 @@
         return;
       }
 
+      const currentTime = Date.now();
+
+      // إظهار الرسالة عندك فوراً قبل حتى ما تترفع للسيرفر
+      appendMessageLocally(text, currentTime);
+      input.value = "";
+
       try {
         await addDoc(collection(db, "messages"), {
           text: text,
           senderId: myId,
-          createdAt: Date.now()
+          createdAt: currentTime
         });
-        input.value = "";
       } catch (error) {
         console.error("خطأ في الإرسال: ", error);
       }
@@ -205,18 +221,19 @@
         if (change.type === "added") {
           const data = change.doc.data();
           
-          // شرط الـ 30 ثانية للرسائل
           const now = Date.now();
           if (now - data.createdAt <= 30000) {
-            const messageDiv = document.createElement("div");
             
-            if (data.senderId === myId) {
-              messageDiv.className = "message";
-            } else {
+            // إذا كانت الرسالة من شخص آخر (ليست منك)، قم بعرضها وإرسال الإشعار
+            if (data.senderId !== myId) {
+              const messageDiv = document.createElement("div");
               messageDiv.className = "message other";
-              
-              // إرسال الإشعار للجهاز الرئيسي فقط عند وصول رسالة جديدة من شخص آخر
-              if (!isInitialLoad && data.senderId !== myId && localStorage.getItem("is_admin") === "true") {
+              messageDiv.textContent = data.text;
+              messageDiv.dataset.createdAt = data.createdAt;
+              messagesContainer.appendChild(messageDiv);
+
+              // إرسال الإشعار للجهاز الرئيسي فقط
+              if (!isInitialLoad && localStorage.getItem("is_admin") === "true") {
                 if ("Notification" in window && Notification.permission === "granted") {
                   new Notification("رسالة جديدة 🕋", {
                     body: data.text,
@@ -224,21 +241,16 @@
                   });
                 }
               }
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
-
-            messageDiv.textContent = data.text;
-            messageDiv.dataset.createdAt = data.createdAt;
-            
-            messagesContainer.appendChild(messageDiv);
           }
         }
       });
 
       isInitialLoad = false;
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
 
-    // فحص كل ثانية لمسح الرسائل التي مر عليها 30 ثانية تلقائياً
+    // فحص كل ثانية لمسح الرسائل التي مر عليها 30 ثانية تلقائياً للطرفين
     setInterval(() => {
       const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
