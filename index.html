@@ -205,6 +205,7 @@
         if (change.type === "added") {
           const data = change.doc.data();
           
+          // شرط الـ 30 ثانية للرسائل
           const now = Date.now();
           if (now - data.createdAt <= 30000) {
             const messageDiv = document.createElement("div");
@@ -214,7 +215,7 @@
             } else {
               messageDiv.className = "message other";
               
-              // الإشعار يظهر للجهاز الرئيسي فقط وعندما تكون الرسالة من شخص آخر
+              // إرسال الإشعار للجهاز الرئيسي فقط عند وصول رسالة جديدة من شخص آخر
               if (!isInitialLoad && data.senderId !== myId && localStorage.getItem("is_admin") === "true") {
                 if ("Notification" in window && Notification.permission === "granted") {
                   new Notification("رسالة جديدة 🕋", {
@@ -237,7 +238,7 @@
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
 
-    // مسح الرسائل بعد 30 ثانية
+    // فحص كل ثانية لمسح الرسائل التي مر عليها 30 ثانية تلقائياً
     setInterval(() => {
       const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
