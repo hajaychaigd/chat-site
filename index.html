@@ -42,7 +42,7 @@
       flex-direction: column;
     }
 
-    /* رسائلك أنت (في اليمين بلون الواتساب الأخضر الفاتح) */
+    /* رسائلك أنت (في اليمين) */
     .message {
       background: #dcf8c6;
       padding: 10px 14px;
@@ -54,7 +54,7 @@
       word-break: break-word;
     }
 
-    /* رسائل الطرف الآخر أو الترحيب (في الشمال) */
+    /* رسائل الطرف الآخر (في الشمال) */
     .message.other {
       background: #eeeeee;
       margin-right: 0;
@@ -138,14 +138,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // إنشاء معرف فريد لهذا المتصفح عشان نعرف رسائلك من رسائل غيرك
+    // معرف فريد للمتصفح
     let myId = localStorage.getItem("chat_user_id");
     if (!myId) {
-      myId = 'user_' + Math.random().toString(36.20);
+      myId = 'user_' + Math.random().toString(36).substring(2);
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // دالة الإرسال مع حفظ الـ senderId
+    // دالة الإرسال
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
@@ -173,30 +173,32 @@
       }
     });
 
-    // جلب وعرض الرسائل (اليمين لرسائلك، الشمال لغيرك) + الاختفاء بعد 45 ثانية
+    // جلب وعرض الرسائل مع حذفها تلقائياً بعد مرور 45 ثانية
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+    
     onSnapshot(q, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
       messagesContainer.innerHTML = '<div class="message other">أهلاً 👋</div>';
 
       snapshot.forEach((doc) => {
         const data = doc.data();
-        const messageDiv = document.createElement("div");
         
-        // لو الرسالة بتاعتك تظهر في اليمين (message عادية)، لو مش بتاعتك تظهر في الشمال (.other)
-        if (data.senderId === myId) {
-          messageDiv.className = "message";
-        } else {
-          messageDiv.className = "message other";
+        // حساب عمر الرسلي بالمللي ثانية
+        const age = Date.now() - data.createdAt;
+        
+        // إذا مر أقل من 45 ثانية (45000 ملّي ثانية)، اعرض الرسالة
+        if (age < 45000) {
+          const messageDiv = document.createElement("div");
+          
+          if (data.senderId === myId) {
+            messageDiv.className = "message";
+          } else {
+            messageDiv.className = "message other";
+          }
+
+          messageDiv.textContent = data.text;
+          messagesContainer.appendChild(messageDiv);
         }
-
-        messageDiv.textContent = data.text;
-        messagesContainer.appendChild(messageDiv);
-
-        // اختفاء الرسالة بعد 45 ثانية
-        setTimeout(() => {
-          messageDiv.remove();
-        }, 45000);
       });
 
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
