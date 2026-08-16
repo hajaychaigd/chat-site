@@ -38,8 +38,11 @@
       flex: 1;
       padding: 15px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
+    /* رسائلك أنت (في اليمين بلون الواتساب الأخضر الفاتح) */
     .message {
       background: #dcf8c6;
       padding: 10px 14px;
@@ -51,6 +54,7 @@
       word-break: break-word;
     }
 
+    /* رسائل الطرف الآخر أو الترحيب (في الشمال) */
     .message.other {
       background: #eeeeee;
       margin-right: 0;
@@ -134,7 +138,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // دالة الإرسال المتوافقة مع القاعدة
+    // إنشاء معرف فريد لهذا المتصفح عشان نعرف رسائلك من رسائل غيرك
+    let myId = localStorage.getItem("chat_user_id");
+    if (!myId) {
+      myId = 'user_' + Math.random().toString(36.20);
+      localStorage.setItem("chat_user_id", myId);
+    }
+
+    // دالة الإرسال مع حفظ الـ senderId
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
@@ -146,6 +157,7 @@
       try {
         await addDoc(collection(db, "messages"), {
           text: text,
+          senderId: myId,
           createdAt: Date.now()
         });
         input.value = "";
@@ -161,7 +173,7 @@
       }
     });
 
-    // جلب وعرض الرسائل لحظياً
+    // جلب وعرض الرسائل (اليمين لرسائلك، الشمال لغيرك) + الاختفاء بعد 45 ثانية
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     onSnapshot(q, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
@@ -170,9 +182,21 @@
       snapshot.forEach((doc) => {
         const data = doc.data();
         const messageDiv = document.createElement("div");
-        messageDiv.className = "message";
+        
+        // لو الرسالة بتاعتك تظهر في اليمين (message عادية)، لو مش بتاعتك تظهر في الشمال (.other)
+        if (data.senderId === myId) {
+          messageDiv.className = "message";
+        } else {
+          messageDiv.className = "message other";
+        }
+
         messageDiv.textContent = data.text;
         messagesContainer.appendChild(messageDiv);
+
+        // اختفاء الرسالة بعد 45 ثانية
+        setTimeout(() => {
+          messageDiv.remove();
+        }, 45000);
       });
 
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
