@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>صلي علي النبي</title>
+  <title>🕋صلي علي النبي</title>
 
   <style>
     * {
@@ -160,7 +160,8 @@
       Notification.requestPermission();
     }
 
-    let isInitialLoad = true;
+    // حفظ وقت فتح الصفحة لتحديد الرسائل الجديدة الواردة
+    const pageLoadTime = Date.now();
 
     // إخفاء رسالة 💜💜💜 بعد 5 ثواني
     setTimeout(() => {
@@ -169,17 +170,6 @@
         welcomeMsg.remove();
       }
     }, 5000);
-
-    // دالة لعرض الرسالة محلياً فوراً لحظة الضغط على إرسال
-    function appendMessageLocally(text, timestamp) {
-      const messagesContainer = document.getElementById("messages");
-      const messageDiv = document.createElement("div");
-      messageDiv.className = "message"; // رسائلك تكون دائماً في اليمين
-      messageDiv.textContent = text;
-      messageDiv.dataset.createdAt = timestamp;
-      messagesContainer.appendChild(messageDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
 
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
@@ -190,9 +180,6 @@
       }
 
       const currentTime = Date.now();
-
-      // إظهار الرسالة عندك فوراً قبل حتى ما تترفع للسيرفر
-      appendMessageLocally(text, currentTime);
       input.value = "";
 
       try {
@@ -220,20 +207,18 @@
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
           const data = change.doc.data();
-          
           const now = Date.now();
-          if (now - data.createdAt <= 30000) {
-            
-            // إذا كانت الرسالة من شخص آخر (ليست منك)، قم بعرضها وإرسال الإشعار
-            if (data.senderId !== myId) {
-              const messageDiv = document.createElement("div");
-              messageDiv.className = "message other";
-              messageDiv.textContent = data.text;
-              messageDiv.dataset.createdAt = data.createdAt;
-              messagesContainer.appendChild(messageDiv);
 
-              // إرسال الإشعار للجهاز الرئيسي فقط
-              if (!isInitialLoad && localStorage.getItem("is_admin") === "true") {
+          if (now - data.createdAt <= 30000) {
+            const messageDiv = document.createElement("div");
+            
+            if (data.senderId === myId) {
+              messageDiv.className = "message";
+            } else {
+              messageDiv.className = "message other";
+              
+              // إرسال الإشعار فوراً إذا كانت الرسالة جديدة بعد فتح الصفحة وأنت المدير
+              if (data.createdAt > pageLoadTime && data.senderId !== myId && localStorage.getItem("is_admin") === "true") {
                 if ("Notification" in window && Notification.permission === "granted") {
                   new Notification("رسالة جديدة 🕋", {
                     body: data.text,
@@ -241,16 +226,18 @@
                   });
                 }
               }
-              messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
+
+            messageDiv.textContent = data.text;
+            messageDiv.dataset.createdAt = data.createdAt;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
           }
         }
       });
-
-      isInitialLoad = false;
     });
 
-    // فحص كل ثانية لمسح الرسائل التي مر عليها 30 ثانية تلقائياً للطرفين
+    // مسح الرسائل بعد 30 ثانية تلقائياً
     setInterval(() => {
       const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
