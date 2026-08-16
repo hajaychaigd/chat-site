@@ -173,36 +173,47 @@
       }
     });
 
-    // جلب وعرض الرسائل مع حذفها تلقائياً بعد مرور 45 ثانية
+    // جلب وعرض الرسائل لحظياً
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     
     onSnapshot(q, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
+      
+      // نحتفظ برسالة الترحيب الأولى بس
       messagesContainer.innerHTML = '<div class="message other">أهلاً 👋</div>';
 
       snapshot.forEach((doc) => {
         const data = doc.data();
+        const messageDiv = document.createElement("div");
         
-        // حساب عمر الرسلي بالمللي ثانية
-        const age = Date.now() - data.createdAt;
-        
-        // إذا مر أقل من 45 ثانية (45000 ملّي ثانية)، اعرض الرسالة
-        if (age < 45000) {
-          const messageDiv = document.createElement("div");
-          
-          if (data.senderId === myId) {
-            messageDiv.className = "message";
-          } else {
-            messageDiv.className = "message other";
-          }
-
-          messageDiv.textContent = data.text;
-          messagesContainer.appendChild(messageDiv);
+        if (data.senderId === myId) {
+          messageDiv.className = "message";
+        } else {
+          messageDiv.className = "message other";
         }
+
+        messageDiv.textContent = data.text;
+        // بنخزن وقت إنشاء الرسالة جوا عنصر الـ HTML عشان نتابعه
+        messageDiv.dataset.createdAt = data.createdAt;
+        
+        messagesContainer.appendChild(messageDiv);
       });
 
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
+
+    // فحص كل ثانية لمسح الرسائل التي مر عليها 30 ثانية تلقائياً بدون Refresh
+    setInterval(() => {
+      const messageDivs = document.querySelectorAll(".messages .message:not(.other:first-child)");
+      const now = Date.now();
+
+      messageDivs.forEach(div => {
+        const createdAt = parseInt(div.dataset.createdAt);
+        if (createdAt && (now - createdAt > 30000)) { // 30000 مللي ثانية = 30 ثانية
+          div.remove();
+        }
+      });
+    }, 1000);
   </script>
 
 </body>
