@@ -16,7 +16,7 @@
       padding: 0;
       height: 100%;
       background: #f2f2f2;
-      overflow: hidden; /* لمنع ظهور سكرول إضافي للصفحة بالكامل */
+      overflow: hidden;
     }
 
     .app {
@@ -41,12 +41,11 @@
     .messages {
       flex: 1;
       padding: 15px;
-      overflow-y: auto; /* السكرول يكون خاص بالرسائل فقط */
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
     }
 
-    /* رسائلك أنت (في اليمين) */
     .message {
       background: #dcf8c6;
       padding: 10px 14px;
@@ -58,7 +57,6 @@
       word-break: break-word;
     }
 
-    /* رسائل الطرف الآخر (في الشمال) */
     .message.other {
       background: #eeeeee;
       margin-right: 0;
@@ -71,7 +69,7 @@
       border-top: 1px solid #ddd;
       gap: 8px;
       background: white;
-      flex-shrink: 0; /* منع انكماش خانة الإرسال وثباتها أسفل الشاشة */
+      flex-shrink: 0;
     }
 
     input {
@@ -108,7 +106,6 @@
     </div>
 
     <div class="messages" id="messages">
-      <!-- رسالة الترحيب المؤقتة -->
       <div class="message other" id="welcomeMessage">
         💜💜💜
       </div>
@@ -145,14 +142,27 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // معرف فريد للمتصفح
+    // التحقق من الرابط السري لتفعيل جهازك كمدير للإشعارات
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'mysecret123') {
+      localStorage.setItem("is_admin", "true");
+      alert("تم تفعيل هذا الجهاز كجهاز أساسي للإشعارات بنجاح! 🔔");
+    }
+
     let myId = localStorage.getItem("chat_user_id");
     if (!myId) {
       myId = 'user_' + Math.random().toString(36).substring(2);
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // إخفاء رسالة 💜💜💜 بعد 5 ثواني تماماً
+    // طلب إذن الإشعارات من المتصفح
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+
+    let isInitialLoad = true;
+
+    // إخفاء رسالة 💜💜💜 بعد 5 ثواني
     setTimeout(() => {
       const welcomeMsg = document.getElementById("welcomeMessage");
       if (welcomeMsg) {
@@ -160,7 +170,6 @@
       }
     }, 5000);
 
-    // دالة الإرسال
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
@@ -181,14 +190,12 @@
       }
     };
 
-    // دعم زر Enter
     document.getElementById("messageInput").addEventListener("keypress", function(event) {
       if (event.key === "Enter") {
         sendMessage();
       }
     });
 
-    // جلب وعرض الرسائل بدون أي مسح للشاشة لتجنب الوميض
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     
     onSnapshot(q, (snapshot) => {
@@ -206,6 +213,16 @@
               messageDiv.className = "message";
             } else {
               messageDiv.className = "message other";
+              
+              // الإشعار يظهر للجهاز الرئيسي فقط وعندما تكون الرسالة من شخص آخر
+              if (!isInitialLoad && data.senderId !== myId && localStorage.getItem("is_admin") === "true") {
+                if ("Notification" in window && Notification.permission === "granted") {
+                  new Notification("رسالة جديدة 🕋", {
+                    body: data.text,
+                    icon: "https://cdn-icons-png.flaticon.com/512/3233/3233483.png"
+                  });
+                }
+              }
             }
 
             messageDiv.textContent = data.text;
@@ -216,10 +233,11 @@
         }
       });
 
+      isInitialLoad = false;
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
 
-    // فحص كل ثانية لمسح الرسائل التي مر عليها 30 ثانية تلقائياً
+    // مسح الرسائل بعد 30 ثانية
     setInterval(() => {
       const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
