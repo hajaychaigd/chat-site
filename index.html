@@ -32,19 +32,28 @@
       background: #075e54;
       color: white;
       padding: 16px;
-      text-align: center;
       font-size: 20px;
       font-weight: bold;
       flex-shrink: 0;
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .status-indicator {
-      font-size: 12px;
-      font-weight: normal;
-      color: #ffeb3b;
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* مؤشر الاتصال (دقطة حمراء أو خضراء على اليمين) */
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #ff5252; /* احمر افتراضي */
+      display: inline-block;
+      box-shadow: 0 0 4px rgba(0,0,0,0.3);
     }
 
     .messages {
@@ -104,7 +113,6 @@
       background: #064e46;
     }
 
-    /* شاشة حظر الدخول إذا كان هناك مستخدم بالفعل */
     #blockScreen {
       position: fixed;
       top: 0;
@@ -128,7 +136,6 @@
 
 <body onclick="unlockAudio()">
 
-  <!-- شاشة تنبيه إذا كان الشات مشغولاً بمستخدم آخر -->
   <div id="blockScreen">
     ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر. يجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت. الرجاء المحاولة لاحقاً.
   </div>
@@ -136,8 +143,11 @@
   <div class="app">
 
     <div class="header">
-      <div>صلي علي النبي 🕋</div>
-      <div id="statusText" class="status-indicator">جاري التحقق من الاتصال...</div>
+      <div class="header-title">
+        <!-- نقطة الاتصال على اليمين -->
+        <span id="statusDot" class="status-dot"></span>
+        <span>صلي علي النبي 🕋</span>
+      </div>
     </div>
 
     <div class="messages" id="messages">
@@ -160,7 +170,6 @@
 
   </div>
 
-  <!-- عنصر الصوت -->
   <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
   <script type="module">
@@ -194,7 +203,6 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // نظام قفل الشات لمستخدم واحد فقط (إذا لم تكن أنت المدير)
     if (!isAdmin) {
       const activeUserRef = doc(db, "status", "active_visitor");
       
@@ -204,20 +212,17 @@
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          // إذا كان هناك مستخدم آخر متصل حديثاً (أقل من 10 ثواني) وليس هو نفس الجهاز
           if (data.active && data.userId !== myId && (now - data.lastSeen < 10000)) {
             document.getElementById("blockScreen").style.display = "flex";
             return;
           }
         }
 
-        // تسجيل هذا الجهاز كمستخدم حالي
         await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() });
       }
 
       checkVisitorAccess();
 
-      // تحديث نبض الحضور كل 4 ثواني
       setInterval(async () => {
         await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() });
       }, 4000);
@@ -229,7 +234,6 @@
 
     const pageLoadTime = Date.now();
 
-    // نظام حالة اتصال المدير
     if (isAdmin) {
       const adminStatusRef = doc(db, "status", "admin_status");
       setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
@@ -245,17 +249,17 @@
 
     const statusQuery = doc(db, "status", "admin_status");
     onSnapshot(statusQuery, (docSnap) => {
-      const statusText = document.getElementById("statusText");
+      const statusDot = document.getElementById("statusDot");
       if (docSnap.exists()) {
         const data = docSnap.data();
         const now = Date.now();
         if (data.online && (now - data.lastSeen < 10000)) {
-          statusText.textContent = "المدير متصل الآن 🟢";
+          statusDot.style.backgroundColor = "#4CAF50"; // أخضر عند الاتصال
         } else {
-          statusText.textContent = "المدير غير متصل 🔴";
+          statusDot.style.backgroundColor = "#ff5252"; // أحمر عند انقطاع الاتصال
         }
       } else {
-        statusText.textContent = "المدير غير متصل 🔴";
+        statusDot.style.backgroundColor = "#ff5252";
       }
     });
 
@@ -313,7 +317,6 @@
           const data = change.doc.data();
           const now = Date.now();
 
-          // رسائل الزائر تتمسح بعد 45 ثانية، أما رسائل المدير تظل دائماً (Infinity)
           const expiryTime = data.isAdminMessage ? Infinity : 45000;
 
           if (data.isAdminMessage || (now - data.createdAt <= expiryTime)) {
@@ -343,7 +346,6 @@
       });
     });
 
-    // فحص دوري لمسح رسائل الزوار بعد 45 ثانية بالضبط، وإبقاء رسائل المدير للأبد
     setInterval(() => {
       const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
