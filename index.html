@@ -248,10 +248,12 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getDatabase, ref, onValue, set, onDisconnect } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
       authDomain: "chat-site-2911b.firebaseapp.com",
+      databaseURL: "https://chat-site-2911b-default-rtdb.firebaseio.com",
       projectId: "chat-site-2911b",
       storageBucket: "chat-site-2911b.firebasestorage.app",
       messagingSenderId: "7306613696",
@@ -261,6 +263,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const rtdb = getDatabase(app);
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'mysecret123') {
@@ -276,7 +279,8 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    const activeUserRef = doc(db, "status", "active_visitor");
+    const activeVisitorRef = ref(rtdb, "status/active_visitor");
+    const activeUserFirestoreRef = doc(db, "status", "active_visitor");
 
     if (isAdmin) {
       document.getElementById("usersCounter").style.display = "flex";
@@ -296,59 +300,41 @@
       window.addEventListener("pagehide", setOffline);
       window.addEventListener("beforeunload", setOffline);
 
-      onSnapshot(activeUserRef, (docSnap) => {
+      onValue(activeVisitorRef, (snapshot) => {
         const countSpan = document.getElementById("onlineCount");
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const now = Date.now();
-          if (data.active && (now - data.lastSeen < 12000)) {
-            countSpan.textContent = "1";
-          } else {
-            countSpan.textContent = "0";
-          }
+        const data = snapshot.val();
+        if (data && data.active) {
+          countSpan.textContent = "1";
         } else {
           countSpan.textContent = "0";
         }
       });
 
     } else {
-      async function checkVisitorAccess() {
+      async function registerVisitor() {
         try {
-          const docSnap = await getDoc(activeUserRef);
-          const now = Date.now();
+          const snapshot = await new Promise((resolve) => {
+            onValue(activeVisitorRef, resolve, { onlyOnce: true });
+          });
 
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.active && data.userId !== myId && (now - data.lastSeen < 12000)) {
-              document.getElementById("blockScreen").style.display = "flex";
-              return;
-            }
+          const data = snapshot.val();
+          if (data && data.active && data.userId !== myId) {
+            document.getElementById("blockScreen").style.display = "flex";
+            return;
           }
-          await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() });
+
+          await set(activeVisitorRef, { active: true, userId: myId });
+          await setDoc(activeUserFirestoreRef, { active: true, userId: myId, lastSeen: Date.now() });
+
+          onDisconnect(activeVisitorRef).remove();
+
         } catch(e) { console.log(e); }
       }
 
-      checkVisitorAccess();
+      registerVisitor();
 
-      setInterval(async () => {
-        try {
-          const docSnap = await getDoc(activeUserRef);
-          const now = Date.now();
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.active && data.userId !== myId && (now - data.lastSeen < 12000)) {
-              document.getElementById("blockScreen").style.display = "flex";
-              return;
-            }
-          }
-          await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() }, { merge: true });
-        } catch(e) { console.log(e); }
-      }, 4000);
-
-      window.addEventListener("beforeunload", async () => {
-        try {
-          await setDoc(activeUserRef, { active: false, userId: myId, lastSeen: Date.now() }, { merge: true });
-        } catch(e) { console.log(e); }
+      window.addEventListener("beforeunload", () => {
+        set(activeVisitorRef, null);
       });
     }
 
@@ -466,6 +452,11 @@
           
           if (data.senderId === myId) {
             messageDiv.className = "message mine";
+            
+            // تحديث حالة القراءة للمستخدم فور فتحه الموقع وتواجد رسائله غير المقروءة
+            if (!isAdmin && !data.read) {
+              updateDoc(doc(db, "messages", docId), { read: true });
+            }
           } else {
             messageDiv.className = "message other";
             
