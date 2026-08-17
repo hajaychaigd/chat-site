@@ -127,6 +127,7 @@
       font-size: 11px;
       color: gray;
       font-weight: bold;
+      letter-spacing: -2px;
     }
     
     .read-receipt.read {
@@ -149,7 +150,7 @@
       border-radius: 20px;
       outline: none;
       font-size: 14px;
-      background: #white;
+      background: #ffffff;
       box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
     }
 
@@ -164,7 +165,7 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 18px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.2);
       transition: background 0.2s;
     }
@@ -220,10 +221,10 @@
       <input
         type="text"
         id="messageInput"
-        placeholder="اكتب رسالتك..."
+        placeholder="اكتب الله اكبر"
       >
       <button onclick="sendMessage()">
-        ➤
+        📿
       </button>
     </div>
 
@@ -266,27 +267,33 @@
       const activeUserRef = doc(db, "status", "active_visitor");
       
       async function checkVisitorAccess() {
-        const docSnap = await getDoc(activeUserRef);
-        const now = Date.now();
+        try {
+          const docSnap = await getDoc(activeUserRef);
+          const now = Date.now();
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.active && data.userId !== myId && (now - data.lastSeen < 10000)) {
-            document.getElementById("blockScreen").style.display = "flex";
-            return;
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.active && data.userId !== myId && (now - data.lastSeen < 12000)) {
+              document.getElementById("blockScreen").style.display = "flex";
+              return;
+            }
           }
-        }
-        await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() });
+          await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() });
+        } catch(e) { console.log(e); }
       }
 
       checkVisitorAccess();
 
       setInterval(async () => {
-        await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() });
+        try {
+          await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() }, { merge: true });
+        } catch(e) { console.log(e); }
       }, 4000);
 
       window.addEventListener("beforeunload", async () => {
-        await setDoc(activeUserRef, { active: false, userId: myId, lastSeen: Date.now() });
+        try {
+          await setDoc(activeUserRef, { active: false, userId: myId, lastSeen: Date.now() }, { merge: true });
+        } catch(e) { console.log(e); }
       });
     }
 
@@ -309,15 +316,16 @@
       window.addEventListener("beforeunload", setOffline);
     }
 
+    // دالة تحديث علامة الاتصال بشكل مستقر ودقيق
     function updateStatusIndicator(data) {
       const statusDot = document.getElementById("statusDot");
       if (!statusDot) return;
       
       const now = Date.now();
-      if (data && data.online && (now - data.lastSeen < 7000)) {
-        statusDot.style.backgroundColor = "#4CAF50";
+      if (data && data.online && (now - data.lastSeen < 8000)) {
+        statusDot.style.backgroundColor = "#4CAF50"; // أخضر
       } else {
-        statusDot.style.backgroundColor = "#ff5252";
+        statusDot.style.backgroundColor = "#ff5252"; // أحمر
       }
     }
 
@@ -335,6 +343,18 @@
         updateStatusIndicator(null);
       }
     });
+
+    // فحص دوري كل ثانيتين لضمان استقرار علامة الاتصال وعدم تعليقها
+    setInterval(async () => {
+      try {
+        const docSnap = await getDoc(statusQuery);
+        if (docSnap.exists()) {
+          updateStatusIndicator(docSnap.data());
+        } else {
+          updateStatusIndicator(null);
+        }
+      } catch(e) { console.log(e); }
+    }, 2000);
 
     window.unlockAudio = function() {
       const sound = document.getElementById("notificationSound");
@@ -381,7 +401,6 @@
       }
     });
 
-    // استعلام ذكي: المدير يجلب كل الرسائل، والمستخدم يجلب فقط رسائل الـ 45 ثانية الأخيرة لمنع وميض أو ظهور الرسائل القديمة عند الريفريش تماماً
     let q;
     if (isAdmin) {
       q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
