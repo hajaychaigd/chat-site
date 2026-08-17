@@ -64,23 +64,27 @@
       gap: 5px;
     }
 
-    /* زرار كتم/مسح الرسائل للمستخدم */
+    /* زرار الجرس (أو التنبيه للمدير) بحجم أكبر */
     .mute-btn {
       background: rgba(255, 255, 255, 0.2);
       border: none;
       color: white;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 20px; /* حجم كبير للرمز */
       cursor: pointer;
       display: none;
       align-items: center;
-      gap: 4px;
-      transition: background 0.2s;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
     }
 
     .mute-btn:hover {
       background: rgba(255, 255, 255, 0.35);
+    }
+
+    .mute-btn:active {
+      transform: scale(0.95);
     }
 
     .status-dot {
@@ -341,8 +345,8 @@
         <span>صلي علي النبي 🕋</span>
       </div>
       <div class="header-actions">
-        <!-- زرار المستخدم الجديد لكتم ومسح الرسائل المؤقتة -->
-        <button id="muteMessagesBtn" class="mute-btn" onclick="toggleMuteMessages()">🔕 إخفاء الرسائل</button>
+        <!-- زرار الجرس بحجم كبير وفي نفس المكان للمستخدم والمدير -->
+        <button id="muteMessagesBtn" class="mute-btn" onclick="triggerBell()">🔔</button>
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
         </div>
@@ -434,7 +438,6 @@
     ];
 
     let currentAyaIndex = 0;
-    let messagesMuted = false; // حالة الكتم/الإخفاء للمستخدم
 
     window.nextAya = function() {
       currentAyaIndex = (currentAyaIndex + 1) % ayatList.length;
@@ -459,29 +462,21 @@
 
     const isAdmin = localStorage.getItem("is_admin") === "true";
 
+    const bellBtn = document.getElementById("muteMessagesBtn");
+    bellBtn.style.display = "flex"; // يظهر الزر عند الجميع في نفس المكان
+
     if (!isAdmin) {
       document.getElementById("tickerContainer").style.display = "block";
       document.getElementById("welcomeMessage").style.display = "flex";
-      document.getElementById("muteMessagesBtn").style.display = "flex"; // إظهار الزر للمستخدم فقط
     }
 
-    // دالة زر كتم/إخفاء الرسائل الجديدة والمؤقتة
-    window.toggleMuteMessages = function() {
-      messagesMuted = !messagesMuted;
-      const btn = document.getElementById("muteMessagesBtn");
-      
-      if (messagesMuted) {
-        btn.innerHTML = "🔔 إظهار الرسائل";
-        btn.style.background = "rgba(229, 57, 53, 0.4)";
-        
-        // مسح جميع رسائل الشات المؤقتة الموجودة حالياً فور الضغط
-        for (const docId in messageElements) {
-          messageElements[docId].element.remove();
-          delete messageElements[docId];
-        }
-      } else {
-        btn.innerHTML = "🔕 إخفاء الرسائل";
-        btn.style.background = "rgba(255, 255, 255, 0.2)";
+    // دالة الضغط على الجرس للمستخدم لتنبيه المدير وإضاءة الزر عنده
+    window.triggerBell = async function() {
+      const bellStatusRef = doc(db, "status", "bell_alert");
+      try {
+        await setDoc(bellStatusRef, { active: true, timestamp: Date.now() });
+      } catch (e) {
+        console.log(e);
       }
     };
 
@@ -523,6 +518,28 @@
           }
         } else {
           countSpan.textContent = "0";
+        }
+      });
+
+      // مراقبة ضغط المستخدم على الجرس لتنبيه المدير وعكس العلامة في نفس المكان
+      const bellStatusRef = doc(db, "status", "bell_alert");
+      onSnapshot(bellStatusRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const now = Date.now();
+          if (data.active && (now - data.timestamp < 4000)) {
+            // تفعيل العلامة عند المدير في نفس مكان الزر (يتغير لون الخلفية ويصدر صوت)
+            bellBtn.style.background = "#ff5252";
+            bellBtn.style.boxShadow = "0 0 15px #ff5252";
+            const sound = document.getElementById("notificationSound");
+            if (sound) {
+              sound.currentTime = 0;
+              sound.play().catch(e => console.log(e));
+            }
+          } else {
+            bellBtn.style.background = "rgba(255, 255, 255, 0.2)";
+            bellBtn.style.boxShadow = "none";
+          }
         }
       });
 
@@ -665,9 +682,6 @@
 
         if (change.type === "added") {
           if (messageElements[docId]) return;
-
-          // إذا كان المستخدم ضغط على زر الإخفاء، لا تعرض الرسالة الواردة نهائياً
-          if (!isAdmin && messagesMuted) return;
 
           const messageDiv = document.createElement("div");
           messageDiv.id = "msg_" + docId;
