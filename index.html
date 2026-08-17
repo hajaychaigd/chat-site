@@ -280,7 +280,6 @@
     }
 
     const activeVisitorRef = ref(rtdb, "status/active_visitor");
-    const activeUserFirestoreRef = doc(db, "status", "active_visitor");
 
     if (isAdmin) {
       document.getElementById("usersCounter").style.display = "flex";
@@ -302,8 +301,8 @@
 
       onValue(activeVisitorRef, (snapshot) => {
         const countSpan = document.getElementById("onlineCount");
-        const data = snapshot.val();
-        if (data && data.active) {
+        const val = snapshot.val();
+        if (val && val.active === true) {
           countSpan.textContent = "1";
         } else {
           countSpan.textContent = "0";
@@ -317,16 +316,14 @@
             onValue(activeVisitorRef, resolve, { onlyOnce: true });
           });
 
-          const data = snapshot.val();
-          if (data && data.active && data.userId !== myId) {
+          const val = snapshot.val();
+          if (val && val.active === true && val.userId !== myId) {
             document.getElementById("blockScreen").style.display = "flex";
             return;
           }
 
           await set(activeVisitorRef, { active: true, userId: myId });
-          await setDoc(activeUserFirestoreRef, { active: true, userId: myId, lastSeen: Date.now() });
-
-          onDisconnect(activeVisitorRef).remove();
+          onDisconnect(activeVisitorRef).set({ active: false, userId: null });
 
         } catch(e) { console.log(e); }
       }
@@ -334,7 +331,7 @@
       registerVisitor();
 
       window.addEventListener("beforeunload", () => {
-        set(activeVisitorRef, null);
+        set(activeVisitorRef, { active: false, userId: null });
       });
     }
 
@@ -452,14 +449,11 @@
           
           if (data.senderId === myId) {
             messageDiv.className = "message mine";
-            
-            // تحديث حالة القراءة للمستخدم فور فتحه الموقع وتواجد رسائله غير المقروءة
             if (!isAdmin && !data.read) {
               updateDoc(doc(db, "messages", docId), { read: true });
             }
           } else {
             messageDiv.className = "message other";
-            
             if (data.createdAt > pageLoadTime && data.senderId !== myId && isAdmin) {
               const sound = document.getElementById("notificationSound");
               if (sound) {
