@@ -3,105 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🕋صلي علي النبي</title>
+  <title>🕋 صلي على النبي</title>
 
   <style>
     * {
       box-sizing: border-box;
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      background: #f2f2f2;
+      background: #e5ddd5;
       overflow: hidden;
     }
 
     .app {
-      max-width: 400px;
+      max-width: 450px;
       height: 100%;
       margin: auto;
-      background: white;
+      background: #efeae2;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     }
 
+    /* الهيدر بتصميم واتساب أنيق */
     .header {
       background: #075e54;
       color: white;
-      padding: 16px;
-      font-size: 20px;
+      padding: 12px 16px;
+      font-size: 18px;
       font-weight: bold;
       flex-shrink: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .header-title {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .status-dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background-color: #ff5252;
       display: inline-block;
-      box-shadow: 0 0 4px rgba(0,0,0,0.3);
+      box-shadow: 0 0 6px rgba(0,0,0,0.4);
       transition: background-color 0.3s ease;
     }
 
+    /* صندوق الرسائل */
     .messages {
       flex: 1;
       padding: 15px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
+      gap: 8px;
+      background-image: radial-gradient(#d1d7db 0.75px, transparent 0.75px);
+      background-size: 15px 15px;
     }
 
+    /* تصميم الرسائل */
     .message {
-      background: #dcf8c6;
-      padding: 10px 14px;
-      margin: 8px 0;
-      border-radius: 12px;
+      background: #ffffff;
+      padding: 8px 12px;
+      border-radius: 7px;
+      max-width: 75%;
       width: fit-content;
-      max-width: 80%;
-      margin-right: auto;
       word-break: break-word;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
+      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
       position: relative;
+      font-size: 14px;
     }
 
+    /* رسائل الطرف الآخر أو المدير للمستخدم */
     .message.other {
-      background: #eeeeee;
+      background: #ffffff;
       margin-right: 0;
       margin-left: auto;
+      border-top-right-radius: 7px;
+      border-top-left-radius: 0;
+    }
+
+    /* رسائلك الشخصية */
+    .message.mine {
+      background: #dcf8c6;
+      margin-right: auto;
+      margin-left: 0;
+      border-top-right-radius: 0;
+      border-top-left-radius: 7px;
+    }
+
+    .message-text {
+      color: #111;
+      line-height: 1.4;
     }
 
     .message-footer {
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       font-size: 10px;
-      color: #888;
+      color: #666;
+      margin-top: -2px;
     }
 
     .timer-text {
-      font-size: 10px;
-      color: #888;
+      color: #e53935;
       font-weight: bold;
+      background: rgba(229, 57, 53, 0.1);
+      padding: 1px 4px;
+      border-radius: 4px;
     }
 
     .read-receipt {
-      font-size: 12px;
+      font-size: 11px;
       color: gray;
       font-weight: bold;
     }
@@ -110,32 +138,41 @@
       color: #34b7f1;
     }
 
+    /* منطقة الإرسال */
     .input-area {
       display: flex;
-      padding: 10px;
-      border-top: 1px solid #ddd;
+      padding: 10px 12px;
+      background: #f0f2f5;
       gap: 8px;
-      background: white;
+      align-items: center;
       flex-shrink: 0;
     }
 
     input {
       flex: 1;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 25px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 20px;
       outline: none;
-      font-size: 15px;
+      font-size: 14px;
+      background: #white;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
     }
 
     button {
       border: none;
       background: #075e54;
       color: white;
-      padding: 0 18px;
-      border-radius: 25px;
-      font-size: 15px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       cursor: pointer;
+      font-size: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: background 0.2s;
     }
 
     button:hover {
@@ -157,8 +194,9 @@
       text-align: center;
       padding: 20px;
       z-index: 9999;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -166,7 +204,7 @@
 <body onclick="unlockAudio()">
 
   <div id="blockScreen">
-    ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر. يجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت. الرجاء المحاولة لاحقاً.
+    ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
   </div>
 
   <div class="app">
@@ -180,7 +218,7 @@
 
     <div class="messages" id="messages">
       <div class="message other" id="welcomeMessage">
-        💜💜💜
+        <span class="message-text">💜💜💜 أهلاً بك في خدمة العملاء</span>
       </div>
     </div>
 
@@ -190,9 +228,8 @@
         id="messageInput"
         placeholder="اكتب رسالتك..."
       >
-
       <button onclick="sendMessage()">
-        إرسال
+        ➤
       </button>
     </div>
 
@@ -220,7 +257,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'mysecret123') {
       localStorage.setItem("is_admin", "true");
-      alert("تم تفعيل هذا الجهاز كجهاز أساسي للتنبيهات بنجاح! 🔔");
+      alert("تم تفعيل هذا الجهاز كجهاز أساسي للمدير بنجاح! 🔔");
     }
 
     const isAdmin = localStorage.getItem("is_admin") === "true";
@@ -231,6 +268,7 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
+    // إدارة قفل الشات للزوار
     if (!isAdmin) {
       const activeUserRef = doc(db, "status", "active_visitor");
       
@@ -261,6 +299,7 @@
 
     const pageLoadTime = Date.now();
 
+    // اتصال المدير اللحظي
     if (isAdmin) {
       const adminStatusRef = doc(db, "status", "admin_status");
       setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
@@ -351,14 +390,17 @@
 
         if (change.type === "added") {
           const now = Date.now();
-          const expiryTime = data.isAdminMessage ? Infinity : 45000;
+          
+          // شاشة المستخدم: الرسائل تختفي بعد 45 ثانية. شاشة المدير: ثابتة دائماً (لا تختفي أبداً)
+          const expiryTime = (!isAdmin && !data.isAdminMessage) ? 45000 : Infinity;
 
-          if (data.isAdminMessage || (now - data.createdAt <= expiryTime)) {
+          if (isAdmin || (now - data.createdAt <= expiryTime)) {
             const messageDiv = document.createElement("div");
             messageDiv.id = "msg_" + docId;
             
+            // تحديد محاذاة الرسالة (إذا كانت رسالتك تظهر يميناً بلون مختلف، وإلا يساراً)
             if (data.senderId === myId) {
-              messageDiv.className = "message";
+              messageDiv.className = "message mine";
             } else {
               messageDiv.className = "message other";
               
@@ -372,15 +414,15 @@
             }
 
             const textSpan = document.createElement("span");
+            textSpan.className = "message-text";
             textSpan.textContent = data.text;
             messageDiv.appendChild(textSpan);
 
             const footerDiv = document.createElement("div");
             footerDiv.className = "message-footer";
 
-            if (data.isAdminMessage) {
-              messageDiv.classList.add("admin-msg");
-            } else {
+            // إضافة العداد التنازلي للمستخدمين فقط (وليس للمدير)
+            if (!isAdmin) {
               const timerSpan = document.createElement("span");
               timerSpan.className = "timer-text";
               footerDiv.appendChild(timerSpan);
@@ -398,6 +440,7 @@
 
             messageElements[docId] = { element: messageDiv, data: data };
 
+            // إذا كان المستخدم هو المدير ورأى رسالة الزائر، تتحول للون الأزرق تلقائياً
             if (isAdmin && !data.isAdminMessage && !data.read) {
               updateDoc(doc(db, "messages", docId), { read: true });
             }
@@ -420,27 +463,27 @@
       });
     });
 
-    // عداد تنازلي يعرض الأرقام الصافية فقط بدون أي حروف أو نصوص زائدة
-    setInterval(() => {
-      const now = Date.now();
-      for (const docId in messageElements) {
-        const item = messageElements[docId];
-        if (item.data.isAdminMessage) continue;
+    // عداد تنازلي خاص بالمستخدمين فقط لحذف الرسائل بعد 45 ثانية
+    if (!isAdmin) {
+      setInterval(() => {
+        const now = Date.now();
+        for (const docId in messageElements) {
+          const item = messageElements[docId];
+          const createdAt = item.data.createdAt;
+          const timeLeft = 45000 - (now - createdAt);
 
-        const createdAt = item.data.createdAt;
-        const timeLeft = 45000 - (now - createdAt);
-
-        if (timeLeft <= 0) {
-          item.element.remove();
-          delete messageElements[docId];
-        } else {
-          const timerSpan = item.element.querySelector(".timer-text");
-          if (timerSpan) {
-            timerSpan.textContent = Math.ceil(timeLeft / 1000);
+          if (timeLeft <= 0) {
+            item.element.remove();
+            delete messageElements[docId];
+          } else {
+            const timerSpan = item.element.querySelector(".timer-text");
+            if (timerSpan) {
+              timerSpan.textContent = Math.ceil(timeLeft / 1000);
+            }
           }
         }
-      }
-    }, 1000);
+      }, 1000);
+    }
   </script>
 
 </body>
