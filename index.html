@@ -68,7 +68,7 @@
       transition: background-color 0.3s ease;
     }
 
-    /* شريط الحركة المتحرك للأذكار */
+    /* شريط الحركة المتحرك للأذكار (من الشمال لليمين وبشكل متواصل وبطء مناسب) */
     .ticker-container {
       background: #e1dfdd;
       color: #075e54;
@@ -80,25 +80,32 @@
       font-weight: bold;
       border-bottom: 1px solid #d1d7db;
       display: none;
+      direction: ltr; /* لضمان الحركة والسلاسة من اليسار لليمين */
     }
 
     .ticker-track {
-      display: inline-block;
+      display: inline-flex;
       white-space: nowrap;
-      animation: tickerAnimation 18s linear infinite;
+      animation: tickerAnimation 25s linear infinite;
+    }
+
+    .ticker-group {
+      display: inline-flex;
+      gap: 35px;
+      padding-right: 35px;
+      flex-shrink: 0;
     }
 
     .ticker-item {
       display: inline-block;
-      margin-left: 40px;
     }
 
     @keyframes tickerAnimation {
       0% {
-        transform: translateX(100%);
+        transform: translateX(-50%);
       }
       100% {
-        transform: translateX(-100%);
+        transform: translateX(0%);
       }
     }
 
@@ -270,17 +277,21 @@
       </div>
     </div>
 
-    <!-- شريط الأذكار المتحرك (يظهر للمستخدم فقط وبأكثر من ذكر) -->
+    <!-- شريط الأذكار المتحرك (متواصل وبطيء ومن اليسار لليمين) -->
     <div id="tickerContainer" class="ticker-container">
       <div class="ticker-track">
-        <span class="ticker-item">سبحان الله 📿</span>
-        <span class="ticker-item">الحمد لله 📿</span>
-        <span class="ticker-item">الله أكبر 📿</span>
-        <span class="ticker-item">استغفر الله 📿</span>
-        <span class="ticker-item">سبحان الله 📿</span>
-        <span class="ticker-item">الحمد لله 📿</span>
-        <span class="ticker-item">الله أكبر 📿</span>
-        <span class="ticker-item">استغفر الله 📿</span>
+        <div class="ticker-group">
+          <span class="ticker-item">سبحان الله 📿</span>
+          <span class="ticker-item">الحمد لله 📿</span>
+          <span class="ticker-item">الله أكبر 📿</span>
+          <span class="ticker-item">استغفر الله 📿</span>
+        </div>
+        <div class="ticker-group">
+          <span class="ticker-item">سبحان الله 📿</span>
+          <span class="ticker-item">الحمد لله 📿</span>
+          <span class="ticker-item">الله أكبر 📿</span>
+          <span class="ticker-item">استغفر الله 📿</span>
+        </div>
       </div>
     </div>
 
@@ -333,7 +344,6 @@
 
     const isAdmin = localStorage.getItem("is_admin") === "true";
 
-    // إظهار الشريط المتحرك للمستخدم العادي فقط وعدم إظهاره للمدير
     if (!isAdmin) {
       document.getElementById("tickerContainer").style.display = "block";
     }
