@@ -68,6 +68,40 @@
       transition: background-color 0.3s ease;
     }
 
+    /* شريط الحركة المتحرك */
+    .ticker-container {
+      background: #e1dfdd;
+      color: #075e54;
+      padding: 6px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+      font-size: 12px;
+      font-weight: bold;
+      border-bottom: 1px solid #d1d7db;
+      display: none;
+    }
+
+    .ticker-track {
+      display: inline-block;
+      white-space: nowrap;
+      animation: tickerAnimation 15s linear infinite;
+    }
+
+    .ticker-item {
+      display: inline-block;
+      margin-left: 50px;
+    }
+
+    @keyframes tickerAnimation {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
     .messages {
       flex: 1;
       padding: 15px;
@@ -110,7 +144,6 @@
       border-top-left-radius: 7px;
     }
 
-    /* تنسيق ثابت لآية الكرسي */
     .message.aya-box {
       background: #fffdf5;
       max-width: 90%;
@@ -237,8 +270,18 @@
       </div>
     </div>
 
+    <!-- شريط صلي على النبي المتحرك (يظهر للمستخدم فقط) -->
+    <div id="tickerContainer" class="ticker-container">
+      <div class="ticker-track">
+        <span class="ticker-item">✨ صلي على النبي 🕋</span>
+        <span class="ticker-item">✨ صلي على النبي 🕋</span>
+        <span class="ticker-item">✨ صلي على النبي 🕋</span>
+        <span class="ticker-item">✨ صلي على النبي 🕋</span>
+        <span class="ticker-item">✨ صلي على النبي 🕋</span>
+      </div>
+    </div>
+
     <div class="messages" id="messages">
-      <!-- رسالة آية الكرسي الثابتة -->
       <div class="message aya-box" id="welcomeMessage">
         <span class="message-text">
           اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ.💜💜💜
@@ -286,6 +329,11 @@
     }
 
     const isAdmin = localStorage.getItem("is_admin") === "true";
+
+    // إظهار الشريط المتحرك للمستخدم العادي فقط وعدم إظهاره للمدير
+    if (!isAdmin) {
+      document.getElementById("tickerContainer").style.display = "block";
+    }
 
     let myId = localStorage.getItem("chat_user_id");
     if (!myId) {
@@ -499,7 +547,7 @@
             const timerSpan = document.createElement("span");
             timerSpan.className = "timer-text";
             footerDiv.appendChild(timerSpan);
-            messageDiv.dataset.createdAt = data.createdAt;
+            messageDividerData(messageDiv, data.createdAt);
           }
 
           const readReceipt = document.createElement("span");
@@ -533,6 +581,10 @@
         }
       });
     });
+
+    function messageDividerData(msgDiv, createdAt) {
+      msgDiv.dataset.createdAt = createdAt;
+    }
 
     if (!isAdmin) {
       setInterval(() => {
