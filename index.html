@@ -279,6 +279,7 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
+    const onlineUserRef = ref(rtdb, "status/online_user");
     const activeVisitorRef = ref(rtdb, "status/active_visitor");
 
     if (isAdmin) {
@@ -299,15 +300,11 @@
       window.addEventListener("pagehide", setOffline);
       window.addEventListener("beforeunload", setOffline);
 
-      // مراقبة فورية وديناميكية لمتغير العداد عند المدير
-      onValue(activeVisitorRef, (snapshot) => {
+      // الاستماع المباشر للقيمة العددية البسيطة
+      onValue(onlineUserRef, (snapshot) => {
         const countSpan = document.getElementById("onlineCount");
         const val = snapshot.val();
-        if (val && (val === true || val.active === true)) {
-          countSpan.textContent = "1";
-        } else {
-          countSpan.textContent = "0";
-        }
+        countSpan.textContent = (val === 1 || val === true) ? "1" : "0";
       });
 
     } else {
@@ -317,14 +314,18 @@
             onValue(activeVisitorRef, resolve, { onlyOnce: true });
           });
 
-          const val = snapshot.val();
-          if (val && (val === true || val.active === true) && val.userId !== myId) {
+          const currentActiveUser = snapshot.val();
+          if (currentActiveUser && currentActiveUser !== myId) {
             document.getElementById("blockScreen").style.display = "flex";
             return;
           }
 
-          await set(activeVisitorRef, { active: true, userId: myId });
+          // تسجيل الهوية وتصفير العداد تلقائياً عند المغادرة
+          await set(activeVisitorRef, myId);
+          await set(onlineUserRef, 1);
+
           onDisconnect(activeVisitorRef).remove();
+          onDisconnect(onlineUserRef).set(0);
 
         } catch(e) { console.log(e); }
       }
@@ -333,6 +334,7 @@
 
       window.addEventListener("beforeunload", () => {
         remove(activeVisitorRef);
+        set(onlineUserRef, 0);
       });
     }
 
