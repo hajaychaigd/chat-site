@@ -248,7 +248,6 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-    import { getDatabase, ref, onValue, set, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -263,7 +262,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const rtdb = getDatabase(app);
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'mysecret123') {
@@ -279,8 +277,7 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    const onlineUserRef = ref(rtdb, "status/online_user");
-    const activeVisitorRef = ref(rtdb, "status/active_visitor");
+    const activeVisitorDocRef = doc(db, "status", "active_visitor");
 
     if (isAdmin) {
       document.getElementById("usersCounter").style.display = "flex";
@@ -300,42 +297,57 @@
       window.addEventListener("pagehide", setOffline);
       window.addEventListener("beforeunload", setOffline);
 
-      // الاستماع المباشر للقيمة العددية البسيطة
-      onValue(onlineUserRef, (snapshot) => {
+      onSnapshot(activeVisitorDocRef, (docSnap) => {
         const countSpan = document.getElementById("onlineCount");
-        const val = snapshot.val();
-        countSpan.textContent = (val === 1 || val === true) ? "1" : "0";
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const now = Date.now();
+          if (data.active && (now - data.lastSeen < 6000)) {
+            countSpan.textContent = "1";
+          } else {
+            countSpan.textContent = "0";
+          }
+        } else {
+          countSpan.textContent = "0";
+        }
       });
 
     } else {
       async function registerVisitor() {
         try {
-          const snapshot = await new Promise((resolve) => {
-            onValue(activeVisitorRef, resolve, { onlyOnce: true });
-          });
+          const docSnap = await getDoc(activeVisitorDocRef);
+          const now = Date.now();
 
-          const currentActiveUser = snapshot.val();
-          if (currentActiveUser && currentActiveUser !== myId) {
-            document.getElementById("blockScreen").style.display = "flex";
-            return;
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.active && (now - data.lastSeen < 6000) && data.userId !== myId) {
+              document.getElementById("blockScreen").style.display = "flex";
+              return;
+            }
           }
 
-          // تسجيل الهوية وتصفير العداد تلقائياً عند المغادرة
-          await set(activeVisitorRef, myId);
-          await set(onlineUserRef, 1);
+          await setDoc(activeVisitorDocRef, { active: true, userId: myId, lastSeen: Date.now() });
 
-          onDisconnect(activeVisitorRef).remove();
-          onDisconnect(onlineUserRef).set(0);
+          const visitorHeartbeat = setInterval(async () => {
+            try {
+              await setDoc(activeVisitorDocRef, { active: true, userId: myId, lastSeen: Date.now() }, { merge: true });
+            } catch(e) {}
+          }, 3000);
+
+          const removeVisitor = async () => {
+            clearInterval(visitorHeartbeat);
+            try {
+              await setDoc(activeVisitorDocRef, { active: false, userId: null, lastSeen: 0 });
+            } catch(e) {}
+          };
+
+          window.addEventListener("pagehide", removeVisitor);
+          window.addEventListener("beforeunload", removeVisitor);
 
         } catch(e) { console.log(e); }
       }
 
       registerVisitor();
-
-      window.addEventListener("beforeunload", () => {
-        remove(activeVisitorRef);
-        set(onlineUserRef, 0);
-      });
     }
 
     const pageLoadTime = Date.now();
