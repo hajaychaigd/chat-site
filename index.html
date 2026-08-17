@@ -46,12 +46,11 @@
       gap: 10px;
     }
 
-    /* مؤشر الاتصال (دقطة حمراء أو خضراء على اليمين) */
     .status-dot {
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background-color: #ff5252; /* احمر افتراضي */
+      background-color: #ff5252;
       display: inline-block;
       box-shadow: 0 0 4px rgba(0,0,0,0.3);
     }
@@ -73,12 +72,22 @@
       max-width: 80%;
       margin-right: auto;
       word-break: break-word;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .message.other {
       background: #eeeeee;
       margin-right: 0;
       margin-left: auto;
+    }
+
+    /* تنسيق العداد التنازلي بخط بسيط وصغير */
+    .timer-text {
+      font-size: 10px;
+      color: #888;
+      align-self: flex-end;
     }
 
     .input-area {
@@ -144,7 +153,6 @@
 
     <div class="header">
       <div class="header-title">
-        <!-- نقطة الاتصال على اليمين -->
         <span id="statusDot" class="status-dot"></span>
         <span>صلي علي النبي 🕋</span>
       </div>
@@ -254,9 +262,9 @@
         const data = docSnap.data();
         const now = Date.now();
         if (data.online && (now - data.lastSeen < 10000)) {
-          statusDot.style.backgroundColor = "#4CAF50"; // أخضر عند الاتصال
+          statusDot.style.backgroundColor = "#4CAF50";
         } else {
-          statusDot.style.backgroundColor = "#ff5252"; // أحمر عند انقطاع الاتصال
+          statusDot.style.backgroundColor = "#ff5252";
         }
       } else {
         statusDot.style.backgroundColor = "#ff5252";
@@ -336,9 +344,22 @@
               }
             }
 
-            messageDiv.textContent = data.text;
-            messageDiv.dataset.createdAt = data.createdAt;
-            messageDiv.dataset.isAdmin = data.isAdminMessage ? "true" : "false";
+            // النص الأساسي للرسالة
+            const textSpan = document.createElement("span");
+            textSpan.textContent = data.text;
+            messageDiv.appendChild(textSpan);
+
+            // إذا لم تكن رسالة المدير، نضيف عداد تنازلي صغير بجانبها
+            if (!data.isAdminMessage) {
+              const timerSpan = document.createElement("span");
+              timerSpan.className = "timer-text";
+              messageDiv.appendChild(timerSpan);
+              messageDiv.dataset.createdAt = data.createdAt;
+              messageDiv.dataset.hasTimer = "true";
+            } else {
+              messageDiv.classList.add("admin-msg");
+            }
+
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
           }
@@ -346,16 +367,29 @@
       });
     });
 
+    // تحديث العدادات التنازلية وحذف الرسائل منتهية الصلاحية تلقائياً
     setInterval(() => {
       const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
 
       messageDivs.forEach(div => {
-        const isAdminMsg = div.dataset.isAdmin === "true";
-        const createdAt = parseInt(div.dataset.createdAt);
+        // رسائل المدير لا تتأثر نهائياً
+        if (div.classList.contains("admin-msg")) {
+          return; 
+        }
 
-        if (!isAdminMsg && createdAt && (now - createdAt > 45000)) { 
+        const createdAt = parseInt(div.dataset.createdAt);
+        const elapsed = now - createdAt;
+        const timeLeft = 45000 - elapsed;
+
+        if (timeLeft <= 0) {
           div.remove();
+        } else {
+          const timerSpan = div.querySelector(".timer-text");
+          if (timerSpan) {
+            const secondsLeft = Math.ceil(timeLeft / 1000);
+            timerSpan.textContent = `تختفي بعد ${secondsLeft} ثا`;
+          }
         }
       });
     }, 1000);
