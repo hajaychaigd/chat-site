@@ -6,108 +6,546 @@
   <title>🕋 صلي على النبي</title>
 
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    html, body { margin: 0; padding: 0; height: 100%; background: #e5ddd5; overflow: hidden; }
-    .app { max-width: 450px; height: 100%; margin: auto; background: #efeae2; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-    .header { background: #075e54; color: white; padding: 12px 16px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-    .users-counter { background: rgba(0,0,0,0.25); padding: 4px 10px; border-radius: 12px; font-size: 13px; display: none; }
-    .messages { flex: 1; padding: 15px; overflow-y: auto; background-image: radial-gradient(#d1d7db 0.75px, transparent 0.75px); background-size: 15px 15px; }
-    .message { background: #ffffff; padding: 10px 14px; border-radius: 7px; margin-bottom: 8px; max-width: 85%; font-size: 14px; line-height: 1.6; color: #333; }
-    .mine { background: #dcf8c6; margin-right: auto; }
-    .welcome-msg { background: #fffdf5; border: 1px solid #e1e1e1; text-align: center; color: #555; font-style: italic; }
-    .input-area { display: flex; padding: 10px; background: #f0f2f5; gap: 8px; }
-    input { flex: 1; padding: 10px; border: none; border-radius: 20px; outline: none; }
-    button { background: #075e54; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
-    #blockScreen { position: fixed; top:0; left:0; width:100%; height:100%; background:#075e54; color:white; display:none; flex-direction:column; justify-content:center; align-items:center; z-index:9999; padding: 20px; text-align: center; }
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #e5ddd5;
+      overflow: hidden;
+    }
+
+    .app {
+      max-width: 450px;
+      height: 100%;
+      margin: auto;
+      background: #efeae2;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    .header {
+      background: #075e54;
+      color: white;
+      padding: 12px 16px;
+      font-size: 18px;
+      font-weight: bold;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .users-counter {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      display: none;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #ff5252;
+      display: inline-block;
+      box-shadow: 0 0 6px rgba(0,0,0,0.4);
+      transition: background-color 0.3s ease;
+    }
+
+    .messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background-image: radial-gradient(#d1d7db 0.75px, transparent 0.75px);
+      background-size: 15px 15px;
+    }
+
+    .message {
+      background: #ffffff;
+      padding: 8px 12px;
+      border-radius: 7px;
+      max-width: 75%;
+      width: fit-content;
+      word-break: break-word;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+      position: relative;
+      font-size: 14px;
+    }
+
+    .message.other {
+      background: #ffffff;
+      margin-right: 0;
+      margin-left: auto;
+      border-top-right-radius: 7px;
+      border-top-left-radius: 0;
+    }
+
+    .message.mine {
+      background: #dcf8c6;
+      margin-right: auto;
+      margin-left: 0;
+      border-top-right-radius: 0;
+      border-top-left-radius: 7px;
+    }
+
+    .message-text {
+      color: #111;
+      line-height: 1.4;
+    }
+
+    .message-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: #666;
+      margin-top: -2px;
+    }
+
+    .timer-text {
+      color: #e53935;
+      font-weight: bold;
+      background: rgba(229, 57, 53, 0.1);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+
+    .read-receipt {
+      font-size: 11px;
+      color: gray;
+      font-weight: bold;
+      letter-spacing: -2px;
+    }
+    
+    .read-receipt.read {
+      color: #34b7f1;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px 12px;
+      background: #f0f2f5;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 20px;
+      outline: none;
+      font-size: 14px;
+      background: #ffffff;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    button {
+      border: none;
+      background: #075e54;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #064e46;
+    }
+
+    #blockScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #075e54;
+      color: white;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      z-index: 9999;
+      font-size: 20px;
+      font-weight: bold;
+      line-height: 1.5;
+    }
   </style>
 </head>
 
-<body>
+<body onclick="unlockAudio()">
 
-  <div id="blockScreen">❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>الرجاء المحاولة لاحقاً.</div>
+  <div id="blockScreen">
+    ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
+  </div>
 
   <div class="app">
+
     <div class="header">
-      <span>صلي علي النبي 🕋</span>
-      <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">0</span></div>
+      <div class="header-title">
+        <span id="statusDot" class="status-dot"></span>
+        <span>صلي علي النبي 🕋</span>
+      </div>
+      <div id="usersCounter" class="users-counter">
+        <span>👤</span> <span id="onlineCount">0</span>
+      </div>
     </div>
-    
+
     <div class="messages" id="messages">
-      <!-- رسالة آية الكرسي الثابتة -->
-      <div class="message welcome-msg">
-        اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ.💜💜💜
+      <div class="message other" id="welcomeMessage">
+        <span class="message-text">💜💜💜 أهلاً بك في خدمة العملاء</span>
       </div>
     </div>
 
     <div class="input-area">
-      <input type="text" id="messageInput" placeholder="اكتب رسالتك...">
-      <button onclick="sendMessage()">📿</button>
+      <input
+        type="text"
+        id="messageInput"
+        placeholder="الله اكبر"
+      >
+      <button onclick="sendMessage()">
+        📿
+      </button>
     </div>
+
   </div>
+
+  <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
       authDomain: "chat-site-2911b.firebaseapp.com",
+      databaseURL: "https://chat-site-2911b-default-rtdb.firebaseio.com",
       projectId: "chat-site-2911b",
       storageBucket: "chat-site-2911b.firebasestorage.app",
       messagingSenderId: "7306613696",
-      appId: "1:7306613696:web:5479f7634c7e903bbdae25"
+      appId: "1:7306613696:web:5479f7634c7e903bbdae25",
+      measurementId: "G-KZ4L2JHQN4"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const isAdmin = window.location.search.includes('admin=mysecret123');
-    const myId = 'user_' + Math.random().toString(36).substring(2);
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'mysecret123') {
+      localStorage.setItem("is_admin", "true");
+      alert("تم تفعيل هذا الجهاز كجهاز أساسي للمدير بنجاح! 🔔");
+    }
+
+    const isAdmin = localStorage.getItem("is_admin") === "true";
+
+    let myId = localStorage.getItem("chat_user_id");
+    if (!myId) {
+      myId = 'user_' + Math.random().toString(36).substring(2);
+      localStorage.setItem("chat_user_id", myId);
+    }
+
     const activeVisitorDocRef = doc(db, "status", "active_visitor");
 
-    // التحقق من حالة الشات عند الدخول
-    getDoc(activeVisitorDocRef).then((docSnap) => {
-      if (!isAdmin && docSnap.exists() && docSnap.data().active === true) {
-        document.getElementById("blockScreen").style.display = "flex";
-      } else if (!isAdmin) {
-        setDoc(activeVisitorDocRef, { active: true, userId: myId });
+    if (isAdmin) {
+      document.getElementById("usersCounter").style.display = "flex";
+
+      const adminStatusRef = doc(db, "status", "admin_status");
+      setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
+
+      const heartbeat = setInterval(() => {
+        setDoc(adminStatusRef, { online: true, lastSeen: Date.now() }, { merge: true });
+      }, 4000);
+
+      const setOffline = async () => {
+        clearInterval(heartbeat);
+        await setDoc(adminStatusRef, { online: false, lastSeen: 0 });
+      };
+
+      window.addEventListener("pagehide", setOffline);
+      window.addEventListener("beforeunload", setOffline);
+
+      onSnapshot(activeVisitorDocRef, (docSnap) => {
+        const countSpan = document.getElementById("onlineCount");
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const now = Date.now();
+          if (data.active && (now - data.lastSeen < 6000)) {
+            countSpan.textContent = "1";
+          } else {
+            countSpan.textContent = "0";
+          }
+        } else {
+          countSpan.textContent = "0";
+        }
+      });
+
+    } else {
+      async function registerVisitor() {
+        try {
+          const docSnap = await getDoc(activeVisitorDocRef);
+          const now = Date.now();
+
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.active && (now - data.lastSeen < 6000) && data.userId !== myId) {
+              document.getElementById("blockScreen").style.display = "flex";
+              return;
+            }
+          }
+
+          await setDoc(activeVisitorDocRef, { active: true, userId: myId, lastSeen: Date.now() });
+
+          const visitorHeartbeat = setInterval(async () => {
+            try {
+              await setDoc(activeVisitorDocRef, { active: true, userId: myId, lastSeen: Date.now() }, { merge: true });
+            } catch(e) {}
+          }, 3000);
+
+          const removeVisitor = async () => {
+            clearInterval(visitorHeartbeat);
+            try {
+              await setDoc(activeVisitorDocRef, { active: false, userId: null, lastSeen: 0 });
+            } catch(e) {}
+          };
+
+          window.addEventListener("pagehide", removeVisitor);
+          window.addEventListener("beforeunload", removeVisitor);
+
+        } catch(e) { console.log(e); }
+      }
+
+      registerVisitor();
+    }
+
+    const pageLoadTime = Date.now();
+
+    function updateStatusIndicator(data) {
+      const statusDot = document.getElementById("statusDot");
+      if (!statusDot) return;
+      
+      const now = Date.now();
+      if (data && data.online && (now - data.lastSeen < 8000)) {
+        statusDot.style.backgroundColor = "#4CAF50";
+      } else {
+        statusDot.style.backgroundColor = "#ff5252";
+      }
+    }
+
+    const statusQuery = doc(db, "status", "admin_status");
+    getDoc(statusQuery).then((docSnap) => {
+      if (docSnap.exists()) {
+        updateStatusIndicator(docSnap.data());
       }
     });
 
-    if (isAdmin) {
-      document.getElementById("usersCounter").style.display = "block";
-      onSnapshot(activeVisitorDocRef, (docSnap) => {
-        document.getElementById("onlineCount").textContent = (docSnap.exists() && docSnap.data().active) ? "1" : "0";
-      });
-    }
-
-    // تنظيف الحالة عند الخروج
-    window.addEventListener("beforeunload", () => {
-      if (!isAdmin) setDoc(activeVisitorDocRef, { active: false, userId: null });
+    onSnapshot(statusQuery, (docSnap) => {
+      if (docSnap.exists()) {
+        updateStatusIndicator(docSnap.data());
+      } else {
+        updateStatusIndicator(null);
+      }
     });
 
-    window.sendMessage = async () => {
-      const input = document.getElementById("messageInput");
-      if (!input.value.trim()) return;
-      await addDoc(collection(db, "messages"), { text: input.value, senderId: myId, createdAt: Date.now() });
-      input.value = "";
+    setInterval(async () => {
+      try {
+        const docSnap = await getDoc(statusQuery);
+        if (docSnap.exists()) {
+          updateStatusIndicator(docSnap.data());
+        } else {
+          updateStatusIndicator(null);
+        }
+      } catch(e) { console.log(e); }
+    }, 2000);
+
+    window.unlockAudio = function() {
+      const sound = document.getElementById("notificationSound");
+      if (sound) {
+        sound.play().then(() => {
+          sound.pause();
+          sound.currentTime = 0;
+        }).catch(e => console.log(e));
+      }
     };
 
-    onSnapshot(query(collection(db, "messages"), orderBy("createdAt", "asc")), (snapshot) => {
-      const container = document.getElementById("messages");
-      // نحتفظ فقط برسالة الترحيب ونمسح باقي الرسائل القديمة عند التحديث
-      const welcomeMsg = container.querySelector(".welcome-msg");
-      container.innerHTML = "";
-      container.appendChild(welcomeMsg);
-      
-      snapshot.forEach(doc => {
-        const div = document.createElement("div");
-        div.className = "message " + (doc.data().senderId === myId ? "mine" : "");
-        div.textContent = doc.data().text;
-        container.appendChild(div);
-      });
-      container.scrollTop = container.scrollHeight;
+    setTimeout(() => {
+      const welcomeMsg = document.getElementById("welcomeMessage");
+      if (welcomeMsg) {
+        welcomeMsg.remove();
+      }
+    }, 5000);
+
+    window.sendMessage = async function() {
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+
+      if (text === "") return;
+
+      const currentTime = Date.now();
+      input.value = "";
+
+      try {
+        await addDoc(collection(db, "messages"), {
+          text: text,
+          senderId: myId,
+          isAdminMessage: isAdmin,
+          createdAt: currentTime,
+          read: isAdmin
+        });
+      } catch (error) {
+        console.error("خطأ في الإرسال: ", error);
+      }
+    };
+
+    document.getElementById("messageInput").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        sendMessage();
+      }
     });
+
+    let q;
+    if (isAdmin) {
+      q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+    } else {
+      const fortyFiveSecondsAgo = Date.now() - 45000;
+      q = query(
+        collection(db, "messages"), 
+        where("createdAt", ">=", fortyFiveSecondsAgo),
+        orderBy("createdAt", "asc")
+      );
+    }
+
+    const messageElements = {};
+
+    onSnapshot(q, (snapshot) => {
+      const messagesContainer = document.getElementById("messages");
+
+      snapshot.docChanges().forEach((change) => {
+        const docId = change.doc.id;
+        const data = change.doc.data();
+
+        if (change.type === "added") {
+          if (messageElements[docId]) return;
+
+          const messageDiv = document.createElement("div");
+          messageDiv.id = "msg_" + docId;
+          
+          if (data.senderId === myId) {
+            messageDiv.className = "message mine";
+            if (!isAdmin && !data.read) {
+              updateDoc(doc(db, "messages", docId), { read: true });
+            }
+          } else {
+            messageDiv.className = "message other";
+            if (data.createdAt > pageLoadTime && data.senderId !== myId && isAdmin) {
+              const sound = document.getElementById("notificationSound");
+              if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(err => console.log(err));
+              }
+            }
+          }
+
+          const textSpan = document.createElement("span");
+          textSpan.className = "message-text";
+          textSpan.textContent = data.text;
+          messageDiv.appendChild(textSpan);
+
+          const footerDiv = document.createElement("div");
+          footerDiv.className = "message-footer";
+
+          if (!isAdmin) {
+            const timerSpan = document.createElement("span");
+            timerSpan.className = "timer-text";
+            footerDiv.appendChild(timerSpan);
+            messageDiv.dataset.createdAt = data.createdAt;
+          }
+
+          const readReceipt = document.createElement("span");
+          readReceipt.className = "read-receipt " + (data.read ? "read" : "");
+          readReceipt.innerHTML = "✓✓";
+          footerDiv.appendChild(readReceipt);
+
+          messageDiv.appendChild(footerDiv);
+          messagesContainer.appendChild(messageDiv);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+          messageElements[docId] = { element: messageDiv, data: data };
+
+          if (isAdmin && !data.isAdminMessage && !data.read) {
+            updateDoc(doc(db, "messages", docId), { read: true });
+          }
+        } 
+        else if (change.type === "modified") {
+          if (messageElements[docId]) {
+            const readReceipt = messageElements[docId].element.querySelector(".read-receipt");
+            if (readReceipt && data.read) {
+              readReceipt.classList.add("read");
+            }
+          }
+        }
+        else if (change.type === "removed") {
+          if (messageElements[docId]) {
+            messageElements[docId].element.remove();
+            delete messageElements[docId];
+          }
+        }
+      });
+    });
+
+    if (!isAdmin) {
+      setInterval(() => {
+        const now = Date.now();
+        for (const docId in messageElements) {
+          const item = messageElements[docId];
+          const createdAt = item.data.createdAt;
+          const timeLeft = 45000 - (now - createdAt);
+
+          if (timeLeft <= 0) {
+            item.element.remove();
+            delete messageElements[docId];
+          } else {
+            const timerSpan = item.element.querySelector(".timer-text");
+            if (timerSpan) {
+              timerSpan.textContent = Math.ceil(timeLeft / 1000);
+            }
+          }
+        }
+      }, 1000);
+    }
   </script>
+
 </body>
 </html>
