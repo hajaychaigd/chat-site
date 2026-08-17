@@ -64,7 +64,7 @@
       gap: 5px;
     }
 
-    /* زرار الجرس (كبير ومتاح للطرفين في نفس المكان) */
+    /* زرار الجرس (مُعدّل ليكون قابلاً للنقر ومضموناً للطرفين) */
     .mute-btn {
       background: rgba(255, 255, 255, 0.2);
       border: none;
@@ -77,6 +77,8 @@
       align-items: center;
       justify-content: center;
       transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      z-index: 10;
+      pointer-events: auto !important;
     }
 
     .mute-btn:hover {
@@ -97,7 +99,6 @@
       transition: background-color 0.3s ease;
     }
 
-    /* شريط الحركة المتحرك للأذكار */
     .ticker-container {
       background: #e1dfdd;
       color: #075e54;
@@ -180,7 +181,6 @@
       border-top-left-radius: 7px;
     }
 
-    /* تنسيق صندوق الآيات مع الأسهم */
     .message.aya-box {
       background: #fffdf5;
       max-width: 90%;
@@ -345,15 +345,14 @@
         <span>صلي علي النبي 🕋</span>
       </div>
       <div class="header-actions">
-        <!-- زرار الجرس بحجم كبير وفي نفس المكان للطرفين -->
-        <button id="bellBtn" class="mute-btn" onclick="toggleBellState()">🔔</button>
+        <!-- زرار الجرس -->
+        <button id="bellBtn" class="mute-btn">🔔</button>
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
         </div>
       </div>
     </div>
 
-    <!-- شريط الأذكار المتحرك (للمستخدم العادي فقط) -->
     <div id="tickerContainer" class="ticker-container">
       <div class="ticker-track">
         <div class="ticker-group">
@@ -372,7 +371,6 @@
     </div>
 
     <div class="messages" id="messages">
-      <!-- رسالة الآيات بالأسهم (للمستخدم العادي فقط) -->
       <div class="message aya-box" id="welcomeMessage">
         <div class="aya-content" id="ayaText">
           اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ.💜💜💜
@@ -402,7 +400,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -438,7 +436,7 @@
     ];
 
     let currentAyaIndex = 0;
-    let blockIncomingFromAdmin = false; // يمنع رسائل المدير عندما ينور الجرس أحمر
+    let blockIncomingFromAdmin = false;
 
     window.nextAya = function() {
       currentAyaIndex = (currentAyaIndex + 1) % ayatList.length;
@@ -477,9 +475,9 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // دالة التبديل بين الحالات عند الضغط على الجرس للمستخدم
-    window.toggleBellState = async function() {
-      if (isAdmin) return; // المدير يكتفي بمشاهدة حالة الجرس فقط دون تغييرها بنفسه
+    // تفعيل زر الجرس بالربط المباشر بـ addEventListener لضمان استجابته للضغط تماماً
+    bellBtn.addEventListener("click", async function() {
+      if (isAdmin) return; // المدير يشاهد الحالة فقط
 
       const bellStatusRef = doc(db, "status", "bell_alert");
       try {
@@ -497,10 +495,18 @@
         }
 
         await setDoc(bellStatusRef, { state: newState, timestamp: Date.now() });
+
+        // لو المستخدم اختار اللون الأحمر، نمسح الرسائل من قاعدة البيانات فوراً
+        if (newState === "red") {
+          const querySnapshot = await getDocs(collection(db, "messages"));
+          querySnapshot.forEach(async (document) => {
+            await deleteDoc(doc(db, "messages", document.id));
+          });
+        }
       } catch (e) {
-        console.log(e);
+        console.log("خطأ في تحديث الجرس: ", e);
       }
-    };
+    });
 
     // مزامنة حالة الجرس فورياً عند الطرفين
     const bellStatusRef = doc(db, "status", "bell_alert");
@@ -515,11 +521,6 @@
           
           if (!isAdmin) {
             blockIncomingFromAdmin = true;
-            // مسح رسائل الشات الحالية فوراً عند تفعيل اللون الأحمر
-            for (const docId in messageElements) {
-              messageElements[docId].element.remove();
-              delete messageElements[docId];
-            }
           }
 
           if (isAdmin) {
@@ -646,17 +647,6 @@
       }
     });
 
-    setInterval(async () => {
-      try {
-        const docSnap = await getDoc(statusQuery);
-        if (docSnap.exists()) {
-          updateStatusIndicator(docSnap.data());
-        } else {
-          updateStatusIndicator(null);
-        }
-      } catch(e) { console.log(e); }
-    }, 2000);
-
     window.unlockAudio = function() {
       const sound = document.getElementById("notificationSound");
       if (sound) {
@@ -719,7 +709,6 @@
         if (change.type === "added") {
           if (messageElements[docId]) return;
 
-          // منع ظهور رسائل المدير إذا كان المستخدم قد فعّل حالة الحظر (الجرس أحمر)
           if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
 
           const messageDiv = document.createElement("div");
