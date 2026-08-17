@@ -103,10 +103,35 @@
     button:hover {
       background: #064e46;
     }
+
+    /* شاشة حظر الدخول إذا كان هناك مستخدم بالفعل */
+    #blockScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #075e54;
+      color: white;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      z-index: 9999;
+      font-size: 22px;
+      font-weight: bold;
+    }
   </style>
 </head>
 
 <body onclick="unlockAudio()">
+
+  <!-- شاشة تنبيه إذا كان الشات مشغولاً بمستخدم آخر -->
+  <div id="blockScreen">
+    ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر. يجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت. الرجاء المحاولة لاحقاً.
+  </div>
 
   <div class="app">
 
@@ -140,7 +165,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -161,41 +186,69 @@
       alert("تم تفعيل هذا الجهاز كجهاز أساسي للتنبيهات بنجاح! 🔔");
     }
 
+    const isAdmin = localStorage.getItem("is_admin") === "true";
+
     let myId = localStorage.getItem("chat_user_id");
     if (!myId) {
       myId = 'user_' + Math.random().toString(36).substring(2);
       localStorage.setItem("chat_user_id", myId);
     }
 
-    const isAdmin = localStorage.getItem("is_admin") === "true";
+    // نظام قفل الشات لمستخدم واحد فقط (إذا لم تكن أنت المدير)
+    if (!isAdmin) {
+      const activeUserRef = doc(db, "status", "active_visitor");
+      
+      async function checkVisitorAccess() {
+        const docSnap = await getDoc(activeUserRef);
+        const now = Date.now();
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          // إذا كان هناك مستخدم آخر متصل حديثاً (أقل من 10 ثواني) وليس هو نفس الجهاز
+          if (data.active && data.userId !== myId && (now - data.lastSeen < 10000)) {
+            document.getElementById("blockScreen").style.display = "flex";
+            return;
+          }
+        }
+
+        // تسجيل هذا الجهاز كمستخدم حالي
+        await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() });
+      }
+
+      checkVisitorAccess();
+
+      // تحديث نبض الحضور كل 4 ثواني
+      setInterval(async () => {
+        await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() });
+      }, 4000);
+
+      window.addEventListener("beforeunload", async () => {
+        await setDoc(activeUserRef, { active: false, userId: myId, lastSeen: Date.now() });
+      });
+    }
+
     const pageLoadTime = Date.now();
 
-    // نظام تحديث حالة الاتصال للمدير (أنت)
+    // نظام حالة اتصال المدير
     if (isAdmin) {
       const adminStatusRef = doc(db, "status", "admin_status");
-      
-      // تحديث الحالة فوراً عند فتح الصفحة
       setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
 
-      // إرسال إشارة "متصل" كل 5 ثوانٍ
       setInterval(() => {
         setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
       }, 5000);
 
-      // تحويله لغير متصل عند إغلاق الصفحة
       window.addEventListener("beforeunload", () => {
         setDoc(adminStatusRef, { online: false, lastSeen: Date.now() });
       });
     }
 
-    // مراقبة حالة اتصال المدير للزوار
     const statusQuery = doc(db, "status", "admin_status");
     onSnapshot(statusQuery, (docSnap) => {
       const statusText = document.getElementById("statusText");
       if (docSnap.exists()) {
         const data = docSnap.data();
         const now = Date.now();
-        // إذا قام المدير بتحديث حالته خلال اخر 10 ثواني فهو متصل
         if (data.online && (now - data.lastSeen < 10000)) {
           statusText.textContent = "المدير متصل الآن 🟢";
         } else {
@@ -206,7 +259,6 @@
       }
     });
 
-    // فك حظر الصوت بمجرد الضغط في أي مكان بالشاشة أول مرة
     window.unlockAudio = function() {
       const sound = document.getElementById("notificationSound");
       if (sound) {
@@ -237,7 +289,7 @@
         await addDoc(collection(db, "messages"), {
           text: text,
           senderId: myId,
-          isAdminMessage: isAdmin, // تمييز ما إذا كانت الرسالة مرسلة من المدير أم لا
+          isAdminMessage: isAdmin,
           createdAt: currentTime
         });
       } catch (error) {
@@ -261,8 +313,8 @@
           const data = change.doc.data();
           const now = Date.now();
 
-          // رسائل المستخدمين تقعد دقيقة (60 ثانية)، أما رسائل المدير تظل ظاهرة ودائمة
-          const expiryTime = data.isAdminMessage ? Infinity : 60000;
+          // رسائل الزائر تتمسح بعد 45 ثانية، أما رسائل المدير تظل دائماً (Infinity)
+          const expiryTime = data.isAdminMessage ? Infinity : 45000;
 
           if (data.isAdminMessage || (now - data.createdAt <= expiryTime)) {
             const messageDiv = document.createElement("div");
@@ -272,12 +324,11 @@
             } else {
               messageDiv.className = "message other";
               
-              // التشغيل الفوري للصوت عند وصول رسالة جديدة وأنت المدير
               if (data.createdAt > pageLoadTime && data.senderId !== myId && isAdmin) {
                 const sound = document.getElementById("notificationSound");
                 if (sound) {
                   sound.currentTime = 0;
-                  sound.play().catch(err => console.log("خطأ في تشغيل الصوت:", err));
+                  sound.play().catch(err => console.log(err));
                 }
               }
             }
@@ -292,7 +343,7 @@
       });
     });
 
-    // فحص دوري لمسح رسائل المستخدمين بعد دقيقة (60 ثانية) مع إبقاء رسائل المدير ثابتة
+    // فحص دوري لمسح رسائل الزوار بعد 45 ثانية بالضبط، وإبقاء رسائل المدير للأبد
     setInterval(() => {
       const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
@@ -301,8 +352,7 @@
         const isAdminMsg = div.dataset.isAdmin === "true";
         const createdAt = parseInt(div.dataset.createdAt);
 
-        // إذا لم تكن رسالة المدير، ومر عليها أكثر من دقيقة (60 ثانية)، يتم حذفها
-        if (!isAdminMsg && createdAt && (now - createdAt > 60000)) { 
+        if (!isAdminMsg && createdAt && (now - createdAt > 45000)) { 
           div.remove();
         }
       });
