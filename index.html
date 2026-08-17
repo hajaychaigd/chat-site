@@ -110,6 +110,19 @@
       border-top-left-radius: 7px;
     }
 
+    /* تنسيق ثابت لآية الكرسي */
+    .message.aya-box {
+      background: #fffdf5;
+      max-width: 90%;
+      margin-right: auto;
+      margin-left: auto;
+      border-right: 4px solid #075e54;
+      text-align: justify;
+      color: #222;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
     .message-text {
       color: #111;
       line-height: 1.4;
@@ -225,8 +238,11 @@
     </div>
 
     <div class="messages" id="messages">
-      <div class="message other" id="welcomeMessage">
-        <span class="message-text">💜💜💜 أهلاً بك في خدمة العملاء</span>
+      <!-- رسالة آية الكرسي الثابتة -->
+      <div class="message aya-box" id="welcomeMessage">
+        <span class="message-text">
+          اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ.💜💜💜
+        </span>
       </div>
     </div>
 
@@ -399,13 +415,6 @@
         }).catch(e => console.log(e));
       }
     };
-
-    setTimeout(() => {
-      const welcomeMsg = document.getElementById("welcomeMessage");
-      if (welcomeMsg) {
-        welcomeMsg.remove();
-      }
-    }, 5000);
 
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
