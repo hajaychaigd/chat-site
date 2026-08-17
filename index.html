@@ -97,7 +97,7 @@
   </style>
 </head>
 
-<body>
+<body onclick="unlockAudio()">
 
   <div class="app">
 
@@ -125,7 +125,7 @@
 
   </div>
 
-  <!-- عنصر صوت التنبيه الجاهز للاستخدام -->
+  <!-- عنصر الصوت -->
   <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
   <script type="module">
@@ -145,7 +145,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // التحقق من الرابط السري لتفعيل هذا الجهاز كمدير
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'mysecret123') {
       localStorage.setItem("is_admin", "true");
@@ -160,6 +159,17 @@
 
     const pageLoadTime = Date.now();
 
+    // فك حظر الصوت بمجرد الضغط في أي مكان بالشاشة أول مرة
+    window.unlockAudio = function() {
+      const sound = document.getElementById("notificationSound");
+      if (sound) {
+        sound.play().then(() => {
+          sound.pause();
+          sound.currentTime = 0;
+        }).catch(e => console.log(e));
+      }
+    };
+
     setTimeout(() => {
       const welcomeMsg = document.getElementById("welcomeMessage");
       if (welcomeMsg) {
@@ -171,9 +181,7 @@
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
 
-      if (text === "") {
-        return;
-      }
+      if (text === "") return;
 
       const currentTime = Date.now();
       input.value = "";
@@ -213,11 +221,12 @@
             } else {
               messageDiv.className = "message other";
               
-              // إذا وصلت رسالة جديدة بعد فتح الصفحة وأنت المدير، شغل صوت التنبيه فوراً!
+              // التشغيل الفوري للصوت عند وصول رسالة جديدة وأنت المدير
               if (data.createdAt > pageLoadTime && data.senderId !== myId && localStorage.getItem("is_admin") === "true") {
                 const sound = document.getElementById("notificationSound");
                 if (sound) {
-                  sound.play().catch(e => console.log("الصوت بحاجة لتفاعل المستخدم", e));
+                  sound.currentTime = 0;
+                  sound.play().catch(err => console.log("خطأ في تشغيل الصوت:", err));
                 }
               }
             }
@@ -231,7 +240,6 @@
       });
     });
 
-    // مسح الرسائل بعد 30 ثانية تلقائياً
     setInterval(() => {
       const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
