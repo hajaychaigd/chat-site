@@ -48,6 +48,16 @@
       gap: 12px;
     }
 
+    .users-counter {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      display: none;
+      align-items: center;
+      gap: 5px;
+    }
+
     .status-dot {
       width: 10px;
       height: 10px;
@@ -209,6 +219,9 @@
         <span id="statusDot" class="status-dot"></span>
         <span>صلي علي النبي 🕋</span>
       </div>
+      <div id="usersCounter" class="users-counter">
+        <span>👤</span> <span id="onlineCount">0</span>
+      </div>
     </div>
 
     <div class="messages" id="messages">
@@ -221,7 +234,7 @@
       <input
         type="text"
         id="messageInput"
-        placeholder="اكتب الله اكبر"
+        placeholder="الله اكبر"
       >
       <button onclick="sendMessage()">
         📿
@@ -263,9 +276,42 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    if (!isAdmin) {
-      const activeUserRef = doc(db, "status", "active_visitor");
-      
+    const activeUserRef = doc(db, "status", "active_visitor");
+
+    if (isAdmin) {
+      document.getElementById("usersCounter").style.display = "flex";
+
+      const adminStatusRef = doc(db, "status", "admin_status");
+      setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
+
+      const heartbeat = setInterval(() => {
+        setDoc(adminStatusRef, { online: true, lastSeen: Date.now() }, { merge: true });
+      }, 4000);
+
+      const setOffline = async () => {
+        clearInterval(heartbeat);
+        await setDoc(adminStatusRef, { online: false, lastSeen: 0 });
+      };
+
+      window.addEventListener("pagehide", setOffline);
+      window.addEventListener("beforeunload", setOffline);
+
+      onSnapshot(activeUserRef, (docSnap) => {
+        const countSpan = document.getElementById("onlineCount");
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const now = Date.now();
+          if (data.active && (now - data.lastSeen < 12000)) {
+            countSpan.textContent = "1";
+          } else {
+            countSpan.textContent = "0";
+          }
+        } else {
+          countSpan.textContent = "0";
+        }
+      });
+
+    } else {
       async function checkVisitorAccess() {
         try {
           const docSnap = await getDoc(activeUserRef);
@@ -286,6 +332,15 @@
 
       setInterval(async () => {
         try {
+          const docSnap = await getDoc(activeUserRef);
+          const now = Date.now();
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.active && data.userId !== myId && (now - data.lastSeen < 12000)) {
+              document.getElementById("blockScreen").style.display = "flex";
+              return;
+            }
+          }
           await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() }, { merge: true });
         } catch(e) { console.log(e); }
       }, 4000);
@@ -299,33 +354,15 @@
 
     const pageLoadTime = Date.now();
 
-    if (isAdmin) {
-      const adminStatusRef = doc(db, "status", "admin_status");
-      setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
-
-      const heartbeat = setInterval(() => {
-        setDoc(adminStatusRef, { online: true, lastSeen: Date.now() }, { merge: true });
-      }, 4000);
-
-      const setOffline = async () => {
-        clearInterval(heartbeat);
-        await setDoc(adminStatusRef, { online: false, lastSeen: 0 });
-      };
-
-      window.addEventListener("pagehide", setOffline);
-      window.addEventListener("beforeunload", setOffline);
-    }
-
-    // دالة تحديث علامة الاتصال بشكل مستقر ودقيق
     function updateStatusIndicator(data) {
       const statusDot = document.getElementById("statusDot");
       if (!statusDot) return;
       
       const now = Date.now();
       if (data && data.online && (now - data.lastSeen < 8000)) {
-        statusDot.style.backgroundColor = "#4CAF50"; // أخضر
+        statusDot.style.backgroundColor = "#4CAF50";
       } else {
-        statusDot.style.backgroundColor = "#ff5252"; // أحمر
+        statusDot.style.backgroundColor = "#ff5252";
       }
     }
 
@@ -344,7 +381,6 @@
       }
     });
 
-    // فحص دوري كل ثانيتين لضمان استقرار علامة الاتصال وعدم تعليقها
     setInterval(async () => {
       try {
         const docSnap = await getDoc(statusQuery);
