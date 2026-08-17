@@ -233,7 +233,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -309,20 +309,18 @@
       window.addEventListener("beforeunload", setOffline);
     }
 
-    // دالة تحديث لون علامة الاتصال فوراً
     function updateStatusIndicator(data) {
       const statusDot = document.getElementById("statusDot");
       if (!statusDot) return;
       
       const now = Date.now();
       if (data && data.online && (now - data.lastSeen < 7000)) {
-        statusDot.style.backgroundColor = "#4CAF50"; // أخضر
+        statusDot.style.backgroundColor = "#4CAF50";
       } else {
-        statusDot.style.backgroundColor = "#ff5252"; // أحمر
+        statusDot.style.backgroundColor = "#ff5252";
       }
     }
 
-    // فحص الحالة مباشرة أول ما الصفحة تفتح أو تحدث
     const statusQuery = doc(db, "status", "admin_status");
     getDoc(statusQuery).then((docSnap) => {
       if (docSnap.exists()) {
@@ -330,7 +328,6 @@
       }
     });
 
-    // مراقبة التغييرات اللحظية لحالة الاتصال
     onSnapshot(statusQuery, (docSnap) => {
       if (docSnap.exists()) {
         updateStatusIndicator(docSnap.data());
@@ -384,7 +381,19 @@
       }
     });
 
-    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+    // استعلام ذكي: المدير يجلب كل الرسائل، والمستخدم يجلب فقط رسائل الـ 45 ثانية الأخيرة لمنع وميض أو ظهور الرسائل القديمة عند الريفريش تماماً
+    let q;
+    if (isAdmin) {
+      q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+    } else {
+      const fortyFiveSecondsAgo = Date.now() - 45000;
+      q = query(
+        collection(db, "messages"), 
+        where("createdAt", ">=", fortyFiveSecondsAgo),
+        orderBy("createdAt", "asc")
+      );
+    }
+
     const messageElements = {};
 
     onSnapshot(q, (snapshot) => {
@@ -393,63 +402,55 @@
       snapshot.docChanges().forEach((change) => {
         const docId = change.doc.id;
         const data = change.doc.data();
-        const now = Date.now();
 
         if (change.type === "added") {
-          const isExpiredForUser = (!isAdmin && !data.isAdminMessage && (now - data.createdAt > 45000));
-          if (isExpiredForUser) return;
+          if (messageElements[docId]) return;
 
-          const expiryTime = (!isAdmin && !data.isAdminMessage) ? 45000 : Infinity;
-
-          if (isAdmin || (now - data.createdAt <= expiryTime)) {
-            if (messageElements[docId]) return;
-
-            const messageDiv = document.createElement("div");
-            messageDiv.id = "msg_" + docId;
+          const messageDiv = document.createElement("div");
+          messageDiv.id = "msg_" + docId;
+          
+          if (data.senderId === myId) {
+            messageDiv.className = "message mine";
+          } else {
+            messageDiv.className = "message other";
             
-            if (data.senderId === myId) {
-              messageDiv.className = "message mine";
-            } else {
-              messageDiv.className = "message other";
-              
-              if (data.createdAt > pageLoadTime && data.senderId !== myId && isAdmin) {
-                const sound = document.getElementById("notificationSound");
-                if (sound) {
-                  sound.currentTime = 0;
-                  sound.play().catch(err => console.log(err));
-                }
+            if (data.createdAt > pageLoadTime && data.senderId !== myId && isAdmin) {
+              const sound = document.getElementById("notificationSound");
+              if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(err => console.log(err));
               }
             }
+          }
 
-            const textSpan = document.createElement("span");
-            textSpan.className = "message-text";
-            textSpan.textContent = data.text;
-            messageDiv.appendChild(textSpan);
+          const textSpan = document.createElement("span");
+          textSpan.className = "message-text";
+          textSpan.textContent = data.text;
+          messageDiv.appendChild(textSpan);
 
-            const footerDiv = document.createElement("div");
-            footerDiv.className = "message-footer";
+          const footerDiv = document.createElement("div");
+          footerDiv.className = "message-footer";
 
-            if (!isAdmin) {
-              const timerSpan = document.createElement("span");
-              timerSpan.className = "timer-text";
-              footerDiv.appendChild(timerSpan);
-              messageDiv.dataset.createdAt = data.createdAt;
-            }
+          if (!isAdmin) {
+            const timerSpan = document.createElement("span");
+            timerSpan.className = "timer-text";
+            footerDiv.appendChild(timerSpan);
+            messageDiv.dataset.createdAt = data.createdAt;
+          }
 
-            const readReceipt = document.createElement("span");
-            readReceipt.className = "read-receipt " + (data.read ? "read" : "");
-            readReceipt.innerHTML = "✓✓";
-            footerDiv.appendChild(readReceipt);
+          const readReceipt = document.createElement("span");
+          readReceipt.className = "read-receipt " + (data.read ? "read" : "");
+          readReceipt.innerHTML = "✓✓";
+          footerDiv.appendChild(readReceipt);
 
-            messageDiv.appendChild(footerDiv);
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          messageDiv.appendChild(footerDiv);
+          messagesContainer.appendChild(messageDiv);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-            messageElements[docId] = { element: messageDiv, data: data };
+          messageElements[docId] = { element: messageDiv, data: data };
 
-            if (isAdmin && !data.isAdminMessage && !data.read) {
-              updateDoc(doc(db, "messages", docId), { read: true });
-            }
+          if (isAdmin && !data.isAdminMessage && !data.read) {
+            updateDoc(doc(db, "messages", docId), { read: true });
           }
         } 
         else if (change.type === "modified") {
