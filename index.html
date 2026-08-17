@@ -785,7 +785,7 @@
         for (const docId in messageElements) {
           const item = messageElements[docId];
           const createdAt = item.data.createdAt;
-          const timeLeft = 30000 - (now - createdAt);
+          const timeLeft = 35000 - (now - createdAt);
 
           if (timeLeft <= 0) {
             item.element.remove();
