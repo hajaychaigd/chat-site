@@ -248,7 +248,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-    import { getDatabase, ref, onValue, set, onDisconnect } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -299,10 +299,11 @@
       window.addEventListener("pagehide", setOffline);
       window.addEventListener("beforeunload", setOffline);
 
+      // مراقبة فورية وديناميكية لمتغير العداد عند المدير
       onValue(activeVisitorRef, (snapshot) => {
         const countSpan = document.getElementById("onlineCount");
         const val = snapshot.val();
-        if (val && val.active === true) {
+        if (val && (val === true || val.active === true)) {
           countSpan.textContent = "1";
         } else {
           countSpan.textContent = "0";
@@ -317,13 +318,13 @@
           });
 
           const val = snapshot.val();
-          if (val && val.active === true && val.userId !== myId) {
+          if (val && (val === true || val.active === true) && val.userId !== myId) {
             document.getElementById("blockScreen").style.display = "flex";
             return;
           }
 
           await set(activeVisitorRef, { active: true, userId: myId });
-          onDisconnect(activeVisitorRef).set({ active: false, userId: null });
+          onDisconnect(activeVisitorRef).remove();
 
         } catch(e) { console.log(e); }
       }
@@ -331,7 +332,7 @@
       registerVisitor();
 
       window.addEventListener("beforeunload", () => {
-        set(activeVisitorRef, { active: false, userId: null });
+        remove(activeVisitorRef);
       });
     }
 
