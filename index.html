@@ -64,19 +64,19 @@
       gap: 5px;
     }
 
-    /* زرار الجرس (أو التنبيه للمدير) بحجم أكبر */
+    /* زرار الجرس (كبير ومتاح للطرفين في نفس المكان) */
     .mute-btn {
       background: rgba(255, 255, 255, 0.2);
       border: none;
       color: white;
       padding: 6px 12px;
       border-radius: 10px;
-      font-size: 20px; /* حجم كبير للرمز */
+      font-size: 20px;
       cursor: pointer;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s, transform 0.1s;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
     }
 
     .mute-btn:hover {
@@ -345,8 +345,8 @@
         <span>صلي علي النبي 🕋</span>
       </div>
       <div class="header-actions">
-        <!-- زرار الجرس بحجم كبير وفي نفس المكان للمستخدم والمدير -->
-        <button id="muteMessagesBtn" class="mute-btn" onclick="triggerBell()">🔔</button>
+        <!-- زرار الجرس بحجم كبير وفي نفس المكان للطرفين -->
+        <button id="bellBtn" class="mute-btn" onclick="toggleBellState()">🔔</button>
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
         </div>
@@ -438,6 +438,7 @@
     ];
 
     let currentAyaIndex = 0;
+    let blockIncomingFromAdmin = false; // يمنع رسائل المدير عندما ينور الجرس أحمر
 
     window.nextAya = function() {
       currentAyaIndex = (currentAyaIndex + 1) % ayatList.length;
@@ -461,24 +462,14 @@
     }
 
     const isAdmin = localStorage.getItem("is_admin") === "true";
-
-    const bellBtn = document.getElementById("muteMessagesBtn");
-    bellBtn.style.display = "flex"; // يظهر الزر عند الجميع في نفس المكان
+    const bellBtn = document.getElementById("bellBtn");
 
     if (!isAdmin) {
       document.getElementById("tickerContainer").style.display = "block";
       document.getElementById("welcomeMessage").style.display = "flex";
+    } else {
+      document.getElementById("usersCounter").style.display = "flex";
     }
-
-    // دالة الضغط على الجرس للمستخدم لتنبيه المدير وإضاءة الزر عنده
-    window.triggerBell = async function() {
-      const bellStatusRef = doc(db, "status", "bell_alert");
-      try {
-        await setDoc(bellStatusRef, { active: true, timestamp: Date.now() });
-      } catch (e) {
-        console.log(e);
-      }
-    };
 
     let myId = localStorage.getItem("chat_user_id");
     if (!myId) {
@@ -486,11 +477,78 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
+    // دالة التبديل بين الحالات عند الضغط على الجرس للمستخدم
+    window.toggleBellState = async function() {
+      if (isAdmin) return; // المدير يكتفي بمشاهدة حالة الجرس فقط دون تغييرها بنفسه
+
+      const bellStatusRef = doc(db, "status", "bell_alert");
+      try {
+        const docSnap = await getDoc(bellStatusRef);
+        let currentState = "off";
+        if (docSnap.exists()) {
+          currentState = docSnap.data().state || "off";
+        }
+
+        let newState = "red";
+        if (currentState === "red") {
+          newState = "green";
+        } else {
+          newState = "red";
+        }
+
+        await setDoc(bellStatusRef, { state: newState, timestamp: Date.now() });
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    // مزامنة حالة الجرس فورياً عند الطرفين
+    const bellStatusRef = doc(db, "status", "bell_alert");
+    onSnapshot(bellStatusRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const state = data.state || "off";
+
+        if (state === "red") {
+          bellBtn.style.background = "#ff5252";
+          bellBtn.style.boxShadow = "0 0 15px #ff5252";
+          
+          if (!isAdmin) {
+            blockIncomingFromAdmin = true;
+            // مسح رسائل الشات الحالية فوراً عند تفعيل اللون الأحمر
+            for (const docId in messageElements) {
+              messageElements[docId].element.remove();
+              delete messageElements[docId];
+            }
+          }
+
+          if (isAdmin) {
+            const sound = document.getElementById("notificationSound");
+            if (sound) {
+              sound.currentTime = 0;
+              sound.play().catch(e => console.log(e));
+            }
+          }
+        } else if (state === "green") {
+          bellBtn.style.background = "#4CAF50";
+          bellBtn.style.boxShadow = "0 0 15px #4CAF50";
+          
+          if (!isAdmin) {
+            blockIncomingFromAdmin = false;
+          }
+        } else {
+          bellBtn.style.background = "rgba(255, 255, 255, 0.2)";
+          bellBtn.style.boxShadow = "none";
+          if (!isAdmin) {
+            blockIncomingFromAdmin = false;
+          }
+        }
+      }
+    });
+
     const activeVisitorDocRef = doc(db, "status", "active_visitor");
 
     if (isAdmin) {
-      document.getElementById("usersCounter").style.display = "flex";
-
       const adminStatusRef = doc(db, "status", "admin_status");
       setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
 
@@ -518,28 +576,6 @@
           }
         } else {
           countSpan.textContent = "0";
-        }
-      });
-
-      // مراقبة ضغط المستخدم على الجرس لتنبيه المدير وعكس العلامة في نفس المكان
-      const bellStatusRef = doc(db, "status", "bell_alert");
-      onSnapshot(bellStatusRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const now = Date.now();
-          if (data.active && (now - data.timestamp < 4000)) {
-            // تفعيل العلامة عند المدير في نفس مكان الزر (يتغير لون الخلفية ويصدر صوت)
-            bellBtn.style.background = "#ff5252";
-            bellBtn.style.boxShadow = "0 0 15px #ff5252";
-            const sound = document.getElementById("notificationSound");
-            if (sound) {
-              sound.currentTime = 0;
-              sound.play().catch(e => console.log(e));
-            }
-          } else {
-            bellBtn.style.background = "rgba(255, 255, 255, 0.2)";
-            bellBtn.style.boxShadow = "none";
-          }
         }
       });
 
@@ -682,6 +718,9 @@
 
         if (change.type === "added") {
           if (messageElements[docId]) return;
+
+          // منع ظهور رسائل المدير إذا كان المستخدم قد فعّل حالة الحظر (الجرس أحمر)
+          if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
 
           const messageDiv = document.createElement("div");
           messageDiv.id = "msg_" + docId;
