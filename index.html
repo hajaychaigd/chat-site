@@ -53,6 +53,7 @@
       background-color: #ff5252;
       display: inline-block;
       box-shadow: 0 0 4px rgba(0,0,0,0.3);
+      transition: background-color 0.3s ease;
     }
 
     .messages {
@@ -75,6 +76,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      position: relative;
     }
 
     .message.other {
@@ -83,11 +85,29 @@
       margin-left: auto;
     }
 
-    /* تنسيق العداد التنازلي بخط بسيط وصغير */
+    .message-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #888;
+    }
+
     .timer-text {
       font-size: 10px;
       color: #888;
-      align-self: flex-end;
+      font-weight: bold;
+    }
+
+    .read-receipt {
+      font-size: 12px;
+      color: gray;
+      font-weight: bold;
+    }
+    
+    .read-receipt.read {
+      color: #34b7f1;
     }
 
     .input-area {
@@ -182,7 +202,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -225,7 +245,6 @@
             return;
           }
         }
-
         await setDoc(activeUserRef, { active: true, userId: myId, lastSeen: Date.now() });
       }
 
@@ -246,13 +265,17 @@
       const adminStatusRef = doc(db, "status", "admin_status");
       setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
 
-      setInterval(() => {
-        setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
-      }, 5000);
+      const heartbeat = setInterval(() => {
+        setDoc(adminStatusRef, { online: true, lastSeen: Date.now() }, { merge: true });
+      }, 4000);
 
-      window.addEventListener("beforeunload", () => {
-        setDoc(adminStatusRef, { online: false, lastSeen: Date.now() });
-      });
+      const setOffline = async () => {
+        clearInterval(heartbeat);
+        await setDoc(adminStatusRef, { online: false, lastSeen: 0 });
+      };
+
+      window.addEventListener("pagehide", setOffline);
+      window.addEventListener("beforeunload", setOffline);
     }
 
     const statusQuery = doc(db, "status", "admin_status");
@@ -261,7 +284,7 @@
       if (docSnap.exists()) {
         const data = docSnap.data();
         const now = Date.now();
-        if (data.online && (now - data.lastSeen < 10000)) {
+        if (data.online && (now - data.lastSeen < 7000)) {
           statusDot.style.backgroundColor = "#4CAF50";
         } else {
           statusDot.style.backgroundColor = "#ff5252";
@@ -302,7 +325,8 @@
           text: text,
           senderId: myId,
           isAdminMessage: isAdmin,
-          createdAt: currentTime
+          createdAt: currentTime,
+          read: isAdmin
         });
       } catch (error) {
         console.error("خطأ في الإرسال: ", error);
@@ -316,19 +340,22 @@
     });
 
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-    
+    const messageElements = {};
+
     onSnapshot(q, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
 
       snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          const data = change.doc.data();
-          const now = Date.now();
+        const docId = change.doc.id;
+        const data = change.doc.data();
 
+        if (change.type === "added") {
+          const now = Date.now();
           const expiryTime = data.isAdminMessage ? Infinity : 45000;
 
           if (data.isAdminMessage || (now - data.createdAt <= expiryTime)) {
             const messageDiv = document.createElement("div");
+            messageDiv.id = "msg_" + docId;
             
             if (data.senderId === myId) {
               messageDiv.className = "message";
@@ -344,54 +371,75 @@
               }
             }
 
-            // النص الأساسي للرسالة
             const textSpan = document.createElement("span");
             textSpan.textContent = data.text;
             messageDiv.appendChild(textSpan);
 
-            // إذا لم تكن رسالة المدير، نضيف عداد تنازلي صغير بجانبها
-            if (!data.isAdminMessage) {
+            const footerDiv = document.createElement("div");
+            footerDiv.className = "message-footer";
+
+            if (data.isAdminMessage) {
+              messageDiv.classList.add("admin-msg");
+            } else {
               const timerSpan = document.createElement("span");
               timerSpan.className = "timer-text";
-              messageDiv.appendChild(timerSpan);
+              footerDiv.appendChild(timerSpan);
               messageDiv.dataset.createdAt = data.createdAt;
-              messageDiv.dataset.hasTimer = "true";
-            } else {
-              messageDiv.classList.add("admin-msg");
             }
 
+            const readReceipt = document.createElement("span");
+            readReceipt.className = "read-receipt " + (data.read ? "read" : "");
+            readReceipt.innerHTML = "✓✓";
+            footerDiv.appendChild(readReceipt);
+
+            messageDiv.appendChild(footerDiv);
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            messageElements[docId] = { element: messageDiv, data: data };
+
+            if (isAdmin && !data.isAdminMessage && !data.read) {
+              updateDoc(doc(db, "messages", docId), { read: true });
+            }
+          }
+        } 
+        else if (change.type === "modified") {
+          if (messageElements[docId]) {
+            const readReceipt = messageElements[docId].element.querySelector(".read-receipt");
+            if (readReceipt && data.read) {
+              readReceipt.classList.add("read");
+            }
+          }
+        }
+        else if (change.type === "removed") {
+          if (messageElements[docId]) {
+            messageElements[docId].element.remove();
+            delete messageElements[docId];
           }
         }
       });
     });
 
-    // تحديث العدادات التنازلية وحذف الرسائل منتهية الصلاحية تلقائياً
+    // عداد تنازلي يعرض الأرقام الصافية فقط بدون أي حروف أو نصوص زائدة
     setInterval(() => {
-      const messageDivs = document.querySelectorAll(".messages .message:not(#welcomeMessage)");
       const now = Date.now();
+      for (const docId in messageElements) {
+        const item = messageElements[docId];
+        if (item.data.isAdminMessage) continue;
 
-      messageDivs.forEach(div => {
-        // رسائل المدير لا تتأثر نهائياً
-        if (div.classList.contains("admin-msg")) {
-          return; 
-        }
-
-        const createdAt = parseInt(div.dataset.createdAt);
-        const elapsed = now - createdAt;
-        const timeLeft = 45000 - elapsed;
+        const createdAt = item.data.createdAt;
+        const timeLeft = 45000 - (now - createdAt);
 
         if (timeLeft <= 0) {
-          div.remove();
+          item.element.remove();
+          delete messageElements[docId];
         } else {
-          const timerSpan = div.querySelector(".timer-text");
+          const timerSpan = item.element.querySelector(".timer-text");
           if (timerSpan) {
-            const secondsLeft = Math.ceil(timeLeft / 1000);
-            timerSpan.textContent = `تختفي بعد ${secondsLeft} ثا`;
+            timerSpan.textContent = Math.ceil(timeLeft / 1000);
           }
         }
-      });
+      }
     }, 1000);
   </script>
 
