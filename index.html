@@ -48,6 +48,12 @@
       gap: 12px;
     }
 
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .users-counter {
       background: rgba(0, 0, 0, 0.25);
       padding: 4px 10px;
@@ -56,6 +62,25 @@
       display: none;
       align-items: center;
       gap: 5px;
+    }
+
+    /* زرار كتم/مسح الرسائل للمستخدم */
+    .mute-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.2s;
+    }
+
+    .mute-btn:hover {
+      background: rgba(255, 255, 255, 0.35);
     }
 
     .status-dot {
@@ -162,7 +187,7 @@
       color: #222;
       font-size: 14px;
       line-height: 1.6;
-      display: none; /* مخفي افتراضياً ولا يظهر إلا عند المستخدم */
+      display: none;
       flex-direction: column;
       gap: 8px;
     }
@@ -315,8 +340,12 @@
         <span id="statusDot" class="status-dot"></span>
         <span>صلي علي النبي 🕋</span>
       </div>
-      <div id="usersCounter" class="users-counter">
-        <span>👤</span> <span id="onlineCount">0</span>
+      <div class="header-actions">
+        <!-- زرار المستخدم الجديد لكتم ومسح الرسائل المؤقتة -->
+        <button id="muteMessagesBtn" class="mute-btn" onclick="toggleMuteMessages()">🔕 إخفاء الرسائل</button>
+        <div id="usersCounter" class="users-counter">
+          <span>👤</span> <span id="onlineCount">0</span>
+        </div>
       </div>
     </div>
 
@@ -405,6 +434,7 @@
     ];
 
     let currentAyaIndex = 0;
+    let messagesMuted = false; // حالة الكتم/الإخفاء للمستخدم
 
     window.nextAya = function() {
       currentAyaIndex = (currentAyaIndex + 1) % ayatList.length;
@@ -429,11 +459,31 @@
 
     const isAdmin = localStorage.getItem("is_admin") === "true";
 
-    // إظهار الشريط المتحرك وصندوق الآيات للمستخدم العادي فقط، وإخفاؤهما عن المدير
     if (!isAdmin) {
       document.getElementById("tickerContainer").style.display = "block";
       document.getElementById("welcomeMessage").style.display = "flex";
+      document.getElementById("muteMessagesBtn").style.display = "flex"; // إظهار الزر للمستخدم فقط
     }
+
+    // دالة زر كتم/إخفاء الرسائل الجديدة والمؤقتة
+    window.toggleMuteMessages = function() {
+      messagesMuted = !messagesMuted;
+      const btn = document.getElementById("muteMessagesBtn");
+      
+      if (messagesMuted) {
+        btn.innerHTML = "🔔 إظهار الرسائل";
+        btn.style.background = "rgba(229, 57, 53, 0.4)";
+        
+        // مسح جميع رسائل الشات المؤقتة الموجودة حالياً فور الضغط
+        for (const docId in messageElements) {
+          messageElements[docId].element.remove();
+          delete messageElements[docId];
+        }
+      } else {
+        btn.innerHTML = "🔕 إخفاء الرسائل";
+        btn.style.background = "rgba(255, 255, 255, 0.2)";
+      }
+    };
 
     let myId = localStorage.getItem("chat_user_id");
     if (!myId) {
@@ -615,6 +665,9 @@
 
         if (change.type === "added") {
           if (messageElements[docId]) return;
+
+          // إذا كان المستخدم ضغط على زر الإخفاء، لا تعرض الرسالة الواردة نهائياً
+          if (!isAdmin && messagesMuted) return;
 
           const messageDiv = document.createElement("div");
           messageDiv.id = "msg_" + docId;
