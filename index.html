@@ -64,7 +64,7 @@
       gap: 5px;
     }
 
-    /* زرار الجرس (مُعدّل ليكون قابلاً للنقر ومضموناً للطرفين) */
+    /* زرار الجرس */
     .mute-btn {
       background: rgba(255, 255, 255, 0.2);
       border: none;
@@ -400,7 +400,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -475,7 +475,7 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // تفعيل زر الجرس بالربط المباشر بـ addEventListener لضمان استجابته للضغط تماماً
+    // تفعيل زر الجرس للتبديل بين الأحمر والأخضر (بدون حذف الرسائل من قاعدة البيانات نهائياً لتبقى عند المدير)
     bellBtn.addEventListener("click", async function() {
       if (isAdmin) return; // المدير يشاهد الحالة فقط
 
@@ -495,14 +495,6 @@
         }
 
         await setDoc(bellStatusRef, { state: newState, timestamp: Date.now() });
-
-        // لو المستخدم اختار اللون الأحمر، نمسح الرسائل من قاعدة البيانات فوراً
-        if (newState === "red") {
-          const querySnapshot = await getDocs(collection(db, "messages"));
-          querySnapshot.forEach(async (document) => {
-            await deleteDoc(doc(db, "messages", document.id));
-          });
-        }
       } catch (e) {
         console.log("خطأ في تحديث الجرس: ", e);
       }
@@ -521,6 +513,11 @@
           
           if (!isAdmin) {
             blockIncomingFromAdmin = true;
+            // مسح الرسائل من شاشة المستخدم فقط محلياً فوراً
+            for (const docId in messageElements) {
+              messageElements[docId].element.remove();
+              delete messageElements[docId];
+            }
           }
 
           if (isAdmin) {
@@ -709,6 +706,7 @@
         if (change.type === "added") {
           if (messageElements[docId]) return;
 
+          // منع ظهور رسائل المدير لدى المستخدم إذا كان الجرس في وضع اللون الأحمر
           if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
 
           const messageDiv = document.createElement("div");
