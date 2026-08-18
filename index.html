@@ -70,7 +70,6 @@
       gap: 5px;
     }
 
-    /* زرار الجرس الافتراضي أخضر */
     .mute-btn {
       background: #2ba640;
       border: none;
@@ -240,17 +239,6 @@
       font-size: 11px;
     }
 
-    .read-receipt {
-      font-size: 11px;
-      color: #888888;
-      font-weight: bold;
-      letter-spacing: -2px;
-    }
-    
-    .read-receipt.read {
-      color: #065fd4;
-    }
-
     .input-area {
       display: flex;
       padding: 10px 16px;
@@ -334,7 +322,6 @@
         <span id="statusDot" class="status-dot"></span>
       </div>
       <div class="header-actions">
-        <!-- زرار الجرس -->
         <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
@@ -443,7 +430,6 @@
 
         if (state === "red") {
           bellBtn.style.background = "#ff5252";
-          bellBtn.style.color = "#fff";
           bellBtn.style.boxShadow = "0 0 12px #ff5252";
           
           if (!isAdmin) {
@@ -463,7 +449,6 @@
           }
         } else {
           bellBtn.style.background = "#2ba640";
-          bellBtn.style.color = "#fff";
           bellBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
           if (!isAdmin) {
             blockIncomingFromAdmin = false;
@@ -623,7 +608,7 @@
 
           const avatarDiv = document.createElement("div");
           avatarDiv.className = "comment-avatar";
-          avatarDiv.textContent = data.isAdminMessage ? "م" : "ز";
+          avatarDiv.textContent = data.isAdminMessage ? "م" : "ش";
           if(data.isAdminMessage) avatarDiv.style.background = "#cc0000";
           messageDiv.appendChild(avatarDiv);
 
@@ -634,7 +619,7 @@
           headerInfo.className = "comment-header-info";
           const userSpan = document.createElement("span");
           userSpan.className = "comment-username";
-          userSpan.textContent = data.isAdminMessage ? "@المدير" : ("@" + data.senderId.substring(0, 8));
+          userSpan.textContent = data.isAdminMessage ? "@المدير" : "@شيتوس-ل9ج8غ";
           headerInfo.appendChild(userSpan);
           bodyDiv.appendChild(headerInfo);
 
@@ -666,11 +651,6 @@
             messageDividerData(messageDiv, data.createdAt);
           }
 
-          const readReceipt = document.createElement("span");
-          readReceipt.className = "read-receipt " + (data.read ? "read" : "");
-          readReceipt.innerHTML = "✓✓";
-          footerDiv.appendChild(readReceipt);
-
           actionsDiv.appendChild(footerDiv);
           bodyDiv.appendChild(actionsDiv);
           messageDiv.appendChild(bodyDiv);
@@ -683,7 +663,6 @@
             updateDoc(doc(db, "messages", docId), { read: true });
           }
 
-          // تم إلغاء تشغيل الصوت نهائياً للمستخدم، ويعمل فقط للمدير عند وصول رسالة جديدة
           if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
             const sound = document.getElementById("notificationSound");
             if (sound) {
@@ -692,14 +671,6 @@
             }
           }
         } 
-        else if (change.type === "modified") {
-          if (messageElements[docId]) {
-            const readReceipt = messageElements[docId].element.querySelector(".read-receipt");
-            if (readReceipt && data.read) {
-              readReceipt.classList.add("read");
-            }
-          }
-        }
         else if (change.type === "removed") {
           if (messageElements[docId]) {
             messageElements[docId].element.remove();
