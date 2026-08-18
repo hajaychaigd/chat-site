@@ -101,40 +101,7 @@
       display: inline-block;
     }
 
-    /* شريط التسبيحات المتحرك */
-    .ticker-container {
-      background: #f1f1f1;
-      color: #065fd4;
-      padding: 5px 0;
-      overflow: hidden;
-      white-space: nowrap;
-      position: relative;
-      font-size: 12px;
-      font-weight: bold;
-      border-bottom: 1px solid #e5e5e5;
-      display: none;
-      direction: ltr;
-    }
-
-    .ticker-track {
-      display: inline-flex;
-      white-space: nowrap;
-      animation: tickerAnimation 25s linear infinite;
-    }
-
-    .ticker-group {
-      display: inline-flex;
-      gap: 35px;
-      padding-right: 35px;
-      flex-shrink: 0;
-    }
-
-    @keyframes tickerAnimation {
-      0% { transform: translateX(-50%); }
-      100% { transform: translateX(0%); }
-    }
-
-    /* منطقة التعليقات مع الهامش والمسافة من اليمين */
+    /* منطقة التعليقات */
     .messages {
       flex: 1;
       padding: 16px 16px 16px 24px;
@@ -146,6 +113,35 @@
       direction: rtl;
     }
 
+    /* تصميم الرسائل المثبته */
+    .pinned-container {
+      display: none; /* مخفية افتراضياً، وتظهر للمستخدم العادي فقط عبر الكود */
+      flex-direction: column;
+      gap: 16px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 16px;
+      margin-bottom: 4px;
+    }
+
+    .pinned-item-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding-right: 15px;
+    }
+
+    .pinned-item-wrapper:not(:first-child)::before {
+      content: '';
+      position: absolute;
+      top: -16px;
+      right: 0px;
+      width: 16px;
+      height: 22px;
+      border-right: 2px solid #d3d3d3;
+      border-bottom: 2px solid #d3d3d3;
+      border-bottom-right-radius: 10px;
+    }
+
     .message-wrapper {
       position: relative;
       display: flex;
@@ -153,7 +149,6 @@
       padding-right: 15px;
     }
 
-    /* الخط المنحني يبدأ من جهة اليمين */
     .message-wrapper:not(:first-child)::before {
       content: '';
       position: absolute;
@@ -284,6 +279,22 @@
       font-size: 10px;
     }
 
+    /* زر الحذف الصغير جداً للرسالة المثبتة */
+    .delete-pinned-btn {
+      background: rgba(255, 0, 0, 0.1);
+      color: #ff0000;
+      border: none;
+      border-radius: 3px;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: auto;
+    }
+
     /* منطقة الكتابة السفلى */
     .input-area {
       display: flex;
@@ -405,24 +416,75 @@
       </div>
     </div>
 
-    <div id="tickerContainer" class="ticker-container">
-      <div class="ticker-track">
-        <div class="ticker-group">
-          <span class="ticker-item">سبحان الله 📿</span>
-          <span class="ticker-item">الحمد لله 📿</span>
-          <span class="ticker-item">الله أكبر 📿</span>
-          <span class="ticker-item">استغفر الله 📿</span>
+    <!-- منطقة التعليقات -->
+    <div class="messages" id="messages">
+      
+      <!-- حاوية الرسائل المثبتة الثلاث (تظهر للمستخدم العادي فقط) -->
+      <div id="pinnedContainer" class="pinned-container">
+        
+        <!-- الرسالة المثبتة 1 -->
+        <div class="pinned-item-wrapper" id="pinned1">
+          <div class="message">
+            <button class="comment-options-btn">⁝</button>
+            <div class="comment-avatar" style="background: #2ba640;">ش</div>
+            <div class="comment-body">
+              <div class="comment-header-info">
+                <span class="comment-username">@شيتوس-ل9ج8غ</span>
+                <span class="comment-time">• منذ يومين</span>
+              </div>
+              <span class="message-text">راسليني علي هذا القناه الخاصه وتفاعلي معي 💜💜💜</span>
+              <div class="comment-actions">
+                <button class="action-btn">👍 <span>3</span></button>
+                <button class="action-btn">👎</button>
+                <button class="delete-pinned-btn" onclick="removePinned('pinned1')">❌</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="ticker-group">
-          <span class="ticker-item">سبحان الله 📿</span>
-          <span class="ticker-item">الحمد لله 📿</span>
-          <span class="ticker-item">الله أكبر 📿</span>
-          <span class="ticker-item">استغفر الله 📿</span>
-        </div>
-      </div>
-    </div>
 
-    <div class="messages" id="messages"></div>
+        <!-- الرسالة المثبتة 2 -->
+        <div class="pinned-item-wrapper" id="pinned2">
+          <div class="message">
+            <button class="comment-options-btn">⁝</button>
+            <div class="comment-avatar" style="background: #cc0000;">ل</div>
+            <div class="comment-body">
+              <div class="comment-header-info">
+                <span class="comment-username admin-name">@لا اله -الا- الله 7غ8م</span>
+                <span class="comment-time">• منذ يومين</span>
+              </div>
+              <span class="message-text">طبعا ياقمري هتبعك بس اهم حاجه تكوني بنت عشان مش بكلم صبيان.</span>
+              <div class="comment-actions">
+                <button class="action-btn">👍 <span>2</span></button>
+                <button class="action-btn">👎</button>
+                <button class="delete-pinned-btn" onclick="removePinned('pinned2')">❌</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- الرسالة المثبتة 3 -->
+        <div class="pinned-item-wrapper" id="pinned3">
+          <div class="message">
+            <button class="comment-options-btn">⁝</button>
+            <div class="comment-avatar" style="background: #2ba640;">ش</div>
+            <div class="comment-body">
+              <div class="comment-header-info">
+                <span class="comment-username">@شيتوس-ل9ج8غ</span>
+                <span class="comment-time">• منذ يومين</span>
+              </div>
+              <span class="message-text">وانا كمان بنت ومش بكلم ولاد.</span>
+              <div class="comment-actions">
+                <button class="action-btn">👍 <span>4</span></button>
+                <button class="action-btn">👎</button>
+                <button class="delete-pinned-btn" onclick="removePinned('pinned3')">❌</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
 
     <div class="input-area">
       <input type="text" id="messageInput" placeholder="إضافة رد...">
@@ -484,11 +546,17 @@
     const isAdmin = localStorage.getItem("is_admin") === "true";
     const bellBtn = document.getElementById("bellBtn");
 
+    // إظهار الرسائل المثبتة للمستخدم العادي فقط، بينما تظل مخفية عند المدير
     if (!isAdmin) {
-      document.getElementById("tickerContainer").style.display = "block";
+      document.getElementById("pinnedContainer").style.display = "flex";
     } else {
       document.getElementById("usersCounter").style.display = "flex";
     }
+
+    window.removePinned = function(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    };
 
     let myId = localStorage.getItem("chat_user_id");
     if (!myId) {
