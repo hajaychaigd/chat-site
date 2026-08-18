@@ -133,7 +133,7 @@
 
     /* تصميم الرسائل المثبته */
     .pinned-container {
-      display: none; /* يتم التحكم بها عبر الكود حسب حالة الزر */
+      display: none; /* يتم التحكم بها عبر السيرفر */
       flex-direction: column;
       gap: 16px;
       border-bottom: 1px solid #e5e5e5;
@@ -568,11 +568,17 @@
     const togglePinnedBtn = document.getElementById("togglePinnedBtn");
     const pinnedContainer = document.getElementById("pinnedContainer");
 
-    // دالة لتحديث مظهر وحالة زر إخفاء/إظهار المثبتات
-    function updatePinnedToggleUI(isVisible) {
-      if (isVisible) {
+    // إظهار زر التحكم للمدير فقط
+    if (isAdmin) {
+      document.getElementById("usersCounter").style.display = "flex";
+      togglePinnedBtn.style.display = "flex";
+    }
+
+    // دالة لتحديث مظهر الزر وحالة العرض للجميع بناءً على القيمة القادمة من السيرفر
+    function applyPinnedState(visible) {
+      if (visible) {
         pinnedContainer.style.display = "flex";
-        togglePinnedBtn.style.background = "#2ba640"; // أخضر (ظاهر)
+        togglePinnedBtn.style.background = "#2ba640"; // أخضر (منور = ظاهر)
         togglePinnedBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
       } else {
         pinnedContainer.style.display = "none";
@@ -581,27 +587,30 @@
       }
     }
 
-    // إعداد واجهة الزر بناءً على دور المستخدم
-    if (!isAdmin) {
-      // للمستخدم العادي: تظهر المثبتات بشكل افتراضي (أو حسب حالة السيرفر إذا أردت، وهنا تظهر افتراضياً)
-      pinnedContainer.style.display = "flex";
-    } else {
-      // للمدير: يظهر زر العداد وزر التحكم الجديد
-      document.getElementById("usersCounter").style.display = "flex";
-      togglePinnedBtn.style.display = "flex";
-      
-      // جلب الحالة المحفوظة للمدير محلياً أو من فايربيس
-      const savedPinnedState = localStorage.getItem("admin_pinned_visible") !== "false"; // افتراضياً تظهر
-      updatePinnedToggleUI(savedPinnedState);
+    // ربط الزر بقاعدة البيانات لتحديث الحالة عند الضغط (للمدير فقط)
+    togglePinnedBtn.addEventListener("click", async function() {
+      if (!isAdmin) return;
+      const pinnedStatusRef = doc(db, "status", "pinned_status");
+      try {
+        const docSnap = await getDoc(pinnedStatusRef);
+        let currentVisible = true;
+        if (docSnap.exists()) {
+          currentVisible = docSnap.data().visible !== false;
+        }
+        let newVisible = !currentVisible;
+        await setDoc(pinnedStatusRef, { visible: newVisible, timestamp: Date.now() });
+      } catch (e) {}
+    });
 
-      // حدث النقر على زر إخفاء/إظهار المثبتات للمدير
-      togglePinnedBtn.addEventListener("click", function() {
-        const currentlyVisible = pinnedContainer.style.display === "flex";
-        const newState = !currentlyVisible;
-        updatePinnedToggleUI(newState);
-        localStorage.setItem("admin_pinned_visible", newState);
-      });
-    }
+    // الاستماع الفوري لحالة الرسائل المثبتة من قاعدة البيانات (يعمل عند المدير والمستخدم)
+    const pinnedStatusRef = doc(db, "status", "pinned_status");
+    onSnapshot(pinnedStatusRef, (docSnap) => {
+      let isVisible = true; // افتراضياً تظهر
+      if (docSnap.exists()) {
+        isVisible = docSnap.data().visible !== false;
+      }
+      applyPinnedState(isVisible);
+    });
 
     window.removePinned = function(id) {
       const el = document.getElementById(id);
