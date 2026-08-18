@@ -30,7 +30,6 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
 
-    /* شريط العنوان العلوي */
     .header {
       background: #ffffff;
       color: #0f0f0f;
@@ -71,11 +70,11 @@
       gap: 5px;
     }
 
-    /* زرار الجرس */
+    /* زرار الجرس الافتراضي أخضر */
     .mute-btn {
-      background: rgba(0, 0, 0, 0.05);
+      background: #2ba640;
       border: none;
-      color: #0f0f0f;
+      color: #ffffff;
       padding: 6px 12px;
       border-radius: 50%;
       width: 38px;
@@ -86,10 +85,11 @@
       align-items: center;
       justify-content: center;
       transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 0 10px rgba(43, 166, 64, 0.4);
     }
 
     .mute-btn:hover {
-      background: rgba(0, 0, 0, 0.1);
+      background: #238b35;
     }
 
     .status-dot {
@@ -133,7 +133,6 @@
       100% { transform: translateX(0%); }
     }
 
-    /* منطقة التعليقات والردود */
     .messages {
       flex: 1;
       padding: 16px;
@@ -144,7 +143,6 @@
       background: #ffffff;
     }
 
-    /* تصميم التعليق الفردي شبيه بيوتيوب الفاتح */
     .message {
       display: flex;
       gap: 12px;
@@ -197,7 +195,6 @@
       word-break: break-word;
     }
 
-    /* تذييل التعليق (أزرار التفاعل 👍 👎 والوقت) */
     .comment-actions {
       display: flex;
       align-items: center;
@@ -254,55 +251,6 @@
       color: #065fd4;
     }
 
-    /* صندوق آية الكرسي العلوي */
-    .message.aya-box {
-      background: #f8f9fa;
-      border-right: 3px solid #065fd4;
-      padding: 12px;
-      border-radius: 8px;
-      color: #0f0f0f;
-      max-width: 100%;
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-      border: 1px solid #e5e5e5;
-    }
-
-    .aya-content {
-      line-height: 1.6;
-      font-size: 13px;
-    }
-
-    .aya-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid #e5e5e5;
-      padding-top: 6px;
-      margin-top: 4px;
-    }
-
-    .nav-btn {
-      background: #e5e5e5;
-      color: #0f0f0f;
-      border: none;
-      border-radius: 50%;
-      width: 26px;
-      height: 26px;
-      font-size: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      box-shadow: none;
-    }
-
-    .aya-counter {
-      font-size: 11px;
-      color: #606060;
-    }
-
-    /* شريط كتابة التعليق السفلي */
     .input-area {
       display: flex;
       padding: 10px 16px;
@@ -371,7 +319,7 @@
   </style>
 </head>
 
-<body onclick="unlockAudio()">
+<body>
 
   <div id="blockScreen">
     ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
@@ -411,18 +359,7 @@
       </div>
     </div>
 
-    <div class="messages" id="messages">
-      <div class="message aya-box" id="welcomeMessage">
-        <div class="aya-content" id="ayaText">
-          اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ.💜💜💜
-        </div>
-        <div class="aya-nav">
-          <button class="nav-btn" onclick="prevAya()">◀</button>
-          <span class="aya-counter" id="ayaCounter">1 / 16</span>
-          <button class="nav-btn" onclick="nextAya()">▶</button>
-        </div>
-      </div>
-    </div>
+    <div class="messages" id="messages"></div>
 
     <div class="input-area">
       <input
@@ -457,29 +394,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const ayatList = [
-      "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ.💜💜💜",
-      "لَا إِكْرَاهَ فِي الدِّينِ ۖ قَد تَّبَيَّنَ الرُّشْدُ مِنَ الْغَيِّ ۚ فَمَن يَكْفُرْ بِالطَّاغُوتِ وَيُؤْمِن بِاللَّهِ فَقَدِ اسْتَمْسَكَ بِالْعُرْوَةِ الْوُثْقَىٰ لَا انْفِصَامَ لَهَا ۗ وَاللَّهُ سَمِيعٌ عَلِيمٌ.",
-      "اللَّهُ وَلِيُّ الَّذِينَ آمَنُوا يُخْرِجُهُم مِّنَ الظَّلُمَاتِ إِلَى النُّورِ ۖ وَالَّذِينَ كَفَرُوا أَوْلِيَاؤُهُمُ الطَّاغُوتُ يُخْرِجُونَهُم مِّنَ النُّورِ إِلَى الظُّلُمَاتِ ۗ أُولَئِكَ أَصْحَابُ النَّارِ ۖ هُمْ فِيهَا خَالِدُونَ."
-    ];
-
-    let currentAyaIndex = 0;
     let blockIncomingFromAdmin = false;
-
-    window.nextAya = function() {
-      currentAyaIndex = (currentAyaIndex + 1) % ayatList.length;
-      updateAyaDisplay();
-    };
-
-    window.prevAya = function() {
-      currentAyaIndex = (currentAyaIndex - 1 + ayatList.length) % ayatList.length;
-      updateAyaDisplay();
-    };
-
-    function updateAyaDisplay() {
-      document.getElementById("ayaText").textContent = ayatList[currentAyaIndex];
-      document.getElementById("ayaCounter").textContent = (currentAyaIndex + 1) + " / " + ayatList.length;
-    }
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'mysecret123') {
@@ -492,7 +407,6 @@
 
     if (!isAdmin) {
       document.getElementById("tickerContainer").style.display = "block";
-      document.getElementById("welcomeMessage").style.display = "flex";
     } else {
       document.getElementById("usersCounter").style.display = "flex";
     }
@@ -509,9 +423,9 @@
       const bellStatusRef = doc(db, "status", "bell_alert");
       try {
         const docSnap = await getDoc(bellStatusRef);
-        let currentState = "off";
+        let currentState = "green";
         if (docSnap.exists()) {
-          currentState = docSnap.data().state || "off";
+          currentState = docSnap.data().state || "green";
         }
 
         let newState = (currentState === "red") ? "green" : "red";
@@ -525,7 +439,7 @@
     onSnapshot(bellStatusRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        const state = data.state || "off";
+        const state = data.state || "green";
 
         if (state === "red") {
           bellBtn.style.background = "#ff5252";
@@ -547,18 +461,10 @@
               sound.play().catch(e => console.log(e));
             }
           }
-        } else if (state === "green") {
+        } else {
           bellBtn.style.background = "#2ba640";
           bellBtn.style.color = "#fff";
-          bellBtn.style.boxShadow = "0 0 12px #2ba640";
-          
-          if (!isAdmin) {
-            blockIncomingFromAdmin = false;
-          }
-        } else {
-          bellBtn.style.background = "rgba(0, 0, 0, 0.05)";
-          bellBtn.style.color = "#0f0f0f";
-          bellBtn.style.boxShadow = "none";
+          bellBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
           if (!isAdmin) {
             blockIncomingFromAdmin = false;
           }
@@ -658,16 +564,6 @@
     onSnapshot(statusQuery, (docSnap) => {
       updateStatusIndicator(docSnap.exists() ? docSnap.data() : null);
     });
-
-    window.unlockAudio = function() {
-      const sound = document.getElementById("notificationSound");
-      if (sound) {
-        sound.play().then(() => {
-          sound.pause();
-          sound.currentTime = 0;
-        }).catch(e => console.log(e));
-      }
-    };
 
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
@@ -787,7 +683,8 @@
             updateDoc(doc(db, "messages", docId), { read: true });
           }
 
-          if (!isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
+          // تم إلغاء تشغيل الصوت نهائياً للمستخدم، ويعمل فقط للمدير عند وصول رسالة جديدة
+          if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
             const sound = document.getElementById("notificationSound");
             if (sound) {
               sound.currentTime = 0;
