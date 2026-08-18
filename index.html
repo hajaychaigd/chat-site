@@ -133,7 +133,7 @@
 
     /* تصميم الرسائل المثبته */
     .pinned-container {
-      display: flex; /* يتم التحكم بها ديناميكياً */
+      display: flex; /* تظهر افتراضياً للمستخدم فقط وتخفى تلقائياً عند المدير عبر الكود */
       flex-direction: column;
       gap: 16px;
       border-bottom: 1px solid #e5e5e5;
@@ -568,47 +568,58 @@
     const togglePinnedBtn = document.getElementById("togglePinnedBtn");
     const pinnedContainer = document.getElementById("pinnedContainer");
 
+    // إذا كان الجهاز للمدير، يتم إخفاء الرسائل المثبتة عنده تماماً وإظهار زر التحكم
     if (isAdmin) {
       document.getElementById("usersCounter").style.display = "flex";
-      togglePinnedBtn.style.display = "flex"; // إظهار زر التثبيت للمدير
+      togglePinnedBtn.style.display = "flex";
+      pinnedContainer.style.display = "none"; // إخفاء المثبتات عندي أنا (المدير)
     }
 
-    // تعديل زر التثبيت للمدير ليعمل فوراً محلياً ويحدث السيرفر (مع ضمان عدم توقفه أبداً)
+    // زر التحكم الخاص بالمدير (📌): يقوم بتغيير لونه وإرسال الأمر للسيرفر ليظهر/يختفي عند المستخدم
     togglePinnedBtn.addEventListener("click", async function() {
-      const isCurrentlyVisible = pinnedContainer.style.display !== "none";
+      if (!isAdmin) return;
       
-      // التبديل المحلي الفوري للزر والحاوية
-      if (isCurrentlyVisible) {
-        pinnedContainer.style.display = "none";
-        togglePinnedBtn.style.background = "#ff5252";
-        togglePinnedBtn.style.boxShadow = "0 0 12px #ff5252";
-      } else {
-        pinnedContainer.style.display = "flex";
-        togglePinnedBtn.style.background = "#2ba640";
-        togglePinnedBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
-      }
-
-      // تحديث الحالة في قاعدة البيانات لتنتقل للمستخدمين
       const pinnedStatusRef = doc(db, "status", "pinned_status");
       try {
-        await setDoc(pinnedStatusRef, { visible: !isCurrentlyVisible, timestamp: Date.now() });
+        const docSnap = await getDoc(pinnedStatusRef);
+        let currentVisible = true;
+        if (docSnap.exists()) {
+          currentVisible = docSnap.data().visible !== false;
+        }
+        let newVisible = !currentVisible;
+
+        // تحديث لون الزر عند المدير بناءً على الحالة الجديدة للمستخدمين
+        if (newVisible) {
+          togglePinnedBtn.style.background = "#2ba640";
+          togglePinnedBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
+        } else {
+          togglePinnedBtn.style.background = "#ff5252";
+          togglePinnedBtn.style.boxShadow = "0 0 12px #ff5252";
+        }
+
+        await setDoc(pinnedStatusRef, { visible: newVisible, timestamp: Date.now() });
       } catch (e) {}
     });
 
-    // مزامنة حالة التثبيت من السيرفر (في حال تم التحديث من جهة أخرى)
+    // مزامنة حالة زر التثبيت للمدير من السيرفر
     const pinnedStatusRef = doc(db, "status", "pinned_status");
     onSnapshot(pinnedStatusRef, (docSnap) => {
       if (docSnap.exists()) {
         const isVisible = docSnap.data().visible !== false;
         if (isAdmin) {
           if (isVisible) {
-            pinnedContainer.style.display = "flex";
             togglePinnedBtn.style.background = "#2ba640";
             togglePinnedBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
           } else {
-            pinnedContainer.style.display = "none";
             togglePinnedBtn.style.background = "#ff5252";
             togglePinnedBtn.style.boxShadow = "0 0 12px #ff5252";
+          }
+        } else {
+          // للمستخدم العادي: تتأثر الرسائل المثبتة بالظهور أو الإختفاء تلقائياً حسب رغبة المدير
+          if (isVisible && bellBtn.style.background !== "rgb(255, 82, 82)") {
+            pinnedContainer.style.display = "flex";
+          } else {
+            pinnedContainer.style.display = "none";
           }
         }
       }
