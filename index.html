@@ -147,24 +147,25 @@
       background: #ffffff;
     }
 
-    /* تصميم التعليق مع دعم الخط المنحني للردود */
+    /* تصميم حاوية التعليق والخط المنحني مطابق ليوتيوب تماماً */
     .message-wrapper {
       position: relative;
       display: flex;
       flex-direction: column;
+      padding-right: 44px; /* مساحة لخط الرد ليظهر على اليمين تحت الأيقونة */
     }
 
     /* الخط المنحني الموصول بين التعليقات */
     .message-wrapper:not(:first-child)::before {
       content: '';
       position: absolute;
-      top: -12px;
-      right: 15px; /* يتماشى مع منتصف الأيقونة ذات العرض 32px */
-      width: 14px;
-      height: 18px;
-      border-right: 2px solid #e5e5e5;
-      border-bottom: 2px solid #e5e5e5;
-      border-bottom-right-radius: 10px;
+      top: -16px;
+      right: 15px; /* يرتكز تماماً تحت منتصف الأيقونة العلوية */
+      width: 16px;
+      height: 26px;
+      border-right: 2px solid #e0e0e0;
+      border-bottom: 2px solid #e0e0e0;
+      border-bottom-right-radius: 12px;
     }
 
     .message {
@@ -175,6 +176,8 @@
       width: 100%;
       background: #ffffff;
       z-index: 1;
+      /* سحب المحتوى لليمين لتعويض الـ padding-right للحاوية */
+      margin-right: -44px; 
     }
 
     .comment-avatar {
@@ -195,6 +198,13 @@
       display: flex;
       flex-direction: column;
       gap: 3px;
+      position: relative;
+    }
+
+    .comment-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
     }
 
     .comment-header-info {
@@ -213,6 +223,18 @@
     .comment-username.admin-name {
       color: #065fd4;
       font-weight: 500;
+    }
+
+    /* النقاط الثلاثة السوداء ⁝ */
+    .comment-options-btn {
+      background: none;
+      border: none;
+      color: #0f0f0f;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+      font-weight: bold;
     }
 
     .message-text {
@@ -712,6 +734,9 @@
           const bodyDiv = document.createElement("div");
           bodyDiv.className = "comment-body";
 
+          const headerRow = document.createElement("div");
+          headerRow.className = "comment-header-row";
+
           const headerInfo = document.createElement("div");
           headerInfo.className = "comment-header-info";
           
@@ -724,7 +749,15 @@
             userSpan.textContent = "@شيتوس-ل9ج8غ";
           }
           headerInfo.appendChild(userSpan);
-          bodyDiv.appendChild(headerInfo);
+          headerRow.appendChild(headerInfo);
+
+          // إضافة زر النقاط الثلاثة ⁝ تحت اسم شيتوس
+          const optionsBtn = document.createElement("button");
+          optionsBtn.className = "comment-options-btn";
+          optionsBtn.innerHTML = "⁝";
+          headerRow.appendChild(optionsBtn);
+
+          bodyDiv.appendChild(headerRow);
 
           const textSpan = document.createElement("span");
           textSpan.className = "message-text";
