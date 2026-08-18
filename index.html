@@ -146,17 +146,19 @@
       background: #ffffff;
     }
 
+    /* تخطيط التعليق الواحد تماماً زي يوتيوب */
     .message-wrapper {
       position: relative;
       display: flex;
       flex-direction: column;
     }
 
+    /* الخط المنحني الموصول بين التعليقات تحت الصورة مباشرة */
     .message-wrapper:not(:first-child)::before {
       content: '';
       position: absolute;
       top: -16px;
-      right: 15px;
+      right: 15px; /* تحت منتصف الأيقونة اليمين */
       width: 14px;
       height: 22px;
       border-left: 2px solid #e0e0e0;
@@ -166,13 +168,26 @@
 
     .message {
       display: flex;
+      align-items: flex-start;
       gap: 12px;
-      font-size: 13px;
       position: relative;
       width: 100%;
       background: #ffffff;
       z-index: 1;
-      flex-direction: row;
+    }
+
+    /* النقاط الثلاثة في أقصى اليمين خالص */
+    .comment-options-btn {
+      background: none;
+      border: none;
+      color: #0f0f0f;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      font-weight: bold;
+      flex-shrink: 0;
+      margin-top: 4px;
     }
 
     .comment-avatar {
@@ -192,14 +207,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      position: relative;
-    }
-
-    .comment-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      gap: 4px;
     }
 
     .comment-header-info {
@@ -210,7 +218,7 @@
       color: #606060;
     }
 
-    /* البادج الأسود حول اسم المستخدم تماماً زي الصورة الأصلية */
+    /* اسم المستخدم بـ البادج الأسود زي يوتيوب */
     .comment-username {
       background-color: #0f0f0f;
       color: #ffffff;
@@ -226,15 +234,9 @@
       color: #ffffff;
     }
 
-    .comment-options-btn {
-      background: none;
-      border: none;
-      color: #0f0f0f;
-      font-size: 16px;
-      cursor: pointer;
-      padding: 0 4px;
-      line-height: 1;
-      font-weight: bold;
+    .comment-time {
+      font-size: 11px;
+      color: #606060;
     }
 
     .message-text {
@@ -242,14 +244,13 @@
       line-height: 1.4;
       word-break: break-word;
       font-size: 13px;
-      margin-top: 2px;
     }
 
     .comment-actions {
       display: flex;
       align-items: center;
       gap: 16px;
-      margin-top: 2px;
+      margin-top: 4px;
       font-size: 12px;
       color: #606060;
     }
@@ -286,6 +287,7 @@
       font-size: 10px;
     }
 
+    /* شريط الإدخال السفلي */
     .input-area {
       display: flex;
       padding: 10px 16px;
@@ -351,6 +353,7 @@
       line-height: 1.6;
     }
 
+    /* شريط يوتيوب السفلي */
     .yt-navbar {
       height: 50px;
       background: #ffffff;
@@ -717,6 +720,13 @@
           messageDiv.id = "msg_" + docId;
           messageDiv.className = "message";
 
+          // 1. النقاط الثلاثة في أقصى اليمين خالص
+          const optionsBtn = document.createElement("button");
+          optionsBtn.className = "comment-options-btn";
+          optionsBtn.innerHTML = "⁝";
+          messageDiv.appendChild(optionsBtn);
+
+          // 2. صورة المستخدم الدائرية بجوار النقاط
           const avatarDiv = document.createElement("div");
           avatarDiv.className = "comment-avatar";
           if (data.isAdminMessage) {
@@ -728,11 +738,9 @@
           }
           messageDiv.appendChild(avatarDiv);
 
+          // 3. محتوى التعليق (اسم المستخدم والوقت في نفس السطر، وتحتهم النص وأزرار التفاعل)
           const bodyDiv = document.createElement("div");
           bodyDiv.className = "comment-body";
-
-          const headerRow = document.createElement("div");
-          headerRow.className = "comment-header-row";
 
           const headerInfo = document.createElement("div");
           headerInfo.className = "comment-header-info";
@@ -746,14 +754,13 @@
             userSpan.textContent = "@شيتوس-ل9ج8غ";
           }
           headerInfo.appendChild(userSpan);
-          headerRow.appendChild(headerInfo);
 
-          const optionsBtn = document.createElement("button");
-          optionsBtn.className = "comment-options-btn";
-          optionsBtn.innerHTML = "⁝";
-          headerRow.appendChild(optionsBtn);
+          const timeSpan = document.createElement("span");
+          timeSpan.className = "comment-time";
+          timeSpan.textContent = "• الآن";
+          headerInfo.appendChild(timeSpan);
 
-          bodyDiv.appendChild(headerRow);
+          bodyDiv.appendChild(headerInfo);
 
           const textSpan = document.createElement("span");
           textSpan.className = "message-text";
