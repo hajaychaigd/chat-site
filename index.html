@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🕋 الردود</title>
+  <title>الردود</title>
 
   <style>
     * {
@@ -28,14 +28,16 @@
       display: flex;
       flex-direction: column;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: relative;
     }
 
+    /* شريط يوتيوب العلوي */
     .header {
       background: #ffffff;
       color: #0f0f0f;
-      padding: 12px 16px;
+      padding: 10px 16px;
       font-size: 18px;
-      font-weight: bold;
+      font-weight: 500;
       flex-shrink: 0;
       display: flex;
       justify-content: space-between;
@@ -46,12 +48,13 @@
     .header-title {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 20px;
     }
 
     .back-arrow {
-      font-size: 20px;
+      font-size: 22px;
       cursor: pointer;
+      font-weight: normal;
     }
 
     .header-actions {
@@ -70,11 +73,12 @@
       gap: 5px;
     }
 
+    /* زر الجرس الأخضر العلوي */
     .mute-btn {
       background: #2ba640;
       border: none;
       color: #ffffff;
-      padding: 6px 12px;
+      padding: 0;
       border-radius: 50%;
       width: 38px;
       height: 38px;
@@ -83,8 +87,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s, transform 0.1s;
       box-shadow: 0 0 10px rgba(43, 166, 64, 0.4);
+      transition: background 0.2s;
     }
 
     .mute-btn:hover {
@@ -92,18 +96,18 @@
     }
 
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background-color: #ff5252;
       display: inline-block;
-      transition: background-color 0.3s ease;
     }
 
+    /* شريط التسبيحات المتحرك */
     .ticker-container {
       background: #f1f1f1;
       color: #065fd4;
-      padding: 6px 0;
+      padding: 5px 0;
       overflow: hidden;
       white-space: nowrap;
       position: relative;
@@ -132,6 +136,7 @@
       100% { transform: translateX(0%); }
     }
 
+    /* منطقة التعليقات */
     .messages {
       flex: 1;
       padding: 16px;
@@ -142,63 +147,63 @@
       background: #ffffff;
     }
 
+    /* تصميم التعليق تماماً كصورة يوتيوب */
     .message {
       display: flex;
       gap: 12px;
-      font-size: 14px;
+      font-size: 13px;
       position: relative;
       width: 100%;
-      max-width: 100%;
-      background: transparent;
-      padding: 0;
-      box-shadow: none;
     }
 
     .comment-avatar {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: #065fd4;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 15px;
+      object-fit: cover;
       flex-shrink: 0;
+      background-size: cover;
+      background-position: center;
     }
 
     .comment-body {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
 
     .comment-header-info {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       font-size: 12px;
       color: #606060;
     }
 
     .comment-username {
-      color: #0f0f0f;
+      color: #606060;
+      font-weight: 400;
+    }
+
+    .comment-username.admin-name {
+      color: #065fd4;
       font-weight: 500;
     }
 
     .message-text {
       color: #0f0f0f;
-      line-height: 1.5;
+      line-height: 1.4;
       word-break: break-word;
+      font-size: 13px;
     }
 
+    /* أزرار التفاعل 👍 👎 */
     .comment-actions {
       display: flex;
       align-items: center;
       gap: 16px;
-      margin-top: 4px;
+      margin-top: 2px;
       font-size: 12px;
       color: #606060;
     }
@@ -212,15 +217,11 @@
       align-items: center;
       gap: 6px;
       padding: 0;
-      font-size: 13px;
-      box-shadow: none;
-      width: auto;
-      height: auto;
+      font-size: 12px;
     }
 
     .action-btn:hover {
       color: #0f0f0f;
-      background: none;
     }
 
     .message-footer {
@@ -234,11 +235,12 @@
       color: #cc0000;
       font-weight: bold;
       background: rgba(204, 0, 0, 0.08);
-      padding: 1px 6px;
+      padding: 1px 5px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 10px;
     }
 
+    /* شريط الإدخال السفلي */
     .input-area {
       display: flex;
       padding: 10px 16px;
@@ -251,7 +253,7 @@
 
     input {
       flex: 1;
-      padding: 10px 14px;
+      padding: 9px 14px;
       border: 1px solid #cccccc;
       border-radius: 20px;
       outline: none;
@@ -277,7 +279,6 @@
       align-items: center;
       cursor: pointer;
       font-size: 16px;
-      box-shadow: none;
       transition: background 0.2s;
     }
 
@@ -285,6 +286,7 @@
       background: #035ac5;
     }
 
+    /* شاشة الحظر عند انشغال الشات */
     #blockScreen {
       position: fixed;
       top: 0;
@@ -300,9 +302,38 @@
       text-align: center;
       padding: 20px;
       z-index: 9999;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: bold;
       line-height: 1.6;
+    }
+
+    /* شريط التنقل السفلي الثابت المطابق لصورة يوتيوب تماماً */
+    .yt-navbar {
+      height: 50px;
+      background: #ffffff;
+      border-top: 1px solid #e5e5e5;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .yt-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 10px;
+      color: #0f0f0f;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .yt-nav-item img {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -315,6 +346,7 @@
 
   <div class="app">
 
+    <!-- Header -->
     <div class="header">
       <div class="header-title">
         <span class="back-arrow">←</span>
@@ -329,6 +361,7 @@
       </div>
     </div>
 
+    <!-- Ticker -->
     <div id="tickerContainer" class="ticker-container">
       <div class="ticker-track">
         <div class="ticker-group">
@@ -346,8 +379,10 @@
       </div>
     </div>
 
+    <!-- Messages Container -->
     <div class="messages" id="messages"></div>
 
+    <!-- Input Area -->
     <div class="input-area">
       <input
         type="text"
@@ -357,6 +392,29 @@
       <button class="send-btn" onclick="sendMessage()">
         📿
       </button>
+    </div>
+
+    <!-- يوتيوب ناف بار السفلي المطابق للصورة -->
+    <div class="yt-navbar">
+      <div class="yt-nav-item">
+        <svg height="20" viewBox="0 0 24 24" width="20"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" fill="#0f0f0f"/></svg>
+        <span>الرئيسية</span>
+      </div>
+      <div class="yt-nav-item">
+        <svg height="20" viewBox="0 0 24 24" width="20"><path d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33c-.77-.32-1.2-.5-1.2-.5L18 9c1.1-1.1 2-2.4 2-4V3H4v2c0 1.6.9 2.9 2 4l1.43 1.32s-.43.18-1.2.5C4.7 11.2 3 13.2 3 15.5V19h18v-3.5c0-2.3-1.7-4.3-3.23-4.83z" fill="#0f0f0f"/></svg>
+        <span>الاشتراكات</span>
+      </div>
+      <div class="yt-nav-item">
+        <svg height="24" viewBox="0 0 24 24" width="24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="#0f0f0f"/></svg>
+      </div>
+      <div class="yt-nav-item">
+        <svg height="20" viewBox="0 0 24 24" width="20"><path d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33c-.77-.32-1.2-.5-1.2-.5L18 9c1.1-1.1 2-2.4 2-4V3H4v2c0 1.6.9 2.9 2 4l1.43 1.32s-.43.18-1.2.5C4.7 11.2 3 13.2 3 15.5V19h18v-3.5c0-2.3-1.7-4.3-3.23-4.83z" fill="#0f0f0f"/></svg>
+        <span>Shorts</span>
+      </div>
+      <div class="yt-nav-item">
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" alt="أنت">
+        <span>أنت</span>
+      </div>
     </div>
 
   </div>
@@ -606,20 +664,30 @@
           messageDiv.id = "msg_" + docId;
           messageDiv.className = "message";
 
-          const avatarDiv = document.createElement("div");
-          avatarDiv.className = "comment-avatar";
-          avatarDiv.textContent = data.isAdminMessage ? "م" : "ش";
-          if(data.isAdminMessage) avatarDiv.style.background = "#cc0000";
-          messageDiv.appendChild(avatarDiv);
+          // صورة المستخدم المطابقة لصور يوتيوب في الصورة الأصلية
+          const avatarImg = document.createElement("img");
+          avatarImg.className = "comment-avatar";
+          if (data.isAdminMessage) {
+            avatarImg.src = "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop";
+          } else {
+            avatarImg.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop";
+          }
+          messageDiv.appendChild(avatarImg);
 
           const bodyDiv = document.createElement("div");
           bodyDiv.className = "comment-body";
 
           const headerInfo = document.createElement("div");
           headerInfo.className = "comment-header-info";
+          
           const userSpan = document.createElement("span");
           userSpan.className = "comment-username";
-          userSpan.textContent = data.isAdminMessage ? "@المدير" : "@شيتوس-ل9ج8غ";
+          if (data.isAdminMessage) {
+            userSpan.classList.add("admin-name");
+            userSpan.textContent = "@المدير";
+          } else {
+            userSpan.textContent = "@شيتوس-ل9ج8غ";
+          }
           headerInfo.appendChild(userSpan);
           bodyDiv.appendChild(headerInfo);
 
