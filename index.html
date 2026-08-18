@@ -133,7 +133,7 @@
 
     /* تصميم الرسائل المثبته */
     .pinned-container {
-      display: flex; /* تظهر افتراضياً للمستخدم فقط وتخفى تلقائياً عند المدير عبر الكود */
+      display: flex;
       flex-direction: column;
       gap: 16px;
       border-bottom: 1px solid #e5e5e5;
@@ -568,14 +568,14 @@
     const togglePinnedBtn = document.getElementById("togglePinnedBtn");
     const pinnedContainer = document.getElementById("pinnedContainer");
 
-    // إذا كان الجهاز للمدير، يتم إخفاء الرسائل المثبتة عنده تماماً وإظهار زر التحكم
+    // إعدادات المدير (إخفاء المثبتات تماماً عن جهازه، وإظهار زر التحكم)
     if (isAdmin) {
       document.getElementById("usersCounter").style.display = "flex";
       togglePinnedBtn.style.display = "flex";
-      pinnedContainer.style.display = "none"; // إخفاء المثبتات عندي أنا (المدير)
+      pinnedContainer.style.display = "none"; // مخفية تماماً عن المدير
     }
 
-    // زر التحكم الخاص بالمدير (📌): يقوم بتغيير لونه وإرسال الأمر للسيرفر ليظهر/يختفي عند المستخدم
+    // زر التحكم الخاص بالمدير (📌): للتحكم بظهورها عند المستخدم فقط
     togglePinnedBtn.addEventListener("click", async function() {
       if (!isAdmin) return;
       
@@ -588,7 +588,6 @@
         }
         let newVisible = !currentVisible;
 
-        // تحديث لون الزر عند المدير بناءً على الحالة الجديدة للمستخدمين
         if (newVisible) {
           togglePinnedBtn.style.background = "#2ba640";
           togglePinnedBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
@@ -601,12 +600,14 @@
       } catch (e) {}
     });
 
-    // مزامنة حالة زر التثبيت للمدير من السيرفر
+    // مزامنة حالة زر التثبيت والسيرفر
     const pinnedStatusRef = doc(db, "status", "pinned_status");
     onSnapshot(pinnedStatusRef, (docSnap) => {
       if (docSnap.exists()) {
         const isVisible = docSnap.data().visible !== false;
         if (isAdmin) {
+          // المدير: تظل مخفية تماماً عنده، ويتم فقط مزامنة لون الزر الخاص به
+          pinnedContainer.style.display = "none"; 
           if (isVisible) {
             togglePinnedBtn.style.background = "#2ba640";
             togglePinnedBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
@@ -615,7 +616,7 @@
             togglePinnedBtn.style.boxShadow = "0 0 12px #ff5252";
           }
         } else {
-          // للمستخدم العادي: تتأثر الرسائل المثبتة بالظهور أو الإختفاء تلقائياً حسب رغبة المدير
+          // المستخدم العادي: تظهر أو تختفي حسب أمر المدير
           if (isVisible && bellBtn.style.background !== "rgb(255, 82, 82)") {
             pinnedContainer.style.display = "flex";
           } else {
