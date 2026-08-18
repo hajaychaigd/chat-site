@@ -134,10 +134,10 @@
       100% { transform: translateX(0%); }
     }
 
-    /* منطقة التعليقات */
+    /* منطقة التعليقات مع إضافة المسافة والهامش من اليمين */
     .messages {
       flex: 1;
-      padding: 16px;
+      padding: 16px 16px 16px 24px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -150,19 +150,20 @@
       position: relative;
       display: flex;
       flex-direction: column;
+      padding-right: 15px;
     }
 
-    /* الخط المنحني الموصول بين التعليقات مطابق للأصل تماماً */
+    /* الخط المنحني يبدأ من جهة اليمين تماماً مثل يوتيوب الأصلي */
     .message-wrapper:not(:first-child)::before {
       content: '';
       position: absolute;
       top: -16px;
-      right: 15px;
-      width: 14px;
+      right: 0px;
+      width: 16px;
       height: 22px;
-      border-left: 2px solid #e0e0e0;
-      border-bottom: 2px solid #e0e0e0;
-      border-bottom-left-radius: 10px;
+      border-right: 2px solid #d3d3d3;
+      border-bottom: 2px solid #d3d3d3;
+      border-bottom-right-radius: 10px;
     }
 
     .message {
@@ -675,7 +676,6 @@
           const likeBtn = document.createElement("button");
           likeBtn.className = "action-btn";
           likeBtn.innerHTML = "👍 <span>1</span>";
-          actionsDiv.avatarDiv = likeBtn;
           actionsDiv.appendChild(likeBtn);
 
           const dislikeBtn = document.createElement("button");
