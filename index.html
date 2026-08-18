@@ -133,7 +133,7 @@
 
     /* تصميم الرسائل المثبته */
     .pinned-container {
-      display: none; /* يتم التحكم بها عبر السيرفر */
+      display: flex; /* يتم التحكم بها ديناميكياً */
       flex-direction: column;
       gap: 16px;
       border-bottom: 1px solid #e5e5e5;
@@ -568,49 +568,49 @@
     const togglePinnedBtn = document.getElementById("togglePinnedBtn");
     const pinnedContainer = document.getElementById("pinnedContainer");
 
-    // إظهار زر التحكم للمدير فقط
     if (isAdmin) {
       document.getElementById("usersCounter").style.display = "flex";
       togglePinnedBtn.style.display = "flex";
     }
 
-    // دالة لتحديث مظهر الزر وحالة العرض للجميع بناءً على القيمة القادمة من السيرفر
+    // دالة لتحديث مظهر الزر وحالة العرض (التحكم بالمدير عبر السيرفر)
     function applyPinnedState(visible) {
-      if (visible) {
-        pinnedContainer.style.display = "flex";
-        togglePinnedBtn.style.background = "#2ba640"; // أخضر (منور = ظاهر)
-        togglePinnedBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
-      } else {
-        pinnedContainer.style.display = "none";
-        togglePinnedBtn.style.background = "#ff5252"; // أحمر (مخفي)
-        togglePinnedBtn.style.boxShadow = "0 0 12px #ff5252";
+      if (isAdmin) {
+        if (visible) {
+          pinnedContainer.style.display = "flex";
+          togglePinnedBtn.style.background = "#2ba640";
+          togglePinnedBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
+        } else {
+          pinnedContainer.style.display = "none";
+          togglePinnedBtn.style.background = "#ff5252";
+          togglePinnedBtn.style.boxShadow = "0 0 12px #ff5252";
+        }
       }
     }
 
-    // ربط الزر بقاعدة البيانات لتحديث الحالة عند الضغط (للمدير فقط)
-    togglePinnedBtn.addEventListener("click", async function() {
-      if (!isAdmin) return;
-      const pinnedStatusRef = doc(db, "status", "pinned_status");
-      try {
-        const docSnap = await getDoc(pinnedStatusRef);
-        let currentVisible = true;
-        if (docSnap.exists()) {
-          currentVisible = docSnap.data().visible !== false;
-        }
-        let newVisible = !currentVisible;
-        await setDoc(pinnedStatusRef, { visible: newVisible, timestamp: Date.now() });
-      } catch (e) {}
-    });
+    if (isAdmin) {
+      togglePinnedBtn.addEventListener("click", async function() {
+        const pinnedStatusRef = doc(db, "status", "pinned_status");
+        try {
+          const docSnap = await getDoc(pinnedStatusRef);
+          let currentVisible = true;
+          if (docSnap.exists()) {
+            currentVisible = docSnap.data().visible !== false;
+          }
+          let newVisible = !currentVisible;
+          await setDoc(pinnedStatusRef, { visible: newVisible, timestamp: Date.now() });
+        } catch (e) {}
+      });
 
-    // الاستماع الفوري لحالة الرسائل المثبتة من قاعدة البيانات (يعمل عند المدير والمستخدم)
-    const pinnedStatusRef = doc(db, "status", "pinned_status");
-    onSnapshot(pinnedStatusRef, (docSnap) => {
-      let isVisible = true; // افتراضياً تظهر
-      if (docSnap.exists()) {
-        isVisible = docSnap.data().visible !== false;
-      }
-      applyPinnedState(isVisible);
-    });
+      const pinnedStatusRef = doc(db, "status", "pinned_status");
+      onSnapshot(pinnedStatusRef, (docSnap) => {
+        let isVisible = true;
+        if (docSnap.exists()) {
+          isVisible = docSnap.data().visible !== false;
+        }
+        applyPinnedState(isVisible);
+      });
+    }
 
     window.removePinned = function(id) {
       const el = document.getElementById(id);
@@ -623,8 +623,15 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
+    // زر الجرس للمستخدم: عند الضغط عليه يتحول لأحمر ويحذف/يخفي الرسائل المثبتة فوراً من عنده
     bellBtn.addEventListener("click", async function() {
       if (isAdmin) return;
+      
+      // التبديل المحلي لزر الجرس وجعل لونه أحمر وإخفاء المثبتات فوراً عند الضغط
+      bellBtn.style.background = "#ff5252";
+      bellBtn.style.boxShadow = "0 0 12px #ff5252";
+      pinnedContainer.style.display = "none"; // إخفاء وحذف الرسائل المثبتة للمستخدم فوراً
+
       const bellStatusRef = doc(db, "status", "bell_alert");
       try {
         const docSnap = await getDoc(bellStatusRef);
@@ -644,6 +651,7 @@
           bellBtn.style.boxShadow = "0 0 12px #ff5252";
           if (!isAdmin) {
             blockIncomingFromAdmin = true;
+            pinnedContainer.style.display = "none"; // إخفاء الرسائل المثبتة إذا أصبح أحمر من السيرفر أيضاً
             for (const docId in messageElements) {
               messageElements[docId].element.remove();
               delete messageElements[docId];
@@ -656,7 +664,10 @@
         } else {
           bellBtn.style.background = "#2ba640";
           bellBtn.style.boxShadow = "0 0 10px rgba(43, 166, 64, 0.4)";
-          if (!isAdmin) blockIncomingFromAdmin = false;
+          if (!isAdmin) {
+            blockIncomingFromAdmin = false;
+            pinnedContainer.style.display = "flex"; // إرجاع الرسائل المثبتة لو عاد أخضر
+          }
         }
       }
     });
