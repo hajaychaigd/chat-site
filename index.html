@@ -146,19 +146,17 @@
       background: #ffffff;
     }
 
-    /* تصميم التعليق تماماً زي يوتيوب (الأيقونة يمين، الخط نازل من تحتها) */
     .message-wrapper {
       position: relative;
       display: flex;
       flex-direction: column;
     }
 
-    /* الخط المنحني الموصول بين التعليقات زي الصورة الأصلية */
     .message-wrapper:not(:first-child)::before {
       content: '';
       position: absolute;
       top: -16px;
-      right: 15px; /* تحت منتصف الأيقونة اليمين مباشرة */
+      right: 15px;
       width: 14px;
       height: 22px;
       border-left: 2px solid #e0e0e0;
@@ -174,7 +172,7 @@
       width: 100%;
       background: #ffffff;
       z-index: 1;
-      flex-direction: row; /* الأيقونة يمين والنص شمالها */
+      flex-direction: row;
     }
 
     .comment-avatar {
@@ -212,17 +210,22 @@
       color: #606060;
     }
 
+    /* البادج الأسود حول اسم المستخدم تماماً زي الصورة الأصلية */
     .comment-username {
-      color: #606060;
-      font-weight: 400;
+      background-color: #0f0f0f;
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 11px;
+      display: inline-block;
     }
 
     .comment-username.admin-name {
-      color: #065fd4;
-      font-weight: 500;
+      background-color: #065fd4;
+      color: #ffffff;
     }
 
-    /* النقاط الثلاثة السوداء على اليسار */
     .comment-options-btn {
       background: none;
       border: none;
@@ -239,6 +242,7 @@
       line-height: 1.4;
       word-break: break-word;
       font-size: 13px;
+      margin-top: 2px;
     }
 
     .comment-actions {
@@ -270,7 +274,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-right: auto; /* العداد ييجي شمال في سطر التفاعل */
+      margin-right: auto;
     }
 
     .timer-text {
@@ -282,7 +286,6 @@
       font-size: 10px;
     }
 
-    /* شريط الإدخال السفلي */
     .input-area {
       display: flex;
       padding: 10px 16px;
@@ -348,7 +351,6 @@
       line-height: 1.6;
     }
 
-    /* شريط يوتيوب السفلي */
     .yt-navbar {
       height: 50px;
       background: #ffffff;
