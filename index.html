@@ -115,7 +115,7 @@
 
     /* تصميم الرسائل المثبته */
     .pinned-container {
-      display: none; /* مخفية افتراضياً، وتظهر للمستخدم العادي فقط عبر الكود */
+      display: none; /* مخفية للمدير، وتظهر للمستخدم العادي فقط */
       flex-direction: column;
       gap: 16px;
       border-bottom: 1px solid #e5e5e5;
@@ -279,7 +279,7 @@
       font-size: 10px;
     }
 
-    /* زر الحذف الصغير جداً للرسالة المثبتة */
+    /* زر الحذف الصغير للرسالة المثبتة */
     .delete-pinned-btn {
       background: rgba(255, 0, 0, 0.1);
       color: #ff0000;
@@ -419,17 +419,17 @@
     <!-- منطقة التعليقات -->
     <div class="messages" id="messages">
       
-      <!-- حاوية الرسائل المثبتة الثلاث (تظهر للمستخدم العادي فقط) -->
+      <!-- حاوية الرسائل المثبتة الثلاث (تظهر للمستخدم العادي فقط بعد انعكاس الأسماء) -->
       <div id="pinnedContainer" class="pinned-container">
         
-        <!-- الرسالة المثبتة 1 -->
+        <!-- الرسالة المثبتة 1 (أنت تقولها بلسان شيتوس القديم أو بالعكس) -->
         <div class="pinned-item-wrapper" id="pinned1">
           <div class="message">
             <button class="comment-options-btn">⁝</button>
-            <div class="comment-avatar" style="background: #2ba640;">ش</div>
+            <div class="comment-avatar" style="background: #cc0000;">ل</div>
             <div class="comment-body">
               <div class="comment-header-info">
-                <span class="comment-username">@شيتوس-ل9ج8غ</span>
+                <span class="comment-username admin-name">@لا اله -الا- الله 7غ8م</span>
                 <span class="comment-time">• منذ يومين</span>
               </div>
               <span class="message-text">راسليني علي هذا القناه الخاصه وتفاعلي معي 💜💜💜</span>
@@ -442,14 +442,14 @@
           </div>
         </div>
 
-        <!-- الرسالة المثبتة 2 -->
+        <!-- الرسالة المثبتة 2 (شيتوس يرد بها) -->
         <div class="pinned-item-wrapper" id="pinned2">
           <div class="message">
             <button class="comment-options-btn">⁝</button>
-            <div class="comment-avatar" style="background: #cc0000;">ل</div>
+            <div class="comment-avatar" style="background: #2ba640;">ش</div>
             <div class="comment-body">
               <div class="comment-header-info">
-                <span class="comment-username admin-name">@لا اله -الا- الله 7غ8م</span>
+                <span class="comment-username">@شيتوس-ل9ج8غ</span>
                 <span class="comment-time">• منذ يومين</span>
               </div>
               <span class="message-text">طبعا ياقمري هتبعك بس اهم حاجه تكوني بنت عشان مش بكلم صبيان.</span>
@@ -462,14 +462,14 @@
           </div>
         </div>
 
-        <!-- الرسالة المثبتة 3 -->
+        <!-- الرسالة المثبتة 3 (أنت ترد بها) -->
         <div class="pinned-item-wrapper" id="pinned3">
           <div class="message">
             <button class="comment-options-btn">⁝</button>
-            <div class="comment-avatar" style="background: #2ba640;">ش</div>
+            <div class="comment-avatar" style="background: #cc0000;">ل</div>
             <div class="comment-body">
               <div class="comment-header-info">
-                <span class="comment-username">@شيتوس-ل9ج8غ</span>
+                <span class="comment-username admin-name">@لا اله -الا- الله 7غ8م</span>
                 <span class="comment-time">• منذ يومين</span>
               </div>
               <span class="message-text">وانا كمان بنت ومش بكلم ولاد.</span>
@@ -546,7 +546,6 @@
     const isAdmin = localStorage.getItem("is_admin") === "true";
     const bellBtn = document.getElementById("bellBtn");
 
-    // إظهار الرسائل المثبتة للمستخدم العادي فقط، بينما تظل مخفية عند المدير
     if (!isAdmin) {
       document.getElementById("pinnedContainer").style.display = "flex";
     } else {
