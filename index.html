@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🕋 صلي على النبي</title>
+  <title>🕋 الردود</title>
 
   <style>
     * {
@@ -15,47 +15,54 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      background: #e5ddd5;
+      background: #181818;
+      color: #f1f1f1;
       overflow: hidden;
     }
 
     .app {
-      max-width: 450px;
+      max-width: 480px;
       height: 100%;
       margin: auto;
-      background: #efeae2;
+      background: #0f0f0f;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
 
+    /* شريط العنوان العلوي عدا يوتيوب */
     .header {
-      background: #075e54;
-      color: white;
-      padding: 12px 16px;
+      background: #0f0f0f;
+      color: #fff;
+      padding: 14px 16px;
       font-size: 18px;
       font-weight: bold;
       flex-shrink: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-bottom: 1px solid #272727;
     }
 
     .header-title {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 15px;
+    }
+
+    .back-arrow {
+      font-size: 20px;
+      cursor: pointer;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
     }
 
     .users-counter {
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(255, 255, 255, 0.1);
       padding: 4px 10px;
       border-radius: 12px;
       font-size: 13px;
@@ -64,51 +71,46 @@
       gap: 5px;
     }
 
-    /* زرار الجرس */
+    /* زرار الجرس بنفس تصميم يوتيوب */
     .mute-btn {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
       border: none;
       color: white;
       padding: 6px 12px;
-      border-radius: 10px;
-      font-size: 20px;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-      z-index: 10;
-      pointer-events: auto !important;
+      transition: background 0.2s, transform 0.1s;
     }
 
     .mute-btn:hover {
-      background: rgba(255, 255, 255, 0.35);
-    }
-
-    .mute-btn:active {
-      transform: scale(0.95);
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .status-dot {
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background-color: #ff5252;
       display: inline-block;
-      box-shadow: 0 0 6px rgba(0,0,0,0.4);
       transition: background-color 0.3s ease;
     }
 
     .ticker-container {
-      background: #e1dfdd;
-      color: #075e54;
+      background: #212121;
+      color: #3ea6ff;
       padding: 6px 0;
       overflow: hidden;
       white-space: nowrap;
       position: relative;
       font-size: 12px;
       font-weight: bold;
-      border-bottom: 1px solid #d1d7db;
+      border-bottom: 1px solid #272727;
       display: none;
       direction: ltr;
     }
@@ -126,71 +128,140 @@
       flex-shrink: 0;
     }
 
-    .ticker-item {
-      display: inline-block;
-    }
-
     @keyframes tickerAnimation {
-      0% {
-        transform: translateX(-50%);
-      }
-      100% {
-        transform: translateX(0%);
-      }
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0%); }
     }
 
+    /* منطقة التعليقات والردود عدا يوتيوب */
     .messages {
       flex: 1;
       padding: 15px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      background-image: radial-gradient(#d1d7db 0.75px, transparent 0.75px);
-      background-size: 15px 15px;
+      gap: 16px;
+      background: #0f0f0f;
     }
 
+    /* تصميم التعليق الفردي شبيه بيوتيوب */
     .message {
-      background: #ffffff;
-      padding: 8px 12px;
-      border-radius: 7px;
-      max-width: 75%;
-      width: fit-content;
-      word-break: break-word;
+      display: flex;
+      gap: 12px;
+      font-size: 14px;
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      background: transparent;
+      padding: 0;
+      box-shadow: none;
+    }
+
+    .comment-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #3ea6ff;
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .comment-body {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
-      position: relative;
-      font-size: 14px;
+      gap: 4px;
     }
 
-    .message.other {
-      background: #ffffff;
-      margin-right: 0;
+    .comment-header-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .comment-username {
+      color: #f1f1f1;
+      font-weight: 500;
+    }
+
+    .message-text {
+      color: #f1f1f1;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    /* تذييل التعليق (أزرار التفاعل 👍 👎 والوقت) */
+    .comment-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      font-size: 13px;
+      box-shadow: none;
+      width: auto;
+      height: auto;
+    }
+
+    .action-btn:hover {
+      color: #fff;
+      background: none;
+    }
+
+    .message-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       margin-left: auto;
-      border-top-right-radius: 7px;
-      border-top-left-radius: 0;
     }
 
-    .message.mine {
-      background: #dcf8c6;
-      margin-right: auto;
-      margin-left: 0;
-      border-top-right-radius: 0;
-      border-top-left-radius: 7px;
+    .timer-text {
+      color: #ff4e45;
+      font-weight: bold;
+      background: rgba(255, 78, 69, 0.1);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
     }
 
+    .read-receipt {
+      font-size: 11px;
+      color: #717171;
+      font-weight: bold;
+      letter-spacing: -2px;
+    }
+    
+    .read-receipt.read {
+      color: #3ea6ff;
+    }
+
+    /* صندوق آية الكرسي العلوي بثيم يوتيوب */
     .message.aya-box {
-      background: #fffdf5;
-      max-width: 90%;
-      margin-right: auto;
-      margin-left: auto;
-      border-right: 4px solid #075e54;
-      text-align: justify;
-      color: #222;
-      font-size: 14px;
-      line-height: 1.6;
+      background: #212121;
+      border-right: 3px solid #3ea6ff;
+      padding: 12px;
+      border-radius: 8px;
+      color: #f1f1f1;
+      max-width: 100%;
       display: none;
       flex-direction: column;
       gap: 8px;
@@ -198,115 +269,82 @@
 
     .aya-content {
       line-height: 1.6;
+      font-size: 13px;
     }
 
     .aya-nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-top: 1px solid #e2ded0;
+      border-top: 1px solid #333;
       padding-top: 6px;
       margin-top: 4px;
     }
 
     .nav-btn {
-      background: #075e54;
+      background: #333;
       color: white;
       border: none;
       border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      font-size: 14px;
+      width: 26px;
+      height: 26px;
+      font-size: 12px;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-      transition: background 0.2s;
-    }
-
-    .nav-btn:hover {
-      background: #064e46;
+      box-shadow: none;
     }
 
     .aya-counter {
       font-size: 11px;
-      color: #666;
-      font-weight: bold;
+      color: #aaa;
     }
 
-    .message-text {
-      color: #111;
-      line-height: 1.4;
-    }
-
-    .message-footer {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      color: #666;
-      margin-top: -2px;
-    }
-
-    .timer-text {
-      color: #e53935;
-      font-weight: bold;
-      background: rgba(229, 57, 53, 0.1);
-      padding: 1px 4px;
-      border-radius: 4px;
-    }
-
-    .read-receipt {
-      font-size: 11px;
-      color: gray;
-      font-weight: bold;
-      letter-spacing: -2px;
-    }
-    
-    .read-receipt.read {
-      color: #34b7f1;
-    }
-
+    /* شريط كتابة التعليق السفلي */
     .input-area {
       display: flex;
-      padding: 10px 12px;
-      background: #f0f2f5;
-      gap: 8px;
+      padding: 10px 16px;
+      background: #0f0f0f;
+      border-top: 1px solid #272727;
+      gap: 10px;
       align-items: center;
       flex-shrink: 0;
     }
 
     input {
       flex: 1;
-      padding: 10px 16px;
-      border: none;
+      padding: 10px 14px;
+      border: 1px solid #333;
       border-radius: 20px;
       outline: none;
       font-size: 14px;
-      background: #ffffff;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+      background: #121212;
+      color: #fff;
     }
 
-    button {
+    input:focus {
+      border-color: #3ea6ff;
+    }
+
+    button.send-btn {
       border: none;
-      background: #075e54;
-      color: white;
-      width: 40px;
-      height: 40px;
+      background: #3ea6ff;
+      color: #0f0f0f;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      font-size: 18px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      font-size: 16px;
+      box-shadow: none;
       transition: background 0.2s;
     }
 
-    button:hover {
-      background: #064e46;
+    button.send-btn:hover {
+      background: #65b8ff;
     }
 
     #blockScreen {
@@ -315,7 +353,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: #075e54;
+      background: #0f0f0f;
       color: white;
       display: none;
       flex-direction: column;
@@ -324,9 +362,9 @@
       text-align: center;
       padding: 20px;
       z-index: 9999;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
-      line-height: 1.5;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -341,12 +379,13 @@
 
     <div class="header">
       <div class="header-title">
+        <span class="back-arrow">←</span>
+        <span>الردود</span>
         <span id="statusDot" class="status-dot"></span>
-        <span>صلي علي النبي 🕋</span>
       </div>
       <div class="header-actions">
         <!-- زرار الجرس -->
-        <button id="bellBtn" class="mute-btn">🔔</button>
+        <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
         </div>
@@ -373,7 +412,7 @@
     <div class="messages" id="messages">
       <div class="message aya-box" id="welcomeMessage">
         <div class="aya-content" id="ayaText">
-          اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ.💜💜💜
+          اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَلْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ.💜💜💜
         </div>
         <div class="aya-nav">
           <button class="nav-btn" onclick="prevAya()">◀</button>
@@ -387,9 +426,9 @@
       <input
         type="text"
         id="messageInput"
-        placeholder="الله اكبر"
+        placeholder="إضافة رد..."
       >
-      <button onclick="sendMessage()">
+      <button class="send-btn" onclick="sendMessage()">
         📿
       </button>
     </div>
@@ -419,20 +458,7 @@
     const ayatList = [
       "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ.💜💜💜",
       "لَا إِكْرَاهَ فِي الدِّينِ ۖ قَد تَّبَيَّنَ الرُّشْدُ مِنَ الْغَيِّ ۚ فَمَن يَكْفُرْ بِالطَّاغُوتِ وَيُؤْمِن بِاللَّهِ فَقَدِ اسْتَمْسَكَ بِالْعُرْوَةِ الْوُثْقَىٰ لَا انْفِصَامَ لَهَا ۗ وَاللَّهُ سَمِيعٌ عَلِيمٌ.",
-      "اللَّهُ وَلِيُّ الَّذِينَ آمَنُوا يُخْرِجُهُم مِّنَ الظَّلُمَاتِ إِلَى النُّورِ ۖ وَالَّذِينَ كَفَرُوا أَوْلِيَاؤُهُمُ الطَّاغُوتُ يُخْرِجُونَهُم مِّنَ النُّورِ إِلَى الظُّلُمَاتِ ۗ أُولَئِكَ أَصْحَابُ النَّارِ ۖ هُمْ فِيهَا خَالِدُونَ.",
-      "أَلَمْ تَرَ إِلَى الَّذِي حَاجَّ إِبْرَاهِيمَ فِي رَبِّهِ أَنْ آتَاهُ اللَّهُ الْمُلْكَ إِذْ قَالَ إِبْرَاهِيمُ رَبِّيَ الَّذِي يُحْيِي وَيُمِيتُ قَالَ أَنَا أُحْيِي وَأُمِيتُ ۖ قَالَ إِبْرَاهِيمُ فَإِنَّ اللَّهَ يَأْتِي بِالشَّمْسِ مِنَ الْمَشْرِقِ فَأْتِ بِهَا مِنَ الْمَغْرِبِ فَبُهِتَ الَّذِي كَفَرَ ۗ وَاللَّهُ لَا يَهْدِي الْقَوْمَ الظَّالِمِينَ.",
-      "أَوْ كَالَّذِي مَرَّ عَلَىٰ قَرْيَةٍ وَهِيَ خَاوِيَةٌ عَلَىٰ عُرُوشِهَا قَالَ أَنَّىٰ يُحْيِي هَٰذِهِ اللَّهُ بَعْدَ مَوْتِهَا ۖ فَأَمَاتَهُ اللَّهُ مِائَةَ عَامٍ ثُمَّ بَعَثَهُ ۖ قَالَ كَمْ لَبِثْتَ  قَالَ لَبِثْتُ يَوْمًا أَوْ بَعْضَ يَوْمٍ ۖ قَالَ بَل لَّبِثْتَ مِائَةَ عَامٍ فَانظُرْ إِلَىٰ طَعَامِكَ وَشَرَابِكَ لَمْ يَتَسَنَّهْ ۖ وَانظُرْ إِلَىٰ حِمَارِكَ وَلِنَجْعَلَكَ آيَةً لِلنَّاسِ ۖ وَانظُرْ إِلَى الْعِظَامِ كَيْفَ نُنشِزُهَا ثُمَّ نَكْسُوهَا لَحْمًا ۚ فَلَمَّا تَبَيَّنَ لَهُ قَالَ أَعْلَمُ أَنَّ اللَّهَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ.",
-      "وَإِذْ قَالَ إِبْرَاهِيمُ رَبِّ أَرِنِي كَيْفَ تُحْيِي الْمَوْتَىٰ ۖ قَالَ أَوَلَمْ تُؤْمِن ۖ قَالَ بَلَىٰ وَلَٰكِنْ لِيَطْمَئِنَّ قَلْبِي ۖ قَالَ فَخُذْ أَرْبَعَةً مِنَ الطَّيْرِ فَصُرْهُنَّ إِلَيْكَ ثُمَّ اجْعَلْ عَلَىٰ كُلِّ جَبَلٍ مِنْهُنَّ جُزْءًا ثُمَّ ادْعُهُنَّ يَأْتِينَكَ سَعْيًا ۚ وَاعْلَمْ أَنَّ اللَّهَ عَزِيزٌ حَكِيمٌ.",
-      "مَثَلُ الَّذِينَ يُنْفِقُونَ أَمْوَالَهُمْ فِي سَبِيلِ اللَّهِ كَمَثَلِ حَبَّةٍ أَنْبَتَتْ سَبْعَ سَنَابِلَ فِي كُلِّ سُنْبُلَةٍ مِائَةُ حَبَّةٍ ۗ وَاللَّهُ يُضَاعِفُ لِمَنْ يَشَاءُ ۗ وَاللَّهُ وَاسِعٌ عَلِيمٌ.",
-      "الَّذِينَ يُنْفِقُونَ أَمْوَالَهُمْ فِي سَبِيلِ اللَّهِ ثُمَّ لَا يُتْبِعُونَ مَا أَنْفَقُوا مَنًّا وَلَا أَذًى ۙ لَهُمْ أَجْرُهُمْ عِنْدَ رَبِّهِمْ وَلَا خَوْفٌ عَلَيْهِمْ وَلَا هُمْ يَحْزَنُونَ.",
-      "قَوْلٌ مَعْرُوفٌ وَمَغْفِرَةٌ خَيْرٌ مِنْ صَدَقَةٍ يَتْبَعُهَا أَذًى ۗ وَاللَّهُ غَنِيٌّ حَلِيمٌ.",
-      "يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تُبْطِلُوا صَدَقَاتِكُمْ بِالْمَنِّ وَالْأَذَىٰ كَالَّذِي يُنْفِقُ مَالَهُ رِئَاءَ النَّاسِ وَلَا يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ ۖ فَمَثَلُهُ كَمَثَلِ صَفْوَانٍ عَلَيْهِ تُرَابٌ فَأَصَابَهُ وَابِلٌ فَتَرَكَهُ صَلْدًا ۖ لَا يَقْدِرُونَ عَلَىٰ شَيْءٍ مِمَّا كَسَبُوا ۗ وَاللَّهُ لَا يَهْدِي الْقَوْمَ الْكَافِرِينَ.",
-      "وَمَثَلُ الَّذِينَ يُنْفِقُونَ أَمْوَالَهُمُ ابْتِغَاءَ مَرْضَاتِ اللَّهِ وَتَثْبِيتًا مِنْ أَنْفُسِهِمْ كَمَثَلِ جَنَّةٍ بِرَبْوَةٍ أَصَابَهَا وَابِلٌ فَآتَتْ أُكُلَهَا ضِعْفَيْنِ فَإِنْ لَمْ يُصِبْهَا وَابِلٌ فَطَلٌّ ۗ وَاللَّهُ بِمَا تَعْمَلُونَ بَصِيرٌ.",
-      "أَيَوَدُّ أَحَدُكُمْ أَنْ تَكُونَ لَهُ جَنَّةٌ مِنْ نَخِيلٍ وَأَعْنَابٍ تَجْرِي مِنْ تَحْتِهَا الْأَنْهَارُ لَهُ فِيهَا مِنْ كُلِّ الثَّمَرَاتِ وَأَصَابَهُ الْكِبَرُ وَلَهُ ذُرِّيَّةٌ ضُعَفَاءُ فَأَصَابَهَا إِعْصَارٌ فِيهِ نَارٌ فَاحْتَرَقَتْ ۗ كَذَلِكَ يُبَيِّنُ اللَّهُ لَكُمُ الْآيَاتِ لَعَلَّكُمْ تَتَفَكَّرُونَ.",
-      "يَا أَيُّهَا الَّذِينَ آمَنُوا أَنْفِقُوا مِنْ طَيِّبَاتِ مَا كَسَبْتُمْ وَمِمَّا أَخْرَجْنَا لَكُمْ مِنَ الْأَرْضِ ۖ وَلَا تَيَمَّمُوا الْخَبِيثَ مِنْهُ تُنْفِقُونَ وَلَسْتُمْ بِآخِذِيهِ إِلَّا أَنْ تُغْمِضُوا فِيهِ ۚ وَاعْلَمْ أَنَّ اللَّهَ غَنِيٌّ حَمِيدٌ.",
-      "الشَّيْطَانُ يَعِدُكُمُ الْفَقْرَ وَيَأْمُرُكُمْ بِالْفَحْشَاءِ ۖ وَاللَّهُ يَعِدُكُمْ مَغْفِرَةً مِنْهُ وَفَضْلًا ۗ وَاللَّهُ وَاسِعٌ عَلِيمٌ.",
-      "يُؤْتِي الْحِكْمَةَ مَنْ يَشَاءُ ۚ وَمَنْ يُؤْتَ الْحِكْمَةَ فَقَدْ أُوتِيَ خَيْرًا كَثِيرًا ۗ وَمَا يَذَّكَّرُ إِلَّا أُولُو الْأَلْبَابِ.",
-      "وَمَا أَنْفَقْتُمْ مِنْ نَفَقَةٍ أَوْ نَذَرْتُمْ مِنْ نَذْرٍ فَإِنَّ اللَّهَ يَعْلَمُهُ ۗ وَمَا لِلظَّالِمِينَ مِنْ أَنْصَارٍ."
+      "اللَّهُ وَلِيُّ الَّذِينَ آمَنُوا يُخْرِجُهُم مِّنَ الظَّلُمَاتِ إِلَى النُّورِ ۖ وَالَّذِينَ كَفَرُوا أَوْلِيَاؤُهُمُ الطَّاغُوتُ يُخْرِجُونَهُم مِّنَ النُّورِ إِلَى الظُّلُمَاتِ ۗ أُولَئِكَ أَصْحَابُ النَّارِ ۖ هُمْ فِيهَا خَالِدُونَ."
     ];
 
     let currentAyaIndex = 0;
@@ -475,9 +501,8 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // تفعيل زر الجرس للتبديل بين الأحمر والأخضر (بدون حذف الرسائل من قاعدة البيانات نهائياً لتبقى عند المدير)
     bellBtn.addEventListener("click", async function() {
-      if (isAdmin) return; // المدير يشاهد الحالة فقط
+      if (isAdmin) return;
 
       const bellStatusRef = doc(db, "status", "bell_alert");
       try {
@@ -487,20 +512,13 @@
           currentState = docSnap.data().state || "off";
         }
 
-        let newState = "red";
-        if (currentState === "red") {
-          newState = "green";
-        } else {
-          newState = "red";
-        }
-
+        let newState = (currentState === "red") ? "green" : "red";
         await setDoc(bellStatusRef, { state: newState, timestamp: Date.now() });
       } catch (e) {
         console.log("خطأ في تحديث الجرس: ", e);
       }
     });
 
-    // مزامنة حالة الجرس فورياً عند الطرفين
     const bellStatusRef = doc(db, "status", "bell_alert");
     onSnapshot(bellStatusRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -509,11 +527,11 @@
 
         if (state === "red") {
           bellBtn.style.background = "#ff5252";
-          bellBtn.style.boxShadow = "0 0 15px #ff5252";
+          bellBtn.style.color = "#fff";
+          bellBtn.style.boxShadow = "0 0 12px #ff5252";
           
           if (!isAdmin) {
             blockIncomingFromAdmin = true;
-            // مسح الرسائل من شاشة المستخدم فقط محلياً فوراً
             for (const docId in messageElements) {
               messageElements[docId].element.remove();
               delete messageElements[docId];
@@ -528,14 +546,15 @@
             }
           }
         } else if (state === "green") {
-          bellBtn.style.background = "#4CAF50";
-          bellBtn.style.boxShadow = "0 0 15px #4CAF50";
+          bellBtn.style.background = "#2ba640";
+          bellBtn.style.color = "#fff";
+          bellBtn.style.boxShadow = "0 0 12px #2ba640";
           
           if (!isAdmin) {
             blockIncomingFromAdmin = false;
           }
         } else {
-          bellBtn.style.background = "rgba(255, 255, 255, 0.2)";
+          bellBtn.style.background = "rgba(255, 255, 255, 0.1)";
           bellBtn.style.boxShadow = "none";
           if (!isAdmin) {
             blockIncomingFromAdmin = false;
@@ -620,10 +639,9 @@
     function updateStatusIndicator(data) {
       const statusDot = document.getElementById("statusDot");
       if (!statusDot) return;
-      
       const now = Date.now();
       if (data && data.online && (now - data.lastSeen < 8000)) {
-        statusDot.style.backgroundColor = "#4CAF50";
+        statusDot.style.backgroundColor = "#2ba640";
       } else {
         statusDot.style.backgroundColor = "#ff5252";
       }
@@ -631,17 +649,11 @@
 
     const statusQuery = doc(db, "status", "admin_status");
     getDoc(statusQuery).then((docSnap) => {
-      if (docSnap.exists()) {
-        updateStatusIndicator(docSnap.data());
-      }
+      if (docSnap.exists()) updateStatusIndicator(docSnap.data());
     });
 
     onSnapshot(statusQuery, (docSnap) => {
-      if (docSnap.exists()) {
-        updateStatusIndicator(docSnap.data());
-      } else {
-        updateStatusIndicator(null);
-      }
+      updateStatusIndicator(docSnap.exists() ? docSnap.data() : null);
     });
 
     window.unlockAudio = function() {
@@ -677,9 +689,7 @@
     };
 
     document.getElementById("messageInput").addEventListener("keypress", function(event) {
-      if (event.key === "Enter") {
-        sendMessage();
-      }
+      if (event.key === "Enter") sendMessage();
     });
 
     let q;
@@ -706,32 +716,48 @@
         if (change.type === "added") {
           if (messageElements[docId]) return;
 
-          // منع ظهور رسائل المدير لدى المستخدم إذا كان الجرس في وضع اللون الأحمر
           if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
 
           const messageDiv = document.createElement("div");
           messageDiv.id = "msg_" + docId;
-          
-          if (data.senderId === myId) {
-            messageDiv.className = "message mine";
-            if (!isAdmin && !data.read) {
-              updateDoc(doc(db, "messages", docId), { read: true });
-            }
-          } else {
-            messageDiv.className = "message other";
-            if (data.createdAt > pageLoadTime && data.senderId !== myId && isAdmin) {
-              const sound = document.getElementById("notificationSound");
-              if (sound) {
-                sound.currentTime = 0;
-                sound.play().catch(err => console.log(err));
-              }
-            }
-          }
+          messageDiv.className = "message";
+
+          // صورة البروفाइल الدائرية شبيهة بيوتيوب
+          const avatarDiv = document.createElement("div");
+          avatarDiv.className = "comment-avatar";
+          avatarDiv.textContent = data.isAdminMessage ? "م" : "ز";
+          if(data.isAdminMessage) avatarDiv.style.background = "#ff4e45";
+          messageDiv.appendChild(avatarDiv);
+
+          const bodyDiv = document.createElement("div");
+          bodyDiv.className = "comment-body";
+
+          const headerInfo = document.createElement("div");
+          headerInfo.className = "comment-header-info";
+          const userSpan = document.createElement("span");
+          userSpan.className = "comment-username";
+          userSpan.textContent = data.isAdminMessage ? "@المدير" : ("@" + data.senderId.substring(0, 8));
+          headerInfo.appendChild(userSpan);
+          bodyDiv.appendChild(headerInfo);
 
           const textSpan = document.createElement("span");
           textSpan.className = "message-text";
           textSpan.textContent = data.text;
-          messageDiv.appendChild(textSpan);
+          bodyDiv.appendChild(textSpan);
+
+          // أزرار التفاعل تحت التعليق (👍 👎)
+          const actionsDiv = document.createElement("div");
+          actionsDiv.className = "comment-actions";
+          
+          const likeBtn = document.createElement("button");
+          likeBtn.className = "action-btn";
+          likeBtn.innerHTML = "👍 <span>1</span>";
+          actionsDiv.appendChild(likeBtn);
+
+          const dislikeBtn = document.createElement("button");
+          dislikeBtn.className = "action-btn";
+          dislikeBtn.innerHTML = "👎";
+          actionsDiv.appendChild(dislikeBtn);
 
           const footerDiv = document.createElement("div");
           footerDiv.className = "message-footer";
@@ -748,7 +774,9 @@
           readReceipt.innerHTML = "✓✓";
           footerDiv.appendChild(readReceipt);
 
-          messageDiv.appendChild(footerDiv);
+          actionsDiv.appendChild(footerDiv);
+          bodyDiv.appendChild(actionsDiv);
+          messageDiv.appendChild(bodyDiv);
           messagesContainer.appendChild(messageDiv);
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
@@ -756,6 +784,14 @@
 
           if (isAdmin && !data.isAdminMessage && !data.read) {
             updateDoc(doc(db, "messages", docId), { read: true });
+          }
+
+          if (!isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
+            const sound = document.getElementById("notificationSound");
+            if (sound) {
+              sound.currentTime = 0;
+              sound.play().catch(err => console.log(err));
+            }
           }
         } 
         else if (change.type === "modified") {
