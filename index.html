@@ -73,7 +73,6 @@
       gap: 5px;
     }
 
-    /* زر الجرس الأخضر العلوي */
     .mute-btn {
       background: #2ba640;
       border: none;
@@ -147,25 +146,24 @@
       background: #ffffff;
     }
 
-    /* تصميم حاوية التعليق والخط المنحني مطابق ليوتيوب تماماً */
+    /* تصميم التعليق تماماً زي يوتيوب (الأيقونة يمين، الخط نازل من تحتها) */
     .message-wrapper {
       position: relative;
       display: flex;
       flex-direction: column;
-      padding-right: 44px; /* مساحة لخط الرد ليظهر على اليمين تحت الأيقونة */
     }
 
-    /* الخط المنحني الموصول بين التعليقات */
+    /* الخط المنحني الموصول بين التعليقات زي الصورة الأصلية */
     .message-wrapper:not(:first-child)::before {
       content: '';
       position: absolute;
       top: -16px;
-      right: 15px; /* يرتكز تماماً تحت منتصف الأيقونة العلوية */
-      width: 16px;
-      height: 26px;
-      border-right: 2px solid #e0e0e0;
+      right: 15px; /* تحت منتصف الأيقونة اليمين مباشرة */
+      width: 14px;
+      height: 22px;
+      border-left: 2px solid #e0e0e0;
       border-bottom: 2px solid #e0e0e0;
-      border-bottom-right-radius: 12px;
+      border-bottom-left-radius: 10px;
     }
 
     .message {
@@ -176,8 +174,7 @@
       width: 100%;
       background: #ffffff;
       z-index: 1;
-      /* سحب المحتوى لليمين لتعويض الـ padding-right للحاوية */
-      margin-right: -44px; 
+      flex-direction: row; /* الأيقونة يمين والنص شمالها */
     }
 
     .comment-avatar {
@@ -204,7 +201,7 @@
     .comment-header-row {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
     }
 
     .comment-header-info {
@@ -225,7 +222,7 @@
       font-weight: 500;
     }
 
-    /* النقاط الثلاثة السوداء ⁝ */
+    /* النقاط الثلاثة السوداء على اليسار */
     .comment-options-btn {
       background: none;
       border: none;
@@ -244,7 +241,6 @@
       font-size: 13px;
     }
 
-    /* أزرار التفاعل 👍 👎 */
     .comment-actions {
       display: flex;
       align-items: center;
@@ -274,7 +270,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-left: auto;
+      margin-right: auto; /* العداد ييجي شمال في سطر التفاعل */
     }
 
     .timer-text {
@@ -332,7 +328,6 @@
       background: #035ac5;
     }
 
-    /* شاشة الحظر عند انشغال الشات */
     #blockScreen {
       position: fixed;
       top: 0;
@@ -751,7 +746,6 @@
           headerInfo.appendChild(userSpan);
           headerRow.appendChild(headerInfo);
 
-          // إضافة زر النقاط الثلاثة ⁝ تحت اسم شيتوس
           const optionsBtn = document.createElement("button");
           optionsBtn.className = "comment-options-btn";
           optionsBtn.innerHTML = "⁝";
