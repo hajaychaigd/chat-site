@@ -134,7 +134,7 @@
       100% { transform: translateX(0%); }
     }
 
-    /* منطقة التعليقات مع إضافة المسافة والهامش من اليمين */
+    /* منطقة التعليقات مع الهامش والمسافة من اليمين */
     .messages {
       flex: 1;
       padding: 16px 16px 16px 24px;
@@ -153,7 +153,7 @@
       padding-right: 15px;
     }
 
-    /* الخط المنحني يبدأ من جهة اليمين تماماً مثل يوتيوب الأصلي */
+    /* الخط المنحني يبدأ من جهة اليمين */
     .message-wrapper:not(:first-child)::before {
       content: '';
       position: absolute;
@@ -426,7 +426,7 @@
 
     <div class="input-area">
       <input type="text" id="messageInput" placeholder="إضافة رد...">
-      <button class="send-btn" onclick="sendMessage()">📿</button>
+      <button class="send-btn" onclick="sendMessage()">➔</button>
     </div>
 
     <div class="yt-navbar">
@@ -602,7 +602,7 @@
     if (isAdmin) {
       q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     } else {
-      q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
+      q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 60000), orderBy("createdAt", "asc"));
     }
 
     const messageElements = {};
@@ -726,7 +726,7 @@
         const now = Date.now();
         for (const docId in messageElements) {
           const item = messageElements[docId];
-          const timeLeft = 35000 - (now - item.data.createdAt);
+          const timeLeft = 50000 - (now - item.data.createdAt);
           if (timeLeft <= 0) {
             item.element.remove();
             delete messageElements[docId];
