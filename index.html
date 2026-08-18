@@ -147,13 +147,34 @@
       background: #ffffff;
     }
 
-    /* تصميم التعليق */
+    /* تصميم التعليق مع دعم الخط المنحني للردود */
+    .message-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* الخط المنحني الموصول بين التعليقات */
+    .message-wrapper:not(:first-child)::before {
+      content: '';
+      position: absolute;
+      top: -12px;
+      right: 15px; /* يتماشى مع منتصف الأيقونة ذات العرض 32px */
+      width: 14px;
+      height: 18px;
+      border-right: 2px solid #e5e5e5;
+      border-bottom: 2px solid #e5e5e5;
+      border-bottom-right-radius: 10px;
+    }
+
     .message {
       display: flex;
       gap: 12px;
       font-size: 13px;
       position: relative;
       width: 100%;
+      background: #ffffff;
+      z-index: 1;
     }
 
     .comment-avatar {
@@ -310,7 +331,7 @@
       line-height: 1.6;
     }
 
-    /* شريط التنقل السفلي الثابت يوتيوب */
+    /* شريط يوتيوب السفلي */
     .yt-navbar {
       height: 50px;
       background: #ffffff;
@@ -669,11 +690,14 @@
 
           if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
 
+          const wrapperDiv = document.createElement("div");
+          wrapperDiv.id = "wrap_" + docId;
+          wrapperDiv.className = "message-wrapper";
+
           const messageDiv = document.createElement("div");
           messageDiv.id = "msg_" + docId;
           messageDiv.className = "message";
 
-          // أيقونة الحرف (ش للزائر، م للمدير)
           const avatarDiv = document.createElement("div");
           avatarDiv.className = "comment-avatar";
           if (data.isAdminMessage) {
@@ -727,16 +751,18 @@
             const timerSpan = document.createElement("span");
             timerSpan.className = "timer-text";
             footerDiv.appendChild(timerSpan);
-            messageDividerData(messageDiv, data.createdAt);
+            messageDividerData(wrapperDiv, data.createdAt);
           }
 
           actionsDiv.appendChild(footerDiv);
           bodyDiv.appendChild(actionsDiv);
           messageDiv.appendChild(bodyDiv);
-          messagesContainer.appendChild(messageDiv);
+          wrapperDiv.appendChild(messageDiv);
+          
+          messagesContainer.appendChild(wrapperDiv);
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-          messageElements[docId] = { element: messageDiv, data: data };
+          messageElements[docId] = { element: wrapperDiv, data: data };
 
           if (isAdmin && !data.isAdminMessage && !data.read) {
             updateDoc(doc(db, "messages", docId), { read: true });
@@ -759,8 +785,8 @@
       });
     });
 
-    function messageDividerData(msgDiv, createdAt) {
-      msgDiv.dataset.createdAt = createdAt;
+    function messageDividerData(wrapDiv, createdAt) {
+      wrapDiv.dataset.createdAt = createdAt;
     }
 
     if (!isAdmin) {
