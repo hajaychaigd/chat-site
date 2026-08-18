@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +18,6 @@
       background: #f9f9f9;
       color: #0f0f0f;
       overflow: hidden;
-      direction: ltr;
     }
 
     .app {
@@ -30,7 +29,6 @@
       flex-direction: column;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       position: relative;
-      text-align: right;
     }
 
     /* شريط يوتيوب العلوي */
@@ -50,8 +48,7 @@
     .header-title {
       display: flex;
       align-items: center;
-      gap: 20px;
-      direction: rtl;
+      gap: 15px;
     }
 
     .back-arrow {
@@ -74,7 +71,6 @@
       display: none;
       align-items: center;
       gap: 5px;
-      direction: rtl;
     }
 
     .mute-btn {
@@ -144,7 +140,6 @@
       flex-direction: column;
       gap: 16px;
       background: #ffffff;
-      direction: rtl;
     }
 
     .message-wrapper {
@@ -158,12 +153,12 @@
       content: '';
       position: absolute;
       top: -16px;
-      right: 15px;
+      left: 15px;
       width: 14px;
       height: 22px;
-      border-left: 2px solid #e0e0e0;
+      border-right: 2px solid #e0e0e0;
       border-bottom: 2px solid #e0e0e0;
-      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
     }
 
     .message {
@@ -187,6 +182,7 @@
       font-weight: bold;
       flex-shrink: 0;
       margin-top: 4px;
+      order: 3;
     }
 
     .comment-avatar {
@@ -200,6 +196,7 @@
       font-weight: bold;
       font-size: 14px;
       flex-shrink: 0;
+      order: 2;
     }
 
     .comment-body {
@@ -207,6 +204,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      order: 1;
     }
 
     .comment-header-info {
@@ -272,7 +270,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-right: auto;
+      margin-left: auto;
     }
 
     .timer-text {
@@ -293,7 +291,6 @@
       gap: 10px;
       align-items: center;
       flex-shrink: 0;
-      direction: rtl;
     }
 
     input {
@@ -305,7 +302,6 @@
       font-size: 14px;
       background: #f1f1f1;
       color: #0f0f0f;
-      text-align: right;
     }
 
     input:focus {
@@ -355,7 +351,6 @@
       justify-content: space-around;
       align-items: center;
       flex-shrink: 0;
-      direction: ltr;
     }
 
     .yt-nav-item {
@@ -431,23 +426,23 @@
 
     <div class="yt-navbar">
       <div class="yt-nav-item">
-        <div class="yt-nav-avatar">ش</div>
-        <span>أنت</span>
-      </div>
-      <div class="yt-nav-item">
-        <svg height="20" viewBox="0 0 24 24" width="20"><path d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33c-.77-.32-1.2-.5-1.2-.5L18 9c1.1-1.1 2-2.4 2-4V3H4v2c0 1.6.9 2.9 2 4l1.43 1.32s-.43.18-1.2.5C4.7 11.2 3 13.2 3 15.5V19h18v-3.5c0-2.3-1.7-4.3-3.23-4.83z" fill="#0f0f0f"/></svg>
-        <span>Shorts</span>
-      </div>
-      <div class="yt-nav-item">
-        <svg height="24" viewBox="0 0 24 24" width="24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="#0f0f0f"/></svg>
+        <svg height="20" viewBox="0 0 24 24" width="20"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" fill="#0f0f0f"/></svg>
+        <span>الرئيسية</span>
       </div>
       <div class="yt-nav-item">
         <svg height="20" viewBox="0 0 24 24" width="20"><path d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33c-.77-.32-1.2-.5-1.2-.5L18 9c1.1-1.1 2-2.4 2-4V3H4v2c0 1.6.9 2.9 2 4l1.43 1.32s-.43.18-1.2.5C4.7 11.2 3 13.2 3 15.5V19h18v-3.5c0-2.3-1.7-4.3-3.23-4.83z" fill="#0f0f0f"/></svg>
         <span>الاشتراكات</span>
       </div>
       <div class="yt-nav-item">
-        <svg height="20" viewBox="0 0 24 24" width="20"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" fill="#0f0f0f"/></svg>
-        <span>الرئيسية</span>
+        <svg height="24" viewBox="0 0 24 24" width="24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="#0f0f0f"/></svg>
+      </div>
+      <div class="yt-nav-item">
+        <svg height="20" viewBox="0 0 24 24" width="20"><path d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33c-.77-.32-1.2-.5-1.2-.5L18 9c1.1-1.1 2-2.4 2-4V3H4v2c0 1.6.9 2.9 2 4l1.43 1.32s-.43.18-1.2.5C4.7 11.2 3 13.2 3 15.5V19h18v-3.5c0-2.3-1.7-4.3-3.23-4.83z" fill="#0f0f0f"/></svg>
+        <span>Shorts</span>
+      </div>
+      <div class="yt-nav-item">
+        <div class="yt-nav-avatar">ش</div>
+        <span>أنت</span>
       </div>
     </div>
 
