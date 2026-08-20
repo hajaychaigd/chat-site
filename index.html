@@ -810,7 +810,7 @@
           const visitorLogRef = doc(db, "visitor_logs", myId);
           const nowFormatted = new Date().toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'medium' });
 
-          // تسجيل وقت الدخول في قاعدة البيانات
+          // تسجيل وقت الدخول عند فتح الصفحة
           await setDoc(visitorLogRef, {
             userId: myId,
             loginTime: nowFormatted,
@@ -841,7 +841,8 @@
             } catch(e) {}
           }, 3000);
 
-          window.addEventListener("beforeunload", () => {
+          // رصد الخروج أو مغادرة الصفحة
+          window.addEventListener("pagehide", () => {
             updateVisitorStatus(false);
           });
 
