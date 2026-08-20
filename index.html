@@ -137,8 +137,8 @@
       border: 1px solid #e5e5e5;
       border-radius: 10px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      width: 280px;
-      max-height: 250px;
+      width: 290px;
+      max-height: 280px;
       overflow-y: auto;
       z-index: 1000;
       padding: 10px;
@@ -148,15 +148,22 @@
     }
 
     .visitor-log-item {
-      padding: 6px 8px;
-      border-bottom: 1px solid #f1f1f1;
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-bottom: 5px;
       display: flex;
       flex-direction: column;
       gap: 3px;
+      border: 1px solid rgba(0,0,0,0.04);
     }
 
-    .visitor-log-item:last-child {
-      border-bottom: none;
+    /* ألوان تبادلية منظمة لعناصر القائمة */
+    .visitor-log-item.color-even {
+      background-color: #f4f6f8;
+    }
+
+    .visitor-log-item.color-odd {
+      background-color: #ffffff;
     }
 
     .status-dot {
@@ -648,7 +655,7 @@
         e.stopPropagation();
       });
 
-      // جلب سجل الزيارات وتحديثه للمدير حيًّا
+      // جلب سجل الزيارات وتحديثه للمدير حيًّا مع تبديل الألوان لكل مستخدم تلقائياً
       const logsQuery = query(collection(db, "visitor_logs"), orderBy("timestamp", "desc"));
       onSnapshot(logsQuery, (snapshot) => {
         const logsListEl = document.getElementById("visitorsLogsList");
@@ -657,16 +664,22 @@
           logsListEl.innerHTML = "<div style='text-align:center; color:#777;'>لا توجد سجلات بعد</div>";
           return;
         }
+        let index = 0;
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
           const itemDiv = document.createElement("div");
-          itemDiv.className = "visitor-log-item";
+          
+          // تبديل تلقائي للألوان بين زوجي وفردي لضمان الوضوح التام والتنسيق
+          const colorClass = (index % 2 === 0) ? "color-even" : "color-odd";
+          itemDiv.className = `visitor-log-item ${colorClass}`;
+          
           itemDiv.innerHTML = `
             <span style="font-weight: bold; color: #065fd4;">مستخدم: ${data.userId ? data.userId.substring(0, 10) : 'غير معروف'}</span>
             <span>📥 دخول: ${data.loginTime || '---'}</span>
             <span>📤 خروج: ${data.logoutTime || '---'}</span>
           `;
           logsListEl.appendChild(itemDiv);
+          index++;
         });
       });
     }
