@@ -715,12 +715,41 @@
             document.getElementById("blockScreen").style.display = "flex";
             return;
           }
-          await setDoc(activeVisitorDocRef, { active: true, userId: myId, lastSeen: Date.now() });
-          setInterval(async () => {
+
+          // دالة لتحديث حالة الزائر (دخول/خروج فوري)
+          const updateVisitorStatus = async (isActive) => {
+            try {
+              await setDoc(activeVisitorDocRef, { 
+                active: isActive, 
+                userId: isActive ? myId : null, 
+                lastSeen: Date.now() 
+              }, { merge: true });
+            } catch(e) {}
+          };
+
+          // تسجيل الدخول عند فتح الصفحة
+          await updateVisitorStatus(true);
+
+          // إرسال نبضة كل 3 ثوانٍ للحفاظ على حالة الاتصال
+          const heartbeatInterval = setInterval(async () => {
             try {
               await setDoc(activeVisitorDocRef, { active: true, userId: myId, lastSeen: Date.now() }, { merge: true });
             } catch(e) {}
           }, 3000);
+
+          // رصد إغلاق الصفحة أو الخروج منها لتسجيل الخروج فوراً
+          window.addEventListener("beforeunload", () => {
+            updateVisitorStatus(false);
+          });
+
+          document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") {
+              updateVisitorStatus(false);
+            } else {
+              updateVisitorStatus(true);
+            }
+          });
+
         } catch(e) {}
       }
       registerVisitor();
