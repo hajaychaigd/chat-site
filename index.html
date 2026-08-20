@@ -111,6 +111,54 @@
       transition: background 0.2s;
     }
 
+    /* قائمة سجل الزيارات للمدير */
+    .visitors-dropdown-container {
+      position: relative;
+      display: none;
+    }
+
+    .visitors-menu-btn {
+      background: #065fd4;
+      border: none;
+      color: #fff;
+      padding: 7px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .visitors-menu {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 45px;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      width: 280px;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 1000;
+      padding: 10px;
+      font-size: 11px;
+      color: #0f0f0f;
+      direction: rtl;
+    }
+
+    .visitor-log-item {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f1f1f1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .visitor-log-item:last-child {
+      border-bottom: none;
+    }
+
     .status-dot {
       width: 7px;
       height: 7px;
@@ -297,7 +345,6 @@
       font-size: 10px;
     }
 
-    /* زر الحذف الصغير للرسالة المثبتة */
     .delete-pinned-btn {
       background: rgba(255, 0, 0, 0.1);
       color: #ff0000;
@@ -427,6 +474,15 @@
         <span id="statusDot" class="status-dot"></span>
       </div>
       <div class="header-actions">
+        <!-- قائمة سجل الزيارات المنسدلة (تظهر للمدير فقط) -->
+        <div class="visitors-dropdown-container" id="visitorsDropdownContainer">
+          <button id="visitorsMenuBtn" class="visitors-menu-btn">سجل الزيارات ▾</button>
+          <div id="visitorsMenu" class="visitors-menu">
+            <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; text-align: center;">أوقات دخول وخروج المستخدمين</div>
+            <div id="visitorsLogsList" style="display: flex; flex-direction: column; gap: 4px;">جاري التحميل...</div>
+          </div>
+        </div>
+
         <!-- زر إخفاء/إظهار المثبتات للمدير -->
         <button id="togglePinnedBtn" class="pinned-toggle-btn" title="إخفاء/إظهار الرسائل المثبتة">📌</button>
         <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
@@ -539,7 +595,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -567,18 +623,57 @@
     const bellBtn = document.getElementById("bellBtn");
     const togglePinnedBtn = document.getElementById("togglePinnedBtn");
     const pinnedContainer = document.getElementById("pinnedContainer");
+    const visitorsDropdownContainer = document.getElementById("visitorsDropdownContainer");
+    const visitorsMenuBtn = document.getElementById("visitorsMenuBtn");
+    const visitorsMenu = document.getElementById("visitorsMenu");
 
-    // إعدادات المدير (إخفاء المثبتات تماماً عن جهازه، وإظهار زر التحكم)
+    // إعدادات واجهة المدير
     if (isAdmin) {
       document.getElementById("usersCounter").style.display = "flex";
       togglePinnedBtn.style.display = "flex";
+      visitorsDropdownContainer.style.display = "block";
       pinnedContainer.style.display = "none"; // مخفية تماماً عن المدير
+
+      // فتح وإغلاق القائمة المنسدلة لسجل الزيارات
+      visitorsMenuBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        visitorsMenu.style.display = visitorsMenu.style.display === "block" ? "none" : "block";
+      });
+
+      document.addEventListener("click", () => {
+        visitorsMenu.style.display = "none";
+      });
+
+      visitorsMenu.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      // جلب سجل الزيارات وتحديثه للمدير حيًّا
+      const logsQuery = query(collection(db, "visitor_logs"), orderBy("timestamp", "desc"));
+      onSnapshot(logsQuery, (snapshot) => {
+        const logsListEl = document.getElementById("visitorsLogsList");
+        logsListEl.innerHTML = "";
+        if (snapshot.empty) {
+          logsListEl.innerHTML = "<div style='text-align:center; color:#777;'>لا توجد سجلات بعد</div>";
+          return;
+        }
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "visitor-log-item";
+          itemDiv.innerHTML = `
+            <span style="font-weight: bold; color: #065fd4;">مستخدم: ${data.userId ? data.userId.substring(0, 10) : 'غير معروف'}</span>
+            <span>📥 دخول: ${data.loginTime || '---'}</span>
+            <span>📤 خروج: ${data.logoutTime || '---'}</span>
+          `;
+          logsListEl.appendChild(itemDiv);
+        });
+      });
     }
 
-    // زر التحكم الخاص بالمدير (📌): للتحكم بظهورها عند المستخدم فقط
+    // زر التحكم الخاص بالمدير (📌)
     togglePinnedBtn.addEventListener("click", async function() {
       if (!isAdmin) return;
-      
       const pinnedStatusRef = doc(db, "status", "pinned_status");
       try {
         const docSnap = await getDoc(pinnedStatusRef);
@@ -600,13 +695,12 @@
       } catch (e) {}
     });
 
-    // مزامنة حالة زر التثبيت والسيرفر
+    // مزامنة حالة زر التثبيت
     const pinnedStatusRef = doc(db, "status", "pinned_status");
     onSnapshot(pinnedStatusRef, (docSnap) => {
       if (docSnap.exists()) {
         const isVisible = docSnap.data().visible !== false;
         if (isAdmin) {
-          // المدير: تظل مخفية تماماً عنده، ويتم فقط مزامنة لون الزر الخاص به
           pinnedContainer.style.display = "none"; 
           if (isVisible) {
             togglePinnedBtn.style.background = "#2ba640";
@@ -616,7 +710,6 @@
             togglePinnedBtn.style.boxShadow = "0 0 12px #ff5252";
           }
         } else {
-          // المستخدم العادي: تظهر أو تختفي حسب أمر المدير
           if (isVisible && bellBtn.style.background !== "rgb(255, 82, 82)") {
             pinnedContainer.style.display = "flex";
           } else {
@@ -637,10 +730,8 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // زر الجرس للمستخدم
     bellBtn.addEventListener("click", async function() {
       if (isAdmin) return;
-      
       bellBtn.style.background = "#ff5252";
       bellBtn.style.boxShadow = "0 0 12px #ff5252";
       pinnedContainer.style.display = "none";
@@ -716,7 +807,17 @@
             return;
           }
 
-          // دالة لتحديث حالة الزائر (دخول/خروج فوري)
+          const visitorLogRef = doc(db, "visitor_logs", myId);
+          const nowFormatted = new Date().toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'medium' });
+
+          // تسجيل وقت الدخول في قاعدة البيانات
+          await setDoc(visitorLogRef, {
+            userId: myId,
+            loginTime: nowFormatted,
+            logoutTime: "متواجد حالياً...",
+            timestamp: Date.now()
+          }, { merge: true });
+
           const updateVisitorStatus = async (isActive) => {
             try {
               await setDoc(activeVisitorDocRef, { 
@@ -724,20 +825,22 @@
                 userId: isActive ? myId : null, 
                 lastSeen: Date.now() 
               }, { merge: true });
+
+              if (!isActive) {
+                const exitFormatted = new Date().toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'medium' });
+                await setDoc(visitorLogRef, { logoutTime: exitFormatted }, { merge: true });
+              }
             } catch(e) {}
           };
 
-          // تسجيل الدخول عند فتح الصفحة
           await updateVisitorStatus(true);
 
-          // إرسال نبضة كل 3 ثوانٍ للحفاظ على حالة الاتصال
           const heartbeatInterval = setInterval(async () => {
             try {
               await setDoc(activeVisitorDocRef, { active: true, userId: myId, lastSeen: Date.now() }, { merge: true });
             } catch(e) {}
           }, 3000);
 
-          // رصد إغلاق الصفحة أو الخروج منها لتسجيل الخروج فوراً
           window.addEventListener("beforeunload", () => {
             updateVisitorStatus(false);
           });
