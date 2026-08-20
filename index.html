@@ -104,14 +104,14 @@
       height: 38px;
       font-size: 16px;
       cursor: pointer;
-      display: none; /* يظهر للمدير فقط */
+      display: none;
       align-items: center;
       justify-content: center;
       box-shadow: 0 0 10px rgba(43, 166, 64, 0.4);
       transition: background 0.2s;
     }
 
-    /* قائمة سجل الزيارات للمدير - تم ضبط المقاسات والتنسيق بدقة */
+    /* قائمة سجل الزيارات للمدير - تم ضبط المقاسات لتبدو متناسقة داخل الشاشة */
     .visitors-dropdown-container {
       position: relative;
       display: none;
@@ -132,29 +132,30 @@
     .visitors-menu {
       display: none;
       position: absolute;
-      left: 0;
+      right: 0; /* محاذاة لليمين لضمان عدم الخروج عن حواف الشاشة */
+      left: auto;
       top: 42px;
       background: #fff;
       border: 1px solid #e5e5e5;
       border-radius: 10px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      width: 270px;
-      max-height: 300px;
+      width: 240px; /* تحديد العرض بدقة ليناسب التصميم */
+      max-height: 280px;
       overflow-y: auto;
       z-index: 1000;
       padding: 8px;
-      font-size: 12px;
+      font-size: 11px;
       color: #0f0f0f;
       direction: rtl;
     }
 
     .visitor-log-item {
-      padding: 8px;
+      padding: 6px 8px;
       border-radius: 6px;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       border: 1px solid rgba(0,0,0,0.06);
     }
 
@@ -162,7 +163,6 @@
       margin-bottom: 0;
     }
 
-    /* ألوان تبادلية منظمة لعناصر القائمة */
     .visitor-log-item.color-even {
       background-color: #f8f9fa;
     }
@@ -644,9 +644,8 @@
       document.getElementById("usersCounter").style.display = "flex";
       togglePinnedBtn.style.display = "flex";
       visitorsDropdownContainer.style.display = "block";
-      pinnedContainer.style.display = "none"; // مخفية تماماً عن المدير
+      pinnedContainer.style.display = "none";
 
-      // فتح وإغلاق القائمة المنسدلة لسجل الزيارات
       visitorsMenuBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         visitorsMenu.style.display = visitorsMenu.style.display === "block" ? "none" : "block";
@@ -660,7 +659,6 @@
         e.stopPropagation();
       });
 
-      // جلب سجل الزيارات وتحديثه للمدير حيًّا مع تبديل الألوان لكل مستخدم تلقائياً
       const logsQuery = query(collection(db, "visitor_logs"), orderBy("timestamp", "desc"));
       onSnapshot(logsQuery, (snapshot) => {
         const logsListEl = document.getElementById("visitorsLogsList");
@@ -674,7 +672,6 @@
           const data = docSnap.data();
           const itemDiv = document.createElement("div");
           
-          // تبديل تلقائي للألوان بين زوجي وفردي لضمان الوضوح التام والتنسيق
           const colorClass = (index % 2 === 0) ? "color-even" : "color-odd";
           itemDiv.className = `visitor-log-item ${colorClass}`;
           
@@ -689,7 +686,6 @@
       });
     }
 
-    // زر التحكم الخاص بالمدير (📌)
     togglePinnedBtn.addEventListener("click", async function() {
       if (!isAdmin) return;
       const pinnedStatusRef = doc(db, "status", "pinned_status");
@@ -713,7 +709,6 @@
       } catch (e) {}
     });
 
-    // مزامنة حالة زر التثبيت
     const pinnedStatusRef = doc(db, "status", "pinned_status");
     onSnapshot(pinnedStatusRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -828,7 +823,6 @@
           const visitorLogRef = doc(db, "visitor_logs", myId);
           const nowFormatted = new Date().toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'medium' });
 
-          // تسجيل وقت الدخول عند فتح الصفحة
           await setDoc(visitorLogRef, {
             userId: myId,
             loginTime: nowFormatted,
@@ -859,7 +853,6 @@
             } catch(e) {}
           }, 3000);
 
-          // رصد الخروج أو مغادرة الصفحة
           window.addEventListener("pagehide", () => {
             updateVisitorStatus(false);
           });
