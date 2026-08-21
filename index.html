@@ -885,25 +885,56 @@
       if (event.key === "Enter") sendMessage();
     });
 
+    // معالجة وضغط الصورة تلقائياً لتناسب الحد الأقصى لقاعدة البيانات
     document.getElementById("imageInput").addEventListener("change", function(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = async function(e) {
-        const base64Image = e.target.result;
-        try {
-          await addDoc(collection(db, "messages"), {
-            text: "",
-            imageUrl: base64Image,
-            senderId: myId,
-            isAdminMessage: isAdmin,
-            createdAt: Date.now(),
-            read: isAdmin
-          });
-        } catch (error) {
-          alert("فشل إرسال الصورة، حجم الملف كبير جداً.");
-        }
+      reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = async function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // تصغير الأبعاد الكبيرة جداً للحفاظ على الحجم الصغير
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // ضغط الجودة إلى 70% لتقليل الحجم بشكل كبير ومناسب للرفع الفوري
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+          try {
+            await addDoc(collection(db, "messages"), {
+              text: "",
+              imageUrl: compressedBase64,
+              senderId: myId,
+              isAdminMessage: isAdmin,
+              createdAt: Date.now(),
+              read: isAdmin
+            });
+          } catch (error) {
+            alert("عذراً، حدث خطأ أثناء إرسال الصورة.");
+          }
+        };
       };
       reader.readAsDataURL(file);
       event.target.value = "";
@@ -997,7 +1028,7 @@
           const actionsGroup = document.createElement("div");
           actionsGroup.className = "actions-group";
 
-          const likeBtn = document.createElement("button");
+          likeBtn = document.createElement("button");
           likeBtn.className = "action-btn";
           likeBtn.innerHTML = "👍 <span>1</span>";
           actionsGroup.appendChild(likeBtn);
