@@ -288,7 +288,6 @@
       margin-top: 2px;
     }
 
-    /* تنسيق الصورة داخل الشات */
     .message-image {
       max-width: 200px;
       max-height: 200px;
@@ -379,11 +378,11 @@
       border-color: #065fd4;
     }
 
-    /* زر إرسال الصور (الأيقونة) */
+    /* زر إرسال الصور بلون مخصص وجذاب 🎈 */
     .image-upload-btn {
-      background: #f0f2f5;
+      background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
       border: none;
-      color: #555;
+      color: #ffffff;
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -393,11 +392,12 @@
       cursor: pointer;
       font-size: 18px;
       flex-shrink: 0;
-      transition: background 0.2s;
+      box-shadow: 0 2px 8px rgba(255, 117, 140, 0.4);
+      transition: transform 0.2s, background 0.2s;
     }
 
     .image-upload-btn:hover {
-      background: #e4e6e9;
+      transform: scale(1.05);
     }
 
     button.send-btn {
@@ -576,7 +576,6 @@
     <!-- منطقة الكتابة مع زر إرسال الصور -->
     <div class="input-area">
       <input type="text" id="messageInput" placeholder="إضافة رد...">
-      <!-- زر إرسال الصورة المخفي (يفتح عند الضغط على الأيقونة) -->
       <input type="file" id="imageInput" accept="image/*" style="display: none;">
       <button class="image-upload-btn" onclick="document.getElementById('imageInput').click()" title="إرسال صورة">📷</button>
       <button class="send-btn" onclick="sendMessage()">➔</button>
@@ -865,7 +864,6 @@
 
     const pageLoadTime = Date.now();
 
-    // دالة إرسال النص العادي
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
@@ -887,7 +885,6 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    // معالجة اختيار وإرسال الصورة
     document.getElementById("imageInput").addEventListener("change", function(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -909,7 +906,7 @@
         }
       };
       reader.readAsDataURL(file);
-      event.target.value = ""; // إعادة تعيين الحقل
+      event.target.value = "";
     });
 
     let q;
@@ -980,7 +977,6 @@
 
           bodyDiv.appendChild(headerInfo);
 
-          // عرض النص إذا وجد
           if (data.text) {
             const textSpan = document.createElement("span");
             textSpan.className = "message-text";
@@ -988,7 +984,6 @@
             bodyDiv.appendChild(textSpan);
           }
 
-          // عرض الصورة إذا وجدت
           if (data.imageUrl) {
             const imgEl = document.createElement("img");
             imgEl.className = "message-image";
