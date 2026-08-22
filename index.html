@@ -722,8 +722,8 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    // استعلام سريع يحدد جلب أحدث 30 رسالة فقط لمنع التحميل الثقيل
-    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"), limit(30));
+    // استعلام لجلب آخر 30 رسالة فقط (تنازلياً من الأحدث للأقدم ثم يعرضها مرتبة)
+    const q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30));
 
     const messageElements = {};
 
@@ -773,9 +773,17 @@
           }
           headerInfo.appendChild(userSpan);
 
+          // عرض التاريخ والوقت الحقيقي للرسالة
           const timeSpan = document.createElement("span");
           timeSpan.className = "comment-time";
-          timeSpan.textContent = "• الآن";
+          if (data.createdAt) {
+            const msgDate = new Date(data.createdAt);
+            const dateStr = msgDate.toLocaleDateString('ar-EG');
+            const timeStr = msgDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+            timeSpan.textContent = `• ${dateStr} ${timeStr}`;
+          } else {
+            timeSpan.textContent = "• وُضعت للتو";
+          }
           headerInfo.appendChild(timeSpan);
 
           bodyDiv.appendChild(headerInfo);
@@ -814,7 +822,8 @@
           messageDiv.appendChild(bodyDiv);
           wrapperDiv.appendChild(messageDiv);
           
-          messagesContainer.appendChild(wrapperDiv);
+          // إضافة الرسائل بحيث تظهر الأحدث في الأسفل دائماً
+          messagesContainer.insertBefore(wrapperDiv, messagesContainer.firstChild);
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
           messageElements[docId] = { element: wrapperDiv, data: data };
