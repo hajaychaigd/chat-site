@@ -377,6 +377,48 @@
       line-height: 1.6;
     }
 
+    /* نافذة كلمة المرور للزائر */
+    #passwordModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10001;
+    }
+    .password-card {
+      background: #ffffff;
+      color: #333;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .password-card input {
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+      letter-spacing: 2px;
+    }
+    .password-card button {
+      background: #4a7bb0;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
     /* نافذة الاتصال الصوتي المنبثقة */
     #callModal {
       position: fixed;
@@ -407,6 +449,17 @@
 
   <div id="blockScreen">
     ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
+  </div>
+
+  <!-- نافذة كلمة المرور للزائر -->
+  <div id="passwordModal">
+    <div class="password-card">
+      <h3>الرجاء إدخال كلمة السر</h3>
+      <p style="font-size: 12px; color: #777;">يجب إدخال كلمة السر للمتابعة</p>
+      <input type="password" id="passwordInput" placeholder="أدخل كلمة السر" maxlength="10">
+      <button id="submitPasswordBtn">دخول</button>
+      <span id="passwordError" style="color: #d97777; font-size: 12px; display: none;">كلمة السر غير صحيحة!</span>
+    </div>
   </div>
 
   <!-- نافذة الاتصال -->
@@ -510,11 +563,43 @@
     const menuBtn = document.getElementById("menuBtn");
     const dropdownMenu = document.getElementById("dropdownMenu");
 
+    // التحقق من كلمة السر للزائر عند فتح الموقع
+    if (!isAdmin) {
+      const passwordModal = document.getElementById("passwordModal");
+      const passwordInput = document.getElementById("passwordInput");
+      const submitPasswordBtn = document.getElementById("submitPasswordBtn");
+      const passwordError = document.getElementById("passwordError");
+
+      if (sessionStorage.getItem("visitor_authenticated") !== "true") {
+        passwordModal.style.display = "flex";
+      }
+
+      function checkPassword() {
+        if (passwordInput.value === "2005") {
+          sessionStorage.setItem("visitor_authenticated", "true");
+          passwordModal.style.display = "none";
+          initVisitorFeatures();
+        } else {
+          passwordError.style.display = "block";
+          passwordInput.value = "";
+        }
+      }
+
+      submitPasswordBtn.addEventListener("click", checkPassword);
+      passwordInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") checkPassword();
+      });
+    }
+
     if (isAdmin) {
       document.getElementById("usersCounter").style.display = "flex";
       menuBtn.style.display = "block";
+      initAdminFeatures();
     } else {
       document.getElementById("tickerContainer").style.display = "block";
+      if (sessionStorage.getItem("visitor_authenticated") === "true") {
+        initVisitorFeatures();
+      }
     }
 
     menuBtn.addEventListener("click", (e) => {
@@ -638,7 +723,7 @@
     const logContainer = document.getElementById("visitorLogContainer");
     const loginTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
 
-    if (isAdmin) {
+    function initAdminFeatures() {
       const adminStatusRef = doc(db, "status", "admin_status");
       setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
       setInterval(() => {
@@ -674,7 +759,10 @@
           logContainer.innerHTML = `<div class="log-item" style="color:#888; text-align:center;">لا يوجد سجلات حتى الآن</div>`;
         }
       });
-    } else {
+      startListeningMessages();
+    }
+
+    function initVisitorFeatures() {
       async function registerVisitor() {
         try {
           const docSnap = await getDoc(activeVisitorDocRef);
@@ -697,11 +785,13 @@
         } catch(e) {}
       }
       registerVisitor();
+      startListeningMessages();
     }
 
     const pageLoadTime = Date.now();
 
     window.sendMessage = async function() {
+      if (!isAdmin && sessionStorage.getItem("visitor_authenticated") !== "true") return;
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
       if (text === "") return;
@@ -722,130 +812,130 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    // استعلام خاص حسب نوع المستخدم (المدير يرى آخر 30 رسالة، الزائر يرى فقط الرسائل التي تُرسل ابتداءً من لحظة فتحه للصفحة)
-    const q = isAdmin 
-      ? query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30))
-      : query(collection(db, "messages"), where("createdAt", ">=", pageLoadTime), orderBy("createdAt", "desc"), limit(30));
-
     const messageElements = {};
 
-    onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
-      const messagesContainer = document.getElementById("messages");
+    function startListeningMessages() {
+      const q = isAdmin 
+        ? query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30))
+        : query(collection(db, "messages"), where("createdAt", ">=", pageLoadTime), orderBy("createdAt", "desc"), limit(30));
 
-      snapshot.docChanges().forEach((change) => {
-        const docId = change.doc.id;
-        const data = change.doc.data();
+      onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
+        const messagesContainer = document.getElementById("messages");
 
-        if (change.type === "added") {
-          if (messageElements[docId]) return;
-          if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
+        snapshot.docChanges().forEach((change) => {
+          const docId = change.doc.id;
+          const data = change.doc.data();
 
-          const wrapperDiv = document.createElement("div");
-          wrapperDiv.id = "wrap_" + docId;
-          wrapperDiv.className = "message-wrapper";
+          if (change.type === "added") {
+            if (messageElements[docId]) return;
+            if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
 
-          const messageDiv = document.createElement("div");
-          messageDiv.id = "msg_" + docId;
-          messageDiv.className = "message";
+            const wrapperDiv = document.createElement("div");
+            wrapperDiv.id = "wrap_" + docId;
+            wrapperDiv.className = "message-wrapper";
 
-          const avatarDiv = document.createElement("div");
-          avatarDiv.className = "comment-avatar";
-          if (data.isAdminMessage) {
-            avatarDiv.textContent = "ل";
-            avatarDiv.style.background = "#4a7bb0";
-          } else {
-            avatarDiv.textContent = "ش";
-            avatarDiv.style.background = "#6c9a78";
+            const messageDiv = document.createElement("div");
+            messageDiv.id = "msg_" + docId;
+            messageDiv.className = "message";
+
+            const avatarDiv = document.createElement("div");
+            avatarDiv.className = "comment-avatar";
+            if (data.isAdminMessage) {
+              avatarDiv.textContent = "ل";
+              avatarDiv.style.background = "#4a7bb0";
+            } else {
+              avatarDiv.textContent = "ش";
+              avatarDiv.style.background = "#6c9a78";
+            }
+            messageDiv.appendChild(avatarDiv);
+
+            const bodyDiv = document.createElement("div");
+            bodyDiv.className = "comment-body";
+
+            const headerInfo = document.createElement("div");
+            headerInfo.className = "comment-header-info";
+            
+            const userSpan = document.createElement("span");
+            userSpan.className = "comment-username";
+            if (data.isAdminMessage) {
+              userSpan.classList.add("admin-name");
+              userSpan.textContent = "@المدير";
+            } else {
+              userSpan.textContent = "@زائر";
+            }
+            headerInfo.appendChild(userSpan);
+
+            const timeSpan = document.createElement("span");
+            timeSpan.className = "comment-time";
+            if (data.createdAt) {
+              const msgDate = new Date(data.createdAt);
+              const dateStr = msgDate.toLocaleDateString('ar-EG');
+              const timeStr = msgDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+              timeSpan.textContent = `• ${dateStr} ${timeStr}`;
+            } else {
+              timeSpan.textContent = "• وُضعت للتو";
+            }
+            headerInfo.appendChild(timeSpan);
+
+            bodyDiv.appendChild(headerInfo);
+
+            const textSpan = document.createElement("span");
+            textSpan.className = "message-text";
+            textSpan.textContent = data.text;
+            bodyDiv.appendChild(textSpan);
+
+            const actionsDiv = document.createElement("div");
+            actionsDiv.className = "comment-actions";
+            
+            const actionButtonsGroup = document.createElement("div");
+            actionButtonsGroup.className = "action-buttons-group";
+
+            const likeBtn = document.createElement("button");
+            likeBtn.className = "action-btn";
+            likeBtn.innerHTML = "👍 <span>1</span>";
+            actionButtonsGroup.appendChild(likeBtn);
+
+            const dislikeBtn = document.createElement("button");
+            dislikeBtn.className = "action-btn";
+            dislikeBtn.innerHTML = "👎";
+            actionButtonsGroup.appendChild(dislikeBtn);
+
+            actionsDiv.appendChild(actionButtonsGroup);
+
+            if (!isAdmin) {
+              const timerSpan = document.createElement("span");
+              timerSpan.className = "timer-text";
+              actionsDiv.appendChild(timerSpan);
+              wrapperDiv.dataset.createdAt = data.createdAt;
+            }
+
+            bodyDiv.appendChild(actionsDiv);
+            messageDiv.appendChild(bodyDiv);
+            wrapperDiv.appendChild(messageDiv);
+            
+            messagesContainer.insertBefore(wrapperDiv, messagesContainer.firstChild);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            messageElements[docId] = { element: wrapperDiv, data: data };
+
+            if (isAdmin && !data.isAdminMessage && !data.read) {
+              updateDoc(doc(db, "messages", docId), { read: true });
+            }
+
+            if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
+              const sound = document.getElementById("notificationSound");
+              if (sound) { sound.currentTime = 0; sound.play().catch(err => {}); }
+            }
+          } 
+          else if (change.type === "removed") {
+            if (messageElements[docId]) {
+              messageElements[docId].element.remove();
+              delete messageElements[docId];
+            }
           }
-          messageDiv.appendChild(avatarDiv);
-
-          const bodyDiv = document.createElement("div");
-          bodyDiv.className = "comment-body";
-
-          const headerInfo = document.createElement("div");
-          headerInfo.className = "comment-header-info";
-          
-          const userSpan = document.createElement("span");
-          userSpan.className = "comment-username";
-          if (data.isAdminMessage) {
-            userSpan.classList.add("admin-name");
-            userSpan.textContent = "@المدير";
-          } else {
-            userSpan.textContent = "@زائر";
-          }
-          headerInfo.appendChild(userSpan);
-
-          // عرض التاريخ والوقت الحقيقي للرسالة
-          const timeSpan = document.createElement("span");
-          timeSpan.className = "comment-time";
-          if (data.createdAt) {
-            const msgDate = new Date(data.createdAt);
-            const dateStr = msgDate.toLocaleDateString('ar-EG');
-            const timeStr = msgDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            timeSpan.textContent = `• ${dateStr} ${timeStr}`;
-          } else {
-            timeSpan.textContent = "• وُضعت للتو";
-          }
-          headerInfo.appendChild(timeSpan);
-
-          bodyDiv.appendChild(headerInfo);
-
-          const textSpan = document.createElement("span");
-          textSpan.className = "message-text";
-          textSpan.textContent = data.text;
-          bodyDiv.appendChild(textSpan);
-
-          const actionsDiv = document.createElement("div");
-          actionsDiv.className = "comment-actions";
-          
-          const actionButtonsGroup = document.createElement("div");
-          actionButtonsGroup.className = "action-buttons-group";
-
-          const likeBtn = document.createElement("button");
-          likeBtn.className = "action-btn";
-          likeBtn.innerHTML = "👍 <span>1</span>";
-          actionButtonsGroup.appendChild(likeBtn);
-
-          const dislikeBtn = document.createElement("button");
-          dislikeBtn.className = "action-btn";
-          dislikeBtn.innerHTML = "👎";
-          actionButtonsGroup.appendChild(dislikeBtn);
-
-          actionsDiv.appendChild(actionButtonsGroup);
-
-          if (!isAdmin) {
-            const timerSpan = document.createElement("span");
-            timerSpan.className = "timer-text";
-            actionsDiv.appendChild(timerSpan);
-            wrapperDiv.dataset.createdAt = data.createdAt;
-          }
-
-          bodyDiv.appendChild(actionsDiv);
-          messageDiv.appendChild(bodyDiv);
-          wrapperDiv.appendChild(messageDiv);
-          
-          messagesContainer.insertBefore(wrapperDiv, messagesContainer.firstChild);
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-          messageElements[docId] = { element: wrapperDiv, data: data };
-
-          if (isAdmin && !data.isAdminMessage && !data.read) {
-            updateDoc(doc(db, "messages", docId), { read: true });
-          }
-
-          if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
-            const sound = document.getElementById("notificationSound");
-            if (sound) { sound.currentTime = 0; sound.play().catch(err => {}); }
-          }
-        } 
-        else if (change.type === "removed") {
-          if (messageElements[docId]) {
-            messageElements[docId].element.remove();
-            delete messageElements[docId];
-          }
-        }
+        });
       });
-    });
+    }
 
     if (!isAdmin) {
       setInterval(() => {
