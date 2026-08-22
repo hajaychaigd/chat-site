@@ -91,7 +91,7 @@
       transition: background 0.2s;
     }
 
-    /* القائمة المنسدلة الجديدة */
+    /* القائمة المنسدلة لسجل الدخول والخروج فقط */
     .menu-btn {
       background: none;
       border: none;
@@ -113,30 +113,32 @@
       background: #ffffff;
       border-radius: 12px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-      width: 170px;
+      width: 230px;
       display: none;
       flex-direction: column;
       z-index: 1000;
       overflow: hidden;
       border: 1px solid #eee;
+      padding: 10px;
     }
 
-    .dropdown-menu button {
-      background: none;
-      border: none;
-      padding: 12px 16px;
-      text-align: right;
-      font-size: 14px;
-      cursor: pointer;
-      color: #0f0f0f;
+    .dropdown-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #606060;
+      margin-bottom: 8px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #f0f0f0;
+      text-align: center;
+    }
+
+    .log-item {
+      font-size: 12px;
+      color: #333;
+      padding: 6px 4px;
+      border-bottom: 1px dashed #f0f0f0;
       display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s;
-    }
-
-    .dropdown-menu button:hover {
-      background: #f8f9fa;
+      justify-content: space-between;
     }
 
     .status-dot {
@@ -385,11 +387,13 @@
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
         </div>
-        <!-- القائمة المنسدلة -->
+        <!-- القائمة المنسدلة لسجل الدخول والخروج -->
         <button id="menuBtn" class="menu-btn">⋮</button>
         <div id="dropdownMenu" class="dropdown-menu">
-          <button id="loginAdminBtn">🔑 تسجيل دخول المدير</button>
-          <button id="logoutUserBtn">🚪 خروج / إعادة تعيين</button>
+          <div class="dropdown-title">سجل دخول وخروج الزوار</div>
+          <div id="visitorLogContainer">
+            <div class="log-item">جاري التحميل...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -415,7 +419,7 @@
 
     <div class="input-area">
       <input type="text" id="messageInput" placeholder="اكتب ردك هنا...">
-      <!-- تم استبدال علامة السبحه بعلامة إرسال رسالة رسمية -->
+      <!-- أيقونة إرسال رسمية بدلاً من السبحة -->
       <button class="send-btn" onclick="sendMessage()" title="إرسال">
         <svg height="18" viewBox="0 0 24 24" width="18" fill="#ffffff"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
@@ -456,27 +460,6 @@
 
     window.addEventListener("click", () => {
       dropdownMenu.style.display = "none";
-    });
-
-    // تسجيل دخول المدير من القائمة
-    document.getElementById("loginAdminBtn").addEventListener("click", () => {
-      const pass = prompt("أدخل كلمة مرور المدير:");
-      if (pass === "mysecret123") {
-        localStorage.setItem("is_admin", "true");
-        alert("تم تفعيل هذا الجهاز كمدير بنجاح!");
-        location.reload();
-      } else if (pass !== null) {
-        alert("كلمة المرور غير صحيحة!");
-      }
-    });
-
-    // تسجيل الخروج / إعادة التعيين
-    document.getElementById("logoutUserBtn").addEventListener("click", () => {
-      if (confirm("هل تريد الخروج وإعادة تعيين الجلسة؟")) {
-        localStorage.removeItem("is_admin");
-        localStorage.removeItem("chat_user_id");
-        location.reload();
-      }
     });
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -539,6 +522,10 @@
 
     const activeVisitorDocRef = doc(db, "status", "active_visitor");
 
+    // تسجيل الدخول والخروج لتعبئة السجل في القائمة
+    const logContainer = document.getElementById("visitorLogContainer");
+    const loginTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
     if (isAdmin) {
       const adminStatusRef = doc(db, "status", "admin_status");
       setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
@@ -552,11 +539,14 @@
           const data = docSnap.data();
           if (data.active && (Date.now() - data.lastSeen < 6000)) {
             countSpan.textContent = "1";
+            logContainer.innerHTML = `<div class="log-item"><span>مستخدم متصل حالياً</span><span>دخل: ${data.loginTime || 'الآن'}</span></div>`;
           } else {
             countSpan.textContent = "0";
+            logContainer.innerHTML = `<div class="log-item" style="color:#888;">لا يوجد زائر حالياً</div>`;
           }
         } else {
           countSpan.textContent = "0";
+          logContainer.innerHTML = `<div class="log-item" style="color:#888;">لا يوجد سجلات بعد</div>`;
         }
       });
     } else {
@@ -567,12 +557,20 @@
             document.getElementById("blockScreen").style.display = "flex";
             return;
           }
-          await setDoc(activeVisitorDocRef, { active: true, userId: myId, lastSeen: Date.now() });
+          await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, lastSeen: Date.now() });
+          
+          logContainer.innerHTML = `<div class="log-item"><span>أنت (الزائر)</span><span>دخلت: ${loginTimeStr}</span></div>`;
+
           setInterval(async () => {
             try {
-              await setDoc(activeVisitorDocRef, { active: true, userId: myId, lastSeen: Date.now() }, { merge: true });
+              await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
             } catch(e) {}
           }, 3000);
+
+          // تسجيل الخروج عند إغلاق الصفحة
+          window.addEventListener("beforeunload", () => {
+            setDoc(activeVisitorDocRef, { active: false, userId: myId, loginTime: loginTimeStr, logoutTime: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }), lastSeen: 0 }, { merge: true });
+          });
         } catch(e) {}
       }
       registerVisitor();
