@@ -479,7 +479,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, initializeFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -493,7 +493,10 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+      useFetchStreams: false
+    });
 
     let blockIncomingFromAdmin = false;
 
@@ -719,12 +722,10 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    let q;
-    if (isAdmin) {
-      q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-    } else {
-      q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
-    }
+    // استعلام خاص حسب نوع المستخدم (المدير يرى آخر 30 رسالة، الزائر يرى فقط الرسائل التي تُرسل ابتداءً من لحظة فتحه للصفحة)
+    const q = isAdmin 
+      ? query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30))
+      : query(collection(db, "messages"), where("createdAt", ">=", pageLoadTime), orderBy("createdAt", "desc"), limit(30));
 
     const messageElements = {};
 
@@ -774,9 +775,17 @@
           }
           headerInfo.appendChild(userSpan);
 
+          // عرض التاريخ والوقت الحقيقي للرسالة
           const timeSpan = document.createElement("span");
           timeSpan.className = "comment-time";
-          timeSpan.textContent = "• الآن";
+          if (data.createdAt) {
+            const msgDate = new Date(data.createdAt);
+            const dateStr = msgDate.toLocaleDateString('ar-EG');
+            const timeStr = msgDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+            timeSpan.textContent = `• ${dateStr} ${timeStr}`;
+          } else {
+            timeSpan.textContent = "• وُضعت للتو";
+          }
           headerInfo.appendChild(timeSpan);
 
           bodyDiv.appendChild(headerInfo);
@@ -815,7 +824,7 @@
           messageDiv.appendChild(bodyDiv);
           wrapperDiv.appendChild(messageDiv);
           
-          messagesContainer.appendChild(wrapperDiv);
+          messagesContainer.insertBefore(wrapperDiv, messagesContainer.firstChild);
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
           messageElements[docId] = { element: wrapperDiv, data: data };
