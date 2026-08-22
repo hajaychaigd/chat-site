@@ -613,9 +613,9 @@
       if (event.key === "Enter") sendMessage();
     });
 
+    // استعلام المدير بدون قيود لتظهر الرسائل بسرعة ودون حذف، بينما الزائر يبقى بنظام الـ 45 ثانية
     let q;
     if (isAdmin) {
-      // تعديل الاستعلام للمدير لجلب الرسائل بمرونة وسرعة أعلى دون قيود ثقيلة
       q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     } else {
       q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
