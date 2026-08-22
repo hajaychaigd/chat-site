@@ -479,7 +479,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, initializeFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, initializeFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -722,12 +722,12 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    // تم توحيد الاستعلام للجميع وجلب آخر 50 رسالة لتظهر رسائل الزوار للمدير فوراً دون ريفريش
+    // استعلام مباشر لجلب آخر 50 رسالة مع الاستماع الحي اللحظي بدون أي قيود تعيق التحديث
     const q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(50));
 
     const messageElements = {};
 
-    onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
+    onSnapshot(q, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
 
       snapshot.docChanges().forEach((change) => {
@@ -738,7 +738,7 @@
           if (messageElements[docId]) return;
           if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
           
-          // للزائر فقط: تجاهل الرسائل القديمة التي أُرسلت قبل فتح الصفحة
+          // للزائر فقط: تجاهل الرسائل القديمة التي أُرسلت قبل فتح صفحته
           if (!isAdmin && data.createdAt < pageLoadTime) return;
 
           const wrapperDiv = document.createElement("div");
