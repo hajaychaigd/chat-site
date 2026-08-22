@@ -722,9 +722,8 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    const q = isAdmin 
-      ? query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30))
-      : query(collection(db, "messages"), where("createdAt", ">=", pageLoadTime), orderBy("createdAt", "desc"), limit(30));
+    // تم توحيد الاستعلام للجميع وجلب آخر 50 رسالة لتظهر رسائل الزوار للمدير فوراً دون ريفريش
+    const q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(50));
 
     const messageElements = {};
 
@@ -738,6 +737,9 @@
         if (change.type === "added") {
           if (messageElements[docId]) return;
           if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
+          
+          // للزائر فقط: تجاهل الرسائل القديمة التي أُرسلت قبل فتح الصفحة
+          if (!isAdmin && data.createdAt < pageLoadTime) return;
 
           const wrapperDiv = document.createElement("div");
           wrapperDiv.id = "wrap_" + docId;
