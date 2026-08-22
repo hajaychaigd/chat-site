@@ -91,7 +91,7 @@
       transition: background 0.2s;
     }
 
-    /* القائمة المنسدلة لسجل الدخول والخروج فقط */
+    /* القائمة المنسدلة (تظهر للمدير فقط) */
     .menu-btn {
       background: none;
       border: none;
@@ -100,6 +100,7 @@
       color: #0f0f0f;
       padding: 4px 8px;
       border-radius: 50%;
+      display: none; /* مخفية افتراضياً وتظهر بالبرمجة للمدير */
     }
 
     .menu-btn:hover {
@@ -113,7 +114,7 @@
       background: #ffffff;
       border-radius: 12px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-      width: 230px;
+      width: 250px;
       display: none;
       flex-direction: column;
       z-index: 1000;
@@ -125,7 +126,7 @@
     .dropdown-title {
       font-size: 13px;
       font-weight: bold;
-      color: #606060;
+      color: #065fd4;
       margin-bottom: 8px;
       padding-bottom: 5px;
       border-bottom: 1px solid #f0f0f0;
@@ -135,8 +136,14 @@
     .log-item {
       font-size: 12px;
       color: #333;
-      padding: 6px 4px;
+      padding: 8px 6px;
       border-bottom: 1px dashed #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .log-row {
       display: flex;
       justify-content: space-between;
     }
@@ -387,10 +394,10 @@
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
         </div>
-        <!-- القائمة المنسدلة لسجل الدخول والخروج -->
+        <!-- زر والقائمة المنسدلة (تظهر للمدير فقط) -->
         <button id="menuBtn" class="menu-btn">⋮</button>
         <div id="dropdownMenu" class="dropdown-menu">
-          <div class="dropdown-title">سجل دخول وخروج الزوار</div>
+          <div class="dropdown-title">سجل دخول وخروج الزائر</div>
           <div id="visitorLogContainer">
             <div class="log-item">جاري التحميل...</div>
           </div>
@@ -419,7 +426,6 @@
 
     <div class="input-area">
       <input type="text" id="messageInput" placeholder="اكتب ردك هنا...">
-      <!-- أيقونة إرسال رسمية بدلاً من السبحة -->
       <button class="send-btn" onclick="sendMessage()" title="إرسال">
         <svg height="18" viewBox="0 0 24 24" width="18" fill="#ffffff"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
@@ -449,10 +455,25 @@
 
     let blockIncomingFromAdmin = false;
 
-    // التحكم بالقائمة المنسدلة
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'mysecret123') {
+      localStorage.setItem("is_admin", "true");
+    }
+
+    const isAdmin = localStorage.getItem("is_admin") === "true";
+    const bellBtn = document.getElementById("bellBtn");
     const menuBtn = document.getElementById("menuBtn");
     const dropdownMenu = document.getElementById("dropdownMenu");
 
+    // إظهار عناصر المدير فقط
+    if (isAdmin) {
+      document.getElementById("usersCounter").style.display = "flex";
+      menuBtn.style.display = "block"; // القائمة تظهر للمدير فقط
+    } else {
+      document.getElementById("tickerContainer").style.display = "block";
+    }
+
+    // التحكم بفتح وإغلاق القائمة للمدير
     menuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       dropdownMenu.style.display = dropdownMenu.style.display === "flex" ? "none" : "flex";
@@ -461,20 +482,6 @@
     window.addEventListener("click", () => {
       dropdownMenu.style.display = "none";
     });
-
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === 'mysecret123') {
-      localStorage.setItem("is_admin", "true");
-    }
-
-    const isAdmin = localStorage.getItem("is_admin") === "true";
-    const bellBtn = document.getElementById("bellBtn");
-
-    if (!isAdmin) {
-      document.getElementById("tickerContainer").style.display = "block";
-    } else {
-      document.getElementById("usersCounter").style.display = "flex";
-    }
 
     let myId = localStorage.getItem("chat_user_id");
     if (!myId) {
@@ -521,8 +528,6 @@
     });
 
     const activeVisitorDocRef = doc(db, "status", "active_visitor");
-
-    // تسجيل الدخول والخروج لتعبئة السجل في القائمة
     const logContainer = document.getElementById("visitorLogContainer");
     const loginTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
 
@@ -533,20 +538,34 @@
         setDoc(adminStatusRef, { online: true, lastSeen: Date.now() }, { merge: true });
       }, 4000);
 
+      // تحديث بيانات السجل للمدير عند تغير حالة الزائر
       onSnapshot(activeVisitorDocRef, (docSnap) => {
         const countSpan = document.getElementById("onlineCount");
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.active && (Date.now() - data.lastSeen < 6000)) {
             countSpan.textContent = "1";
-            logContainer.innerHTML = `<div class="log-item"><span>مستخدم متصل حالياً</span><span>دخل: ${data.loginTime || 'الآن'}</span></div>`;
+            logContainer.innerHTML = `
+              <div class="log-item">
+                <div class="log-row" style="color: #2ba640; font-weight: bold;"><span>🟢 متصل حالياً</span></div>
+                <div class="log-row"><span>دخل في:</span> <span>${data.loginTime || 'غير متوفر'}</span></div>
+              </div>
+            `;
           } else {
             countSpan.textContent = "0";
-            logContainer.innerHTML = `<div class="log-item" style="color:#888;">لا يوجد زائر حالياً</div>`;
+            let logoutDisplay = data.logoutTime ? `<span>خرج في:</span> <span>${data.logoutTime}</span>` : `<span>لم يحدد وقت خروج</span>`;
+            let loginDisplay = data.loginTime ? `<span>دخل في:</span> <span>${data.loginTime}</span>` : ``;
+            logContainer.innerHTML = `
+              <div class="log-item">
+                <div class="log-row" style="color: #888; font-weight: bold;"><span>⚪ غادر الموقع</span></div>
+                <div class="log-row">${loginDisplay}</div>
+                <div class="log-row">${logoutDisplay}</div>
+              </div>
+            `;
           }
         } else {
           countSpan.textContent = "0";
-          logContainer.innerHTML = `<div class="log-item" style="color:#888;">لا يوجد سجلات بعد</div>`;
+          logContainer.innerHTML = `<div class="log-item" style="color:#888; text-align:center;">لا يوجد سجلات حتى الآن</div>`;
         }
       });
     } else {
@@ -557,19 +576,19 @@
             document.getElementById("blockScreen").style.display = "flex";
             return;
           }
-          await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, lastSeen: Date.now() });
+          await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, logoutTime: "", lastSeen: Date.now() });
           
-          logContainer.innerHTML = `<div class="log-item"><span>أنت (الزائر)</span><span>دخلت: ${loginTimeStr}</span></div>`;
-
           setInterval(async () => {
             try {
               await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
             } catch(e) {}
           }, 3000);
 
-          // تسجيل الخروج عند إغلاق الصفحة
+          // تسجيل وقت الخروج عند غلق أو مغادرة الصفحة
           window.addEventListener("beforeunload", () => {
-            setDoc(activeVisitorDocRef, { active: false, userId: myId, loginTime: loginTimeStr, logoutTime: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }), lastSeen: 0 }, { merge: true });
+            const logoutTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+            navigator.sendBeacon ? null : null; // ضمان التحديث الفوري الممكن
+            setDoc(activeVisitorDocRef, { active: false, userId: myId, loginTime: loginTimeStr, logoutTime: logoutTimeStr, lastSeen: 0 }, { merge: true });
           });
         } catch(e) {}
       }
