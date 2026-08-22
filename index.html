@@ -479,7 +479,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, initializeFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, initializeFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -722,8 +722,10 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    // استعلام لجلب آخر 30 رسالة فقط (تنازلياً من الأحدث للأقدم ثم يعرضها مرتبة)
-    const q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30));
+    // استعلام خاص حسب نوع المستخدم (المدير يرى آخر 30 رسالة، الزائر يرى فقط الرسائل التي تُرسل ابتداءً من لحظة فتحه للصفحة)
+    const q = isAdmin 
+      ? query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30))
+      : query(collection(db, "messages"), where("createdAt", ">=", pageLoadTime), orderBy("createdAt", "desc"), limit(30));
 
     const messageElements = {};
 
@@ -822,7 +824,6 @@
           messageDiv.appendChild(bodyDiv);
           wrapperDiv.appendChild(messageDiv);
           
-          // إضافة الرسائل بحيث تظهر الأحدث في الأسفل دائماً
           messagesContainer.insertBefore(wrapperDiv, messagesContainer.firstChild);
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
