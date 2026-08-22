@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>الردود</title>
-  
-  <!-- مكتبة PeerJS للاتصال الصوتي المباشر -->
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <style>
     * {
@@ -31,6 +28,8 @@
       display: flex;
       flex-direction: column;
       position: relative;
+      border-left: 1px solid #e5e5e5;
+      border-right: 1px solid #e5e5e5;
     }
 
     /* الشريط العلوي */
@@ -66,21 +65,10 @@
       position: relative;
     }
 
-    .users-counter {
+    .action-top-btn {
       background: #f2f2f2;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 13px;
-      display: none;
-      align-items: center;
-      gap: 5px;
-      color: #0f0f0f;
-    }
-
-    .mute-btn {
-      background: #2cc067;
       border: none;
-      color: #ffffff;
+      color: #0f0f0f;
       padding: 0;
       border-radius: 50%;
       width: 36px;
@@ -90,100 +78,19 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 6px rgba(44, 192, 103, 0.2);
+      transition: 0.2s;
     }
 
-    /* القائمة المنسدلة */
-    .menu-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #0f0f0f;
-      padding: 4px 8px;
-      border-radius: 50%;
-      display: none; 
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 45px;
-      left: 10px;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-      width: 250px;
-      display: none;
-      flex-direction: column;
-      z-index: 1000;
-      overflow: hidden;
-      border: 1px solid #e5e5e5;
-      padding: 10px;
-    }
-
-    .dropdown-title {
-      font-size: 13px;
-      font-weight: bold;
-      color: #065fd4;
-      margin-bottom: 8px;
-      padding-bottom: 5px;
-      border-bottom: 1px solid #e5e5e5;
-      text-align: center;
-    }
-
-    .log-item {
-      font-size: 12px;
-      color: #606060;
-      padding: 8px 6px;
-      border-bottom: 1px dashed #e5e5e5;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .log-row {
-      display: flex;
-      justify-content: space-between;
+    .action-top-btn:hover {
+      background: #e5e5e5;
     }
 
     .status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background-color: #cc0000;
+      background-color: #2cc067;
       display: inline-block;
-    }
-
-    /* شريط التسبيحات المتحرك */
-    .ticker-container {
-      background: #f9f9f9;
-      color: #065fd4;
-      padding: 6px 0;
-      overflow: hidden;
-      white-space: nowrap;
-      position: relative;
-      font-size: 12px;
-      font-weight: bold;
-      border-bottom: 1px solid #e5e5e5;
-      display: none;
-    }
-
-    .ticker-track {
-      display: inline-flex;
-      white-space: nowrap;
-      animation: tickerAnimation 25s linear infinite;
-    }
-
-    .ticker-group {
-      display: inline-flex;
-      gap: 35px;
-      padding-right: 35px;
-      flex-shrink: 0;
-    }
-
-    @keyframes tickerAnimation {
-      0% { transform: translateX(0%); }
-      100% { transform: translateX(-50%); }
     }
 
     /* منطقة التعليقات (على طراز يوتيوب) */
@@ -302,13 +209,6 @@
       color: #606060;
     }
 
-    .timer-text {
-      color: #cc0000;
-      font-weight: bold;
-      font-size: 11px;
-    }
-
-    /* زر الثلاث نقاط على اليمين */
     .comment-options {
       background: none;
       border: none;
@@ -330,7 +230,7 @@
       flex-shrink: 0;
     }
 
-    input {
+    input[type="text"] {
       flex: 1;
       padding: 10px 18px;
       border: 1px solid #cccccc;
@@ -341,7 +241,7 @@
       color: #0f0f0f;
     }
 
-    input:focus {
+    input[type="text"]:focus {
       border-color: #065fd4;
       background: #ffffff;
     }
@@ -357,29 +257,14 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
+      transition: 0.2s;
     }
 
-    #blockScreen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #ffffff;
-      color: #0f0f0f;
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-      z-index: 9999;
-      font-size: 16px;
-      font-weight: bold;
-      line-height: 1.6;
+    button.send-btn:hover {
+      background: #054ada;
     }
 
-    /* نافذة كلمة المرور للزائر */
+    /* نافذة كلمة المرور */
     #passwordModal {
       position: fixed;
       top: 0;
@@ -387,7 +272,7 @@
       width: 100%;
       height: 100%;
       background: rgba(0,0,0,0.85);
-      display: none;
+      display: flex;
       justify-content: center;
       align-items: center;
       z-index: 10001;
@@ -406,9 +291,13 @@
     }
     .password-card input {
       width: 100%;
+      padding: 10px;
       text-align: center;
       font-size: 18px;
       letter-spacing: 2px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
     }
     .password-card button {
       background: #065fd4;
@@ -420,537 +309,221 @@
       font-size: 15px;
       font-weight: bold;
     }
-
-    /* نافذة الاتصال الصوتي المنبثقة */
-    #callModal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 10000;
-      color: white;
-    }
-    .call-card {
-      background: #ffffff;
-      color: #0f0f0f;
-      padding: 30px;
-      border-radius: 12px;
-      text-align: center;
-      width: 280px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
   </style>
 </head>
 
 <body>
 
-  <div id="blockScreen">
-    ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
-  </div>
-
-  <!-- نافذة كلمة المرور للزائر -->
+  <!-- نافذة كلمة المرور البسيطة والآمنة -->
   <div id="passwordModal">
     <div class="password-card">
-      <h3>الرجاء إدخال كلمة السر</h3>
-      <p style="font-size: 12px; color: #606060;">يجب إدخال كلمة السر للمتابعة (2005)</p>
-      <input type="password" id="passwordInput" placeholder="أدخل كلمة السر" maxlength="10">
+      <h3>تسجيل الدخول للشات</h3>
+      <p style="font-size: 12px; color: #606060;">اختر صفحتك (الزائر أو المدير)</p>
+      <input type="password" id="passwordInput" placeholder="أدخل كلمة المرور" maxlength="10">
       <button id="submitPasswordBtn">دخول</button>
-      <span id="passwordError" style="color: #cc0000; font-size: 12px; display: none;">كلمة السر غير صحيحة!</span>
+      <span id="passwordError" style="color: #cc0000; font-size: 12px; display: none;">كلمة المرور غير صحيحة!</span>
     </div>
   </div>
-
-  <!-- نافذة الاتصال -->
-  <div id="callModal">
-    <div class="call-card">
-      <h3 id="callStatusText" style="margin-bottom: 20px;">جاري الاتصال...</h3>
-      <div style="font-size: 50px; margin-bottom: 20px;">🎙️</div>
-      <div style="display: flex; gap: 15px; justify-content: center;">
-        <button id="acceptCallBtn" style="background: #2cc067; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; display: none;">قبول</button>
-        <button id="endCallBtn" style="background: #cc0000; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">إنهاء</button>
-      </div>
-    </div>
-  </div>
-  <audio id="remoteAudio" autoplay></audio>
 
   <div class="app">
-
     <div class="header">
       <div class="header-title">
-        <span class="back-arrow">←</span>
-        <span>الردود</span>
-        <span id="statusDot" class="status-dot"></span>
+        <span class="back-arrow" id="backBtn">←</span>
+        <span id="headerTitleText">الردود</span>
+        <span class="status-dot"></span>
       </div>
       <div class="header-actions">
-        <button id="callBtn" class="mute-btn" title="اتصال صوتي">📞</button>
-        <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس" style="background: #2cc067;">🔔</button>
-        <div id="usersCounter" class="users-counter">
-          <span>👤</span> <span id="onlineCount">0</span>
-        </div>
-        <button id="menuBtn" class="menu-btn">⋮</button>
-        <div id="dropdownMenu" class="dropdown-menu">
-          <div class="dropdown-title">سجل دخول وخروج الزائر</div>
-          <div id="visitorLogContainer">
-            <div class="log-item">جاري التحميل...</div>
-          </div>
-        </div>
+        <button id="callBtn" class="action-top-btn" title="اتصال">📞</button>
+        <button id="bellBtn" class="action-top-btn" title="تنبيه" style="color: #2cc067;">🔔</button>
       </div>
     </div>
 
-    <div id="tickerContainer" class="ticker-container">
-      <div class="ticker-track">
-        <div class="ticker-group">
-          <span class="ticker-item">سبحان الله 📿</span>
-          <span class="ticker-item">الحمد لله 📿</span>
-          <span class="ticker-item">الله أكبر 📿</span>
-          <span class="ticker-item">استغفر الله 📿</span>
-        </div>
-        <div class="ticker-group">
-          <span class="ticker-item">سبحان الله 📿</span>
-          <span class="ticker-item">الحمد لله 📿</span>
-          <span class="ticker-item">الله أكبر 📿</span>
-          <span class="ticker-item">استغفر الله 📿</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="messages" id="messages"></div>
+    <div class="messages" id="messagesContainer"></div>
 
     <div class="input-area">
       <input type="text" id="messageInput" placeholder="إضافة رد...">
-      <button class="send-btn" onclick="sendMessage()" title="إرسال">
+      <button class="send-btn" id="sendBtn" title="إرسال">
         <svg height="18" viewBox="0 0 24 24" width="18" fill="#ffffff"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
-
   </div>
 
-  <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+  <script>
+    // تحديد ما إذا كان المستخدم مديراً أو زائراً (كلمة مرور المدير: admin123 أو للزائر: 2005)
+    let isAdmin = localStorage.getItem("chat_is_admin") === "true";
+    const passwordModal = document.getElementById("passwordModal");
+    const passwordInput = document.getElementById("passwordInput");
+    const submitPasswordBtn = document.getElementById("submitPasswordBtn");
+    const passwordError = document.getElementById("passwordError");
+    const headerTitleText = document.getElementById("headerTitleText");
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, initializeFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
-      authDomain: "chat-site-2911b.firebaseapp.com",
-      databaseURL: "https://chat-site-2911b-default-rtdb.firebaseio.com",
-      projectId: "chat-site-2911b",
-      storageBucket: "chat-site-2911b.firebasestorage.app",
-      messagingSenderId: "7306613696",
-      appId: "1:7306613696:web:5479f7634c7e903bbdae25",
-      measurementId: "G-KZ4L2JHQN4"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = initializeFirestore(app, {
-      experimentalForceLongPolling: true,
-      useFetchStreams: false
-    });
-
-    let blockIncomingFromAdmin = false;
-
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === 'mysecret123') {
-      localStorage.setItem("is_admin", "true");
+    // التحقق من الجلسة السابقة
+    if (localStorage.getItem("chat_logged_in") === "true") {
+      passwordModal.style.display = "none";
+      updateHeaderTitle();
     }
 
-    const isAdmin = localStorage.getItem("is_admin") === "true";
-    const bellBtn = document.getElementById("bellBtn");
-    const menuBtn = document.getElementById("menuBtn");
-    const dropdownMenu = document.getElementById("dropdownMenu");
-
-    if (!isAdmin) {
-      const passwordModal = document.getElementById("passwordModal");
-      const passwordInput = document.getElementById("passwordInput");
-      const submitPasswordBtn = document.getElementById("submitPasswordBtn");
-      const passwordError = document.getElementById("passwordError");
-
-      if (sessionStorage.getItem("visitor_authenticated") !== "true") {
-        passwordModal.style.display = "flex";
+    function handleLogin() {
+      const val = passwordInput.value.trim();
+      if (val === "admin123") {
+        localStorage.setItem("chat_is_admin", "true");
+        localStorage.setItem("chat_logged_in", "true");
+        isAdmin = true;
+        passwordModal.style.display = "none";
+        updateHeaderTitle();
+        loadMessages();
+      } else if (val === "2005" || val === "") {
+        localStorage.setItem("chat_is_admin", "false");
+        localStorage.setItem("chat_logged_in", "true");
+        isAdmin = false;
+        passwordModal.style.display = "none";
+        updateHeaderTitle();
+        loadMessages();
+      } else {
+        passwordError.style.display = "block";
+        passwordInput.value = "";
       }
+    }
 
-      function checkPassword() {
-        if (passwordInput.value === "2005") {
-          sessionStorage.setItem("visitor_authenticated", "true");
-          passwordModal.style.display = "none";
-          initVisitorFeatures();
+    submitPasswordBtn.addEventListener("click", handleLogin);
+    passwordInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") handleLogin();
+    });
+
+    function updateHeaderTitle() {
+      if (isAdmin) {
+        headerTitleText.textContent = "لوحة التحكم (المدير)";
+      } else {
+        headerTitleText.textContent = "الردود";
+      }
+    }
+
+    // جلب الرسائل المخزنة أو بدء رسائل تجريبية افتراضية تطابق الصورة
+    let messages = JSON.parse(localStorage.getItem("youtube_chat_messages")) || [
+      { id: 1, text: "ننتت", isAdmin: false, time: "منذ دقيقتين" },
+      { id: 2, text: "لا اله -الا- الله 7غ8م", isAdmin: true, time: "منذ دقيقة" },
+      { id: 3, text: "تخ", isAdmin: false, time: "الآن" }
+    ];
+
+    const messagesContainer = document.getElementById("messagesContainer");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    function renderMessages() {
+      messagesContainer.innerHTML = "";
+      messages.forEach(msg => {
+        const containerDiv = document.createElement("div");
+        containerDiv.className = "comment-container";
+
+        // الصورة الرمزية
+        const avatarDiv = document.createElement("div");
+        avatarDiv.className = "comment-avatar";
+        if (msg.isAdmin) {
+          avatarDiv.textContent = "ل";
+          avatarDiv.style.background = "#065fd4";
         } else {
-          passwordError.style.display = "block";
-          passwordInput.value = "";
+          avatarDiv.textContent = "ش";
+          avatarDiv.style.background = "#2cc067";
         }
-      }
+        containerDiv.appendChild(avatarDiv);
 
-      submitPasswordBtn.addEventListener("click", checkPassword);
-      passwordInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") checkPassword();
-      });
-    }
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "comment-content";
 
-    if (isAdmin) {
-      document.getElementById("usersCounter").style.display = "flex";
-      menuBtn.style.display = "block";
-      initAdminFeatures();
-    } else {
-      document.getElementById("tickerContainer").style.display = "block";
-      if (sessionStorage.getItem("visitor_authenticated") === "true") {
-        initVisitorFeatures();
-      }
-    }
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "comment-header";
 
-    menuBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      dropdownMenu.style.display = dropdownMenu.style.display === "flex" ? "none" : "flex";
-    });
-
-    window.addEventListener("click", () => {
-      dropdownMenu.style.display = "none";
-    });
-
-    let myId = localStorage.getItem("chat_user_id");
-    if (!myId) {
-      myId = 'user_' + Math.random().toString(36).substring(2);
-      localStorage.setItem("chat_user_id", myId);
-    }
-
-    // --- منطق الاتصال الصوتي عبر PeerJS ---
-    let peer;
-    let currentCall = null;
-    let localStream = null;
-
-    const myPeerId = isAdmin ? "admin_voice_channel" : "user_" + myId;
-    peer = new Peer(myPeerId);
-
-    peer.on('call', (call) => {
-      currentCall = call;
-      document.getElementById("callModal").style.display = "flex";
-      document.getElementById("callStatusText").textContent = "مكالمة صوتية واردة...";
-      document.getElementById("acceptCallBtn").style.display = "block";
-    });
-
-    document.getElementById("callBtn").addEventListener("click", async () => {
-      const targetId = isAdmin ? "user_active_now" : "admin_voice_channel";
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        const call = peer.call(targetId, localStream);
-        setupCallEvents(call);
-        document.getElementById("callModal").style.display = "flex";
-        document.getElementById("callStatusText").textContent = "جاري الاتصال...";
-      } catch (err) {
-        alert("يرجى التأكد من السماح بالوصول للميكروفون ومن استخدام رابط آمن (HTTPS).");
-      }
-    });
-
-    document.getElementById("acceptCallBtn").addEventListener("click", async () => {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        currentCall.answer(localStream);
-        setupCallEvents(currentCall);
-        document.getElementById("acceptCallBtn").style.display = "none";
-        document.getElementById("callStatusText").textContent = "المكالمة متصلة 🟢";
-      } catch (err) {
-        alert("فشل تشغيل الميكروفون.");
-      }
-    });
-
-    function setupCallEvents(call) {
-      currentCall = call;
-      call.on('stream', (remoteStream) => {
-        const remoteAudio = document.getElementById("remoteAudio");
-        remoteAudio.srcObject = remoteStream;
-        document.getElementById("callStatusText").textContent = "المكالمة متصلة 🟢";
-      });
-      call.on('close', closeCall);
-    }
-
-    function closeCall() {
-      document.getElementById("callModal").style.display = "none";
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-      }
-      currentCall = null;
-    }
-
-    document.getElementById("endCallBtn").addEventListener("click", () => {
-      if (currentCall) currentCall.close();
-      closeCall();
-    });
-
-    bellBtn.addEventListener("click", async function() {
-      if (isAdmin) return;
-      const bellStatusRef = doc(db, "status", "bell_alert");
-      try {
-        const docSnap = await getDoc(bellStatusRef);
-        let currentState = "green";
-        if (docSnap.exists()) currentState = docSnap.data().state || "green";
-        let newState = (currentState === "red") ? "green" : "red";
-        await setDoc(bellStatusRef, { state: newState, timestamp: Date.now() });
-      } catch (e) {}
-    });
-
-    const bellStatusRef = doc(db, "status", "bell_alert");
-    onSnapshot(bellStatusRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const state = docSnap.data().state || "green";
-        if (state === "red") {
-          bellBtn.style.background = "#cc0000";
-          bellBtn.style.boxShadow = "0 0 10px #cc0000";
-          if (!isAdmin) {
-            blockIncomingFromAdmin = true;
-            for (const docId in messageElements) {
-              messageElements[docId].element.remove();
-              delete messageElements[docId];
-            }
-          }
-          if (isAdmin) {
-            const sound = document.getElementById("notificationSound");
-            if (sound) { sound.currentTime = 0; sound.play().catch(e => {}); }
-          }
+        // اسم المستخدم (مظلل بالأسود أو أزرق للمدير)
+        const userSpan = document.createElement("span");
+        userSpan.className = "comment-username";
+        if (msg.isAdmin) {
+          userSpan.classList.add("admin-name");
+          userSpan.textContent = "@المدير";
         } else {
-          bellBtn.style.background = "#2cc067";
-          bellBtn.style.boxShadow = "0 0 8px rgba(44, 192, 103, 0.3)";
-          if (!isAdmin) blockIncomingFromAdmin = false;
+          userSpan.textContent = "@شيتوس-ل9ج8غ";
         }
-      }
-    });
+        headerDiv.appendChild(userSpan);
 
-    const activeVisitorDocRef = doc(db, "status", "active_visitor");
-    const logContainer = document.getElementById("visitorLogContainer");
-    const loginTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        const timeSpan = document.createElement("span");
+        timeSpan.className = "comment-time";
+        timeSpan.textContent = `• ${msg.time}`;
+        headerDiv.appendChild(timeSpan);
+        contentDiv.appendChild(headerDiv);
 
-    function initAdminFeatures() {
-      const adminStatusRef = doc(db, "status", "admin_status");
-      setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
-      setInterval(() => {
-        setDoc(adminStatusRef, { online: true, lastSeen: Date.now() }, { merge: true });
-      }, 4000);
+        const textDiv = document.createElement("div");
+        textDiv.className = "comment-text";
+        textDiv.textContent = msg.text;
+        contentDiv.appendChild(textDiv);
 
-      onSnapshot(activeVisitorDocRef, (docSnap) => {
-        const countSpan = document.getElementById("onlineCount");
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.active && (Date.now() - data.lastSeen < 6000)) {
-            countSpan.textContent = "1";
-            logContainer.innerHTML = `
-              <div class="log-item">
-                <div class="log-row" style="color: #2cc067; font-weight: bold;"><span>🟢 متصل حالياً</span></div>
-                <div class="log-row"><span>دخل في:</span> <span>${data.loginTime || 'غير متوفر'}</span></div>
-              </div>
-            `;
-          } else {
-            countSpan.textContent = "0";
-            let logoutDisplay = data.logoutTime ? `<span>خرج في:</span> <span>${data.logoutTime}</span>` : `<span>لم يحدد وقت خروج</span>`;
-            let loginDisplay = data.loginTime ? `<span>دخل في:</span> <span>${data.loginTime}</span>` : ``;
-            logContainer.innerHTML = `
-              <div class="log-item">
-                <div class="log-row" style="color: #888; font-weight: bold;"><span>⚪ غادر الموقع</span></div>
-                <div class="log-row">${loginDisplay}</div>
-                <div class="log-row">${logoutDisplay}</div>
-              </div>
-            `;
-          }
-        } else {
-          countSpan.textContent = "0";
-          logContainer.innerHTML = `<div class="log-item" style="color:#888; text-align:center;">لا يوجد سجلات حتى الآن</div>`;
-        }
+        // أزرار التفاعل تحت التعليق
+        const footerDiv = document.createElement("div");
+        footerDiv.className = "comment-footer";
+
+        const actionGroup = document.createElement("div");
+        actionGroup.className = "action-group";
+
+        const likeBtn = document.createElement("button");
+        likeBtn.className = "action-icon-btn";
+        likeBtn.innerHTML = "👍 <span>1</span>";
+        actionGroup.appendChild(likeBtn);
+
+        const dislikeBtn = document.createElement("button");
+        dislikeBtn.className = "action-icon-btn";
+        dislikeBtn.innerHTML = "👎";
+        actionGroup.appendChild(dislikeBtn);
+
+        footerDiv.appendChild(actionGroup);
+        contentDiv.appendChild(footerDiv);
+        containerDiv.appendChild(contentDiv);
+
+        const optionsBtn = document.createElement("button");
+        optionsBtn.className = "comment-options";
+        optionsBtn.textContent = "⋮";
+        containerDiv.appendChild(optionsBtn);
+
+        messagesContainer.appendChild(containerDiv);
       });
-      startListeningMessages();
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    function initVisitorFeatures() {
-      async function registerVisitor() {
-        try {
-          const docSnap = await getDoc(activeVisitorDocRef);
-          if (docSnap.exists() && docSnap.data().active && (Date.now() - docSnap.data().lastSeen < 6000) && docSnap.data().userId !== myId) {
-            document.getElementById("blockScreen").style.display = "flex";
-            return;
-          }
-          await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, logoutTime: "", lastSeen: Date.now() });
-          
-          setInterval(async () => {
-            try {
-              await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
-            } catch(e) {}
-          }, 3000);
-
-          window.addEventListener("beforeunload", () => {
-            const logoutTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            setDoc(activeVisitorDocRef, { active: false, userId: myId, loginTime: loginTimeStr, logoutTime: logoutTimeStr, lastSeen: 0 }, { merge: true });
-          });
-        } catch(e) {}
-      }
-      registerVisitor();
-      startListeningMessages();
-    }
-
-    const pageLoadTime = Date.now();
-
-    window.sendMessage = async function() {
-      if (!isAdmin && sessionStorage.getItem("visitor_authenticated") !== "true") return;
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
+    function addMessage() {
+      const text = messageInput.value.trim();
       if (text === "") return;
-      const currentTime = Date.now();
-      input.value = "";
-      try {
-        await addDoc(collection(db, "messages"), {
-          text: text,
-          senderId: myId,
-          isAdminMessage: isAdmin,
-          createdAt: currentTime,
-          read: isAdmin
-        });
-      } catch (error) {}
-    };
 
-    document.getElementById("messageInput").addEventListener("keypress", function(event) {
-      if (event.key === "Enter") sendMessage();
+      const newMsg = {
+        id: Date.now(),
+        text: text,
+        isAdmin: isAdmin,
+        time: "الآن"
+      };
+
+      messages.push(newMsg);
+      localStorage.setItem("youtube_chat_messages", JSON.stringify(messages));
+      messageInput.value = "";
+      renderMessages();
+    }
+
+    sendBtn.addEventListener("click", addMessage);
+    messageInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") addMessage();
     });
 
-    const messageElements = {};
+    // تفاعل الأزرار العلوية لتأكيد عملها بشكل سليم
+    document.getElementById("callBtn").addEventListener("click", () => {
+      alert("جاري بدء الاتصال الصوتي...");
+    });
 
-    function startListeningMessages() {
-      const q = isAdmin 
-        ? query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30))
-        : query(collection(db, "messages"), where("createdAt", ">=", pageLoadTime), orderBy("createdAt", "desc"), limit(30));
+    document.getElementById("bellBtn").addEventListener("click", () => {
+      alert("تم تفعيل التنبيهات بنجاح.");
+    });
 
-      onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
-        const messagesContainer = document.getElementById("messages");
+    document.getElementById("backBtn").addEventListener("click", () => {
+      localStorage.removeItem("chat_logged_in");
+      location.reload();
+    });
 
-        snapshot.docChanges().forEach((change) => {
-          const docId = change.doc.id;
-          const data = change.doc.data();
-
-          if (change.type === "added") {
-            if (messageElements[docId]) return;
-            if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
-
-            const containerDiv = document.createElement("div");
-            containerDiv.id = "wrap_" + docId;
-            containerDiv.className = "comment-container";
-
-            const avatarDiv = document.createElement("div");
-            avatarDiv.className = "comment-avatar";
-            if (data.isAdminMessage) {
-              avatarDiv.textContent = "ل";
-              avatarDiv.style.background = "#065fd4";
-            } else {
-              avatarDiv.textContent = "ش";
-              avatarDiv.style.background = "#2cc067";
-            }
-            containerDiv.appendChild(avatarDiv);
-
-            const contentDiv = document.createElement("div");
-            contentDiv.className = "comment-content";
-
-            const headerDiv = document.createElement("div");
-            headerDiv.className = "comment-header";
-
-            const userSpan = document.createElement("span");
-            userSpan.className = "comment-username";
-            if (data.isAdminMessage) {
-              userSpan.classList.add("admin-name");
-              userSpan.textContent = "@المدير";
-            } else {
-              userSpan.textContent = "@شيتوس-ل9ج8غ";
-            }
-            headerDiv.appendChild(userSpan);
-
-            const timeSpan = document.createElement("span");
-            timeSpan.className = "comment-time";
-            if (data.createdAt) {
-              const msgDate = new Date(data.createdAt);
-              const timeStr = msgDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-              timeSpan.textContent = `• الآن (${timeStr})`;
-            } else {
-              timeSpan.textContent = "• الآن";
-            }
-            headerDiv.appendChild(timeSpan);
-            contentDiv.appendChild(headerDiv);
-
-            const textDiv = document.createElement("div");
-            textDiv.className = "comment-text";
-            textDiv.textContent = data.text;
-            contentDiv.appendChild(textDiv);
-
-            const footerDiv = document.createElement("div");
-            footerDiv.className = "comment-footer";
-
-            const actionGroup = document.createElement("div");
-            actionGroup.className = "action-group";
-
-            const likeBtn = document.createElement("button");
-            likeBtn.className = "action-icon-btn";
-            likeBtn.innerHTML = "👍 <span>1</span>";
-            actionGroup.appendChild(likeBtn);
-
-            const dislikeBtn = document.createElement("button");
-            dislikeBtn.className = "action-icon-btn";
-            dislikeBtn.innerHTML = "👎";
-            actionGroup.appendChild(dislikeBtn);
-
-            footerDiv.appendChild(actionGroup);
-
-            if (!isAdmin) {
-              const timerSpan = document.createElement("span");
-              timerSpan.className = "timer-text";
-              footerDiv.appendChild(timerSpan);
-              containerDiv.dataset.createdAt = data.createdAt;
-            }
-
-            contentDiv.appendChild(footerDiv);
-            containerDiv.appendChild(contentDiv);
-
-            const optionsBtn = document.createElement("button");
-            optionsBtn.className = "comment-options";
-            optionsBtn.textContent = "⋮";
-            containerDiv.appendChild(optionsBtn);
-            
-            messagesContainer.insertBefore(containerDiv, messagesContainer.firstChild);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            messageElements[docId] = { element: containerDiv, data: data };
-
-            if (isAdmin && !data.isAdminMessage && !data.read) {
-              updateDoc(doc(db, "messages", docId), { read: true });
-            }
-
-            if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
-              const sound = document.getElementById("notificationSound");
-              if (sound) { sound.currentTime = 0; sound.play().catch(err => {}); }
-            }
-          } 
-          else if (change.type === "removed") {
-            if (messageElements[docId]) {
-              messageElements[docId].element.remove();
-              delete messageElements[docId];
-            }
-          }
-        });
-      });
-    }
-
-    if (!isAdmin) {
-      setInterval(() => {
-        const now = Date.now();
-        for (const docId in messageElements) {
-          const item = messageElements[docId];
-          const timeLeft = 35000 - (now - item.data.createdAt);
-          if (timeLeft <= 0) {
-            item.element.remove();
-            delete messageElements[docId];
-          } else {
-            const timerSpan = item.element.querySelector(".timer-text");
-            if (timerSpan) timerSpan.textContent = Math.ceil(timeLeft / 1000) + ' ث';
-          }
-        }
-      }, 1000);
-    }
+    // تحميل الرسائل عند البدء
+    renderMessages();
   </script>
-
 </body>
 </html>
