@@ -537,7 +537,8 @@
     let currentCall = null;
     let localStream = null;
 
-    const myPeerId = isAdmin ? "admin_voice_channel" : "user_" + myId;
+    // تحديد الـ Peer ID بناءً على نوع المستخدم
+    const myPeerId = isAdmin ? "admin_voice_channel" : "visitor_" + myId;
     peer = new Peer(myPeerId);
 
     peer.on('call', (call) => {
@@ -548,15 +549,39 @@
     });
 
     document.getElementById("callBtn").addEventListener("click", async () => {
-      const targetId = isAdmin ? "user_active_now" : "admin_voice_channel";
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        const call = peer.call(targetId, localStream);
-        setupCallEvents(call);
-        document.getElementById("callModal").style.display = "flex";
-        document.getElementById("callStatusText").textContent = "جاري الاتصال...";
-      } catch (err) {
-        alert("يرجى التأكد من السماح بالوصول للميكروفون ومن استخدام رابط آمن (HTTPS).");
+      if (isAdmin) {
+        // المدير يجلب الـ Peer ID الخاص بالزائر الحالي من فايربيس
+        try {
+          const docSnap = await getDoc(activeVisitorDocRef);
+          if (docSnap.exists() && docSnap.data().active) {
+            const targetPeerId = docSnap.data().peerId;
+            if (!targetPeerId) {
+              alert("تعذر العثور على معرف اتصال الزائر.");
+              return;
+            }
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            const call = peer.call(targetPeerId, localStream);
+            setupCallEvents(call);
+            document.getElementById("callModal").style.display = "flex";
+            document.getElementById("callStatusText").textContent = "جاري الاتصال بالزائر...";
+          } else {
+            alert("لا يوجد زائر متصل حالياً للاتصال به.");
+          }
+        } catch (err) {
+          alert("حدث خطأ أثناء محاولة الاتصال بالزائر.");
+        }
+      } else {
+        // الزائر يتصل بالمدير مباشرة عبر القناة الثابتة
+        const targetId = "admin_voice_channel";
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          const call = peer.call(targetId, localStream);
+          setupCallEvents(call);
+          document.getElementById("callModal").style.display = "flex";
+          document.getElementById("callStatusText").textContent = "جاري الاتصال بالمدير...";
+        } catch (err) {
+          alert("يرجى التأكد من السماح بالوصول للميكروفون ومن استخدام رابط آمن (HTTPS).");
+        }
       }
     });
 
@@ -682,17 +707,18 @@
             document.getElementById("blockScreen").style.display = "flex";
             return;
           }
-          await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, logoutTime: "", lastSeen: Date.now() });
+          // تسجيل الزائر وتخزين الـ peerId الخاص به لكي يتمكن المدير من الاتصال به
+          await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, loginTime: loginTimeStr, logoutTime: "", lastSeen: Date.now() });
           
           setInterval(async () => {
             try {
-              await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
+              await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
             } catch(e) {}
           }, 3000);
 
           window.addEventListener("beforeunload", () => {
             const logoutTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            setDoc(activeVisitorDocRef, { active: false, userId: myId, loginTime: loginTimeStr, logoutTime: logoutTimeStr, lastSeen: 0 }, { merge: true });
+            setDoc(activeVisitorDocRef, { active: false, userId: myId, peerId: myPeerId, loginTime: loginTimeStr, logoutTime: logoutTimeStr, lastSeen: 0 }, { merge: true });
           });
         } catch(e) {}
       }
@@ -722,7 +748,6 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    // استعلام خاص حسب نوع المستخدم (المدير يرى آخر 30 رسالة، الزائر يرى فقط الرسائل التي تُرسل ابتداءً من لحظة فتحه للصفحة)
     const q = isAdmin 
       ? query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30))
       : query(collection(db, "messages"), where("createdAt", ">=", pageLoadTime), orderBy("createdAt", "desc"), limit(30));
@@ -775,7 +800,6 @@
           }
           headerInfo.appendChild(userSpan);
 
-          // عرض التاريخ والوقت الحقيقي للرسالة
           const timeSpan = document.createElement("span");
           timeSpan.className = "comment-time";
           if (data.createdAt) {
