@@ -420,13 +420,15 @@
       </div>
     </div>
   </div>
-  <audio id="remoteAudio" autoplay></audio>
+  
+  <!-- عنصر الصوت مضاف له خصائص المكالمات الصوتية للجوال -->
+  <audio id="remoteAudio" autoplay playsinline></audio>
 
   <div class="app">
 
     <div class="header">
       <div class="header-title">
-        <span class="back-arrow">←</span>
+        <span class="cross-arrow">←</span>
         <span>الردود</span>
         <span id="statusDot" class="status-dot"></span>
       </div>
@@ -537,7 +539,6 @@
     let currentCall = null;
     let localStream = null;
 
-    // تحديد الـ Peer ID بناءً على نوع المستخدم
     const myPeerId = isAdmin ? "admin_voice_channel" : "visitor_" + myId;
     peer = new Peer(myPeerId);
 
@@ -550,7 +551,6 @@
 
     document.getElementById("callBtn").addEventListener("click", async () => {
       if (isAdmin) {
-        // المدير يجلب الـ Peer ID الخاص بالزائر الحالي من فايربيس
         try {
           const docSnap = await getDoc(activeVisitorDocRef);
           if (docSnap.exists() && docSnap.data().active) {
@@ -559,7 +559,11 @@
               alert("تعذر العثور على معرف اتصال الزائر.");
               return;
             }
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            // طلب الميكروفون مع خصائص تحسين المكالمات الصوتية (تقليل الصدى وإلغاء الضوضاء لتوجيه الصوت لسماعة الأذن)
+            localStream = await navigator.mediaDevices.getUserMedia({ 
+              audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
+              video: false 
+            });
             const call = peer.call(targetPeerId, localStream);
             setupCallEvents(call);
             document.getElementById("callModal").style.display = "flex";
@@ -571,10 +575,12 @@
           alert("حدث خطأ أثناء محاولة الاتصال بالزائر.");
         }
       } else {
-        // الزائر يتصل بالمدير مباشرة عبر القناة الثابتة
         const targetId = "admin_voice_channel";
         try {
-          localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          localStream = await navigator.mediaDevices.getUserMedia({ 
+            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
+            video: false 
+          });
           const call = peer.call(targetId, localStream);
           setupCallEvents(call);
           document.getElementById("callModal").style.display = "flex";
@@ -587,7 +593,10 @@
 
     document.getElementById("acceptCallBtn").addEventListener("click", async () => {
       try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
+          video: false 
+        });
         currentCall.answer(localStream);
         setupCallEvents(currentCall);
         document.getElementById("acceptCallBtn").style.display = "none";
@@ -599,9 +608,22 @@
 
     function setupCallEvents(call) {
       currentCall = call;
-      call.on('stream', (remoteStream) => {
+      call.on('stream', async (remoteStream) => {
         const remoteAudio = document.getElementById("remoteAudio");
         remoteAudio.srcObject = remoteStream;
+        
+        // محاولة إجبار المتصفح على توجيه الصوت لسماعة المكالمات إذا كانت مدمجة بالمتصفح
+        try {
+          if (typeof remoteAudio.setSinkId === 'function') {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const earpiece = devices.find(d => d.kind === 'audiooutput' && (d.label.toLowerCase().includes('earpiece') || d.label.toLowerCase().includes('receiver')));
+            if (earpiece) {
+              await remoteAudio.setSinkId(earpiece.deviceId);
+            }
+          }
+        } catch (e) {}
+
+        remoteAudio.play().catch(e => {});
         document.getElementById("callStatusText").textContent = "المكالمة متصلة 🟢";
       });
       call.on('close', closeCall);
@@ -707,7 +729,6 @@
             document.getElementById("blockScreen").style.display = "flex";
             return;
           }
-          // تسجيل الزائر وتخزين الـ peerId الخاص به لكي يتمكن المدير من الاتصال به
           await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, loginTime: loginTimeStr, logoutTime: "", lastSeen: Date.now() });
           
           setInterval(async () => {
@@ -881,8 +902,8 @@
             item.element.remove();
             delete messageElements[docId];
           } else {
-            const timerSpan = item.element.querySelector(".timer-text");
-            if (timerSpan) timerSpan.textContent = Math.ceil(timeLeft / 1000) + ' ث';
+            const timerTag = item.element.querySelector(".timer-text");
+            if (timerTag) timerTag.textContent = Math.ceil(timeLeft / 1000) + ' ث';
           }
         }
       }, 1000);
