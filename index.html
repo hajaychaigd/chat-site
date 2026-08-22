@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>الردود</title>
+  
+  <!-- مكتبة PeerJS للاتصال الصوتي المباشر -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <style>
     * {
@@ -31,7 +34,7 @@
       position: relative;
     }
 
-    /* شريط العلوي */
+    /* الشريط العلوي */
     .header {
       background: #fafbfc;
       color: #333333;
@@ -92,7 +95,7 @@
       transition: background 0.2s;
     }
 
-    /* القائمة المنسدلة (تظهر للمدير فقط) */
+    /* القائمة المنسدلة */
     .menu-btn {
       background: none;
       border: none;
@@ -189,7 +192,7 @@
       100% { transform: translateX(-50%); }
     }
 
-    /* منطقة التعليقات المنسقة */
+    /* منطقة التعليقات */
     .messages {
       flex: 1;
       padding: 16px;
@@ -307,7 +310,7 @@
       font-size: 11px;
     }
 
-    /* منطقة الكتابة السفلى */
+    /* منطقة الكتابة */
     .input-area {
       display: flex;
       padding: 12px 16px;
@@ -373,6 +376,30 @@
       font-weight: bold;
       line-height: 1.6;
     }
+
+    /* نافذة الاتصال الصوتي المنبثقة */
+    #callModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      color: white;
+    }
+    .call-card {
+      background: #ffffff;
+      color: #333;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      width: 280px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
   </style>
 </head>
 
@@ -381,6 +408,19 @@
   <div id="blockScreen">
     ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
   </div>
+
+  <!-- نافذة الاتصال -->
+  <div id="callModal">
+    <div class="call-card">
+      <h3 id="callStatusText" style="margin-bottom: 20px;">جاري الاتصال...</h3>
+      <div style="font-size: 50px; margin-bottom: 20px;">🎙️</div>
+      <div style="display: flex; gap: 15px; justify-content: center;">
+        <button id="acceptCallBtn" style="background: #6c9a78; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; display: none;">قبول</button>
+        <button id="endCallBtn" style="background: #d97777; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer;">إنهاء</button>
+      </div>
+    </div>
+  </div>
+  <audio id="remoteAudio" autoplay></audio>
 
   <div class="app">
 
@@ -391,6 +431,8 @@
         <span id="statusDot" class="status-dot"></span>
       </div>
       <div class="header-actions">
+        <!-- زر الاتصال الصوتي -->
+        <button id="callBtn" class="mute-btn" title="اتصال صوتي" style="background: #4a7bb0;">📞</button>
         <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
@@ -486,6 +528,70 @@
       myId = 'user_' + Math.random().toString(36).substring(2);
       localStorage.setItem("chat_user_id", myId);
     }
+
+    // --- منطق الاتصال الصوتي عبر PeerJS ---
+    let peer;
+    let currentCall = null;
+    let localStream = null;
+
+    const myPeerId = isAdmin ? "admin_voice_channel" : "user_" + myId;
+    peer = new Peer(myPeerId);
+
+    peer.on('call', (call) => {
+      currentCall = call;
+      document.getElementById("callModal").style.display = "flex";
+      document.getElementById("callStatusText").textContent = "مكالمة صوتية واردة...";
+      document.getElementById("acceptCallBtn").style.display = "block";
+    });
+
+    document.getElementById("callBtn").addEventListener("click", async () => {
+      const targetId = isAdmin ? "user_active_now" : "admin_voice_channel";
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        const call = peer.call(targetId, localStream);
+        setupCallEvents(call);
+        document.getElementById("callModal").style.display = "flex";
+        document.getElementById("callStatusText").textContent = "جاري الاتصال...";
+      } catch (err) {
+        alert("يرجى التأكد من السماح بالوصول للميكروفون ومن استخدام رابط آمن (HTTPS).");
+      }
+    });
+
+    document.getElementById("acceptCallBtn").addEventListener("click", async () => {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        currentCall.answer(localStream);
+        setupCallEvents(currentCall);
+        document.getElementById("acceptCallBtn").style.display = "none";
+        document.getElementById("callStatusText").textContent = "المكالمة متصلة 🟢";
+      } catch (err) {
+        alert("فشل تشغيل الميكروفون.");
+      }
+    });
+
+    function setupCallEvents(call) {
+      currentCall = call;
+      call.on('stream', (remoteStream) => {
+        const remoteAudio = document.getElementById("remoteAudio");
+        remoteAudio.srcObject = remoteStream;
+        document.getElementById("callStatusText").textContent = "المكالمة متصلة 🟢";
+      });
+      call.on('close', closeCall);
+    }
+
+    function closeCall() {
+      document.getElementById("callModal").style.display = "none";
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+      currentCall = null;
+    }
+
+    document.getElementById("endCallBtn").addEventListener("click", () => {
+      if (currentCall) currentCall.close();
+      closeCall();
+    });
+    // -------------------------------------
 
     bellBtn.addEventListener("click", async function() {
       if (isAdmin) return;
@@ -615,7 +721,6 @@
 
     let q;
     if (isAdmin) {
-      // تعديل الاستعلام للمدير لجلب الرسائل بمرونة وسرعة أعلى دون قيود ثقيلة
       q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     } else {
       q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
