@@ -479,7 +479,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -719,12 +719,8 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    let q;
-    if (isAdmin) {
-      q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-    } else {
-      q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
-    }
+    // الاستعلام المباشر والسريع لجلب الرسائل فوراً بدون تأخير
+    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
 
     const messageElements = {};
 
@@ -843,7 +839,7 @@
         const now = Date.now();
         for (const docId in messageElements) {
           const item = messageElements[docId];
-          const timeLeft = 35000 - (now - item.data.createdAt);
+          const timeLeft = 40000 - (now - item.data.createdAt);
           if (timeLeft <= 0) {
             item.element.remove();
             delete messageElements[docId];
