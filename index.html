@@ -479,7 +479,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, initializeFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, initializeFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -493,7 +493,6 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    // تفعيل الاتصال المباشر والفوري لإلغاء أي تأخير في المزامنة أو الشبكة
     const db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
       useFetchStreams: false
@@ -723,8 +722,8 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    // استعلام فوري مباشر لجلب الرسائل
-    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+    // استعلام سريع يحدد جلب أحدث 30 رسالة فقط لمنع التحميل الثقيل
+    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"), limit(30));
 
     const messageElements = {};
 
