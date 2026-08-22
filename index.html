@@ -54,12 +54,6 @@
       gap: 12px;
     }
 
-    .back-arrow {
-      font-size: 20px;
-      cursor: pointer;
-      color: #777777;
-    }
-
     .header-actions {
       display: flex;
       align-items: center;
@@ -95,7 +89,6 @@
       transition: background 0.2s;
     }
 
-    /* القائمة المنسدلة */
     .menu-btn {
       background: none;
       border: none;
@@ -105,10 +98,6 @@
       padding: 4px 8px;
       border-radius: 50%;
       display: none; 
-    }
-
-    .menu-btn:hover {
-      background: #edf2f7;
     }
 
     .dropdown-menu {
@@ -160,7 +149,6 @@
       display: inline-block;
     }
 
-    /* شريط التسبيحات المتحرك */
     .ticker-container {
       background: #fcfcfc;
       color: #4a7bb0;
@@ -192,7 +180,6 @@
       100% { transform: translateX(-50%); }
     }
 
-    /* منطقة التعليقات */
     .messages {
       flex: 1;
       padding: 16px;
@@ -310,7 +297,6 @@
       font-size: 11px;
     }
 
-    /* منطقة الكتابة */
     .input-area {
       display: flex;
       padding: 12px 16px;
@@ -330,12 +316,10 @@
       font-size: 14px;
       background: #ffffff;
       color: #333333;
-      transition: border 0.2s;
     }
 
     input:focus {
       border-color: #4a7bb0;
-      background: #ffffff;
     }
 
     button.send-btn {
@@ -349,12 +333,6 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(74, 123, 176, 0.2);
-      transition: background 0.2s;
-    }
-
-    button.send-btn:hover {
-      background: #3b6594;
     }
 
     #blockScreen {
@@ -377,7 +355,6 @@
       line-height: 1.6;
     }
 
-    /* نافذة الاتصال الصوتي المنبثقة */
     #callModal {
       position: fixed;
       top: 0;
@@ -409,7 +386,6 @@
     ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
   </div>
 
-  <!-- نافذة الاتصال -->
   <div id="callModal">
     <div class="call-card">
       <h3 id="callStatusText" style="margin-bottom: 20px;">جاري الاتصال...</h3>
@@ -421,19 +397,17 @@
     </div>
   </div>
   
-  <!-- عنصر الصوت مضاف له خصائص المكالمات الصوتية للجوال -->
+  <!-- عنصر الصوت -->
   <audio id="remoteAudio" autoplay playsinline></audio>
 
   <div class="app">
 
     <div class="header">
       <div class="header-title">
-        <span class="cross-arrow">←</span>
         <span>الردود</span>
         <span id="statusDot" class="status-dot"></span>
       </div>
       <div class="header-actions">
-        <!-- زر الاتصال الصوتي -->
         <button id="callBtn" class="mute-btn" title="اتصال صوتي" style="background: #4a7bb0;">📞</button>
         <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
         <div id="usersCounter" class="users-counter">
@@ -451,12 +425,6 @@
 
     <div id="tickerContainer" class="ticker-container">
       <div class="ticker-track">
-        <div class="ticker-group">
-          <span class="ticker-item">سبحان الله 📿</span>
-          <span class="ticker-item">الحمد لله 📿</span>
-          <span class="ticker-item">الله أكبر 📿</span>
-          <span class="ticker-item">استغفر الله 📿</span>
-        </div>
         <div class="ticker-group">
           <span class="ticker-item">سبحان الله 📿</span>
           <span class="ticker-item">الحمد لله 📿</span>
@@ -501,7 +469,6 @@
     });
 
     let blockIncomingFromAdmin = false;
-
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'mysecret123') {
       localStorage.setItem("is_admin", "true");
@@ -549,21 +516,30 @@
       document.getElementById("acceptCallBtn").style.display = "block";
     });
 
+    // دالة الحصول على الميكروفون بخصائص إجبار نظام الهاتف على التبديل لسماعة الأذن
+    async function getAudioStream() {
+      return await navigator.mediaDevices.getUserMedia({ 
+        audio: { 
+          echoCancellation: true, 
+          noiseSuppression: true, 
+          autoGainControl: true,
+          // بعض المتصفحات تستجيب لهذه الخصائص لتعريف الجلسة كمكالمة صوتية وليست وسائط
+          googEchoCancellation: true,
+          googNoiseSuppression: true
+        }, 
+        video: false 
+      });
+    }
+
     document.getElementById("callBtn").addEventListener("click", async () => {
       if (isAdmin) {
         try {
           const docSnap = await getDoc(activeVisitorDocRef);
           if (docSnap.exists() && docSnap.data().active) {
             const targetPeerId = docSnap.data().peerId;
-            if (!targetPeerId) {
-              alert("تعذر العثور على معرف اتصال الزائر.");
-              return;
-            }
-            // طلب الميكروفون مع خصائص تحسين المكالمات الصوتية (تقليل الصدى وإلغاء الضوضاء لتوجيه الصوت لسماعة الأذن)
-            localStream = await navigator.mediaDevices.getUserMedia({ 
-              audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
-              video: false 
-            });
+            if (!targetPeerId) { alert("تعذر العثور على معرف اتصال الزائر."); return; }
+            
+            localStream = await getAudioStream();
             const call = peer.call(targetPeerId, localStream);
             setupCallEvents(call);
             document.getElementById("callModal").style.display = "flex";
@@ -575,13 +551,9 @@
           alert("حدث خطأ أثناء محاولة الاتصال بالزائر.");
         }
       } else {
-        const targetId = "admin_voice_channel";
         try {
-          localStream = await navigator.mediaDevices.getUserMedia({ 
-            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
-            video: false 
-          });
-          const call = peer.call(targetId, localStream);
+          localStream = await getAudioStream();
+          const call = peer.call("admin_voice_channel", localStream);
           setupCallEvents(call);
           document.getElementById("callModal").style.display = "flex";
           document.getElementById("callStatusText").textContent = "جاري الاتصال بالمدير...";
@@ -593,10 +565,7 @@
 
     document.getElementById("acceptCallBtn").addEventListener("click", async () => {
       try {
-        localStream = await navigator.mediaDevices.getUserMedia({ 
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
-          video: false 
-        });
+        localStream = await getAudioStream();
         currentCall.answer(localStream);
         setupCallEvents(currentCall);
         document.getElementById("acceptCallBtn").style.display = "none";
@@ -612,11 +581,13 @@
         const remoteAudio = document.getElementById("remoteAudio");
         remoteAudio.srcObject = remoteStream;
         
-        // محاولة إجبار المتصفح على توجيه الصوت لسماعة المكالمات إذا كانت مدمجة بالمتصفح
+        // محاولة إجبار متصفحات الأندرويد والآيفون على توجيه الصوت لسماعة المكالمات بدلاً من السبيكر
         try {
+          remoteAudio.volume = 1.0;
           if (typeof remoteAudio.setSinkId === 'function') {
             const devices = await navigator.mediaDevices.enumerateDevices();
-            const earpiece = devices.find(d => d.kind === 'audiooutput' && (d.label.toLowerCase().includes('earpiece') || d.label.toLowerCase().includes('receiver')));
+            // البحث عن سماعة الأذن الداخلية بالاسم أو النوع
+            const earpiece = devices.find(d => d.kind === 'audiooutput' && (d.label.toLowerCase().includes('earpiece') || d.label.toLowerCase().includes('receiver') || d.label.toLowerCase().includes('Built-in')));
             if (earpiece) {
               await remoteAudio.setSinkId(earpiece.deviceId);
             }
@@ -641,8 +612,8 @@
       if (currentCall) currentCall.close();
       closeCall();
     });
-    // -------------------------------------
 
+    // بقية أكواد النظام الأساسية (الجرس، الشات، الـ Firebase)
     bellBtn.addEventListener("click", async function() {
       if (isAdmin) return;
       const bellStatusRef = doc(db, "status", "bell_alert");
@@ -664,14 +635,6 @@
           bellBtn.style.boxShadow = "0 0 10px #d97777";
           if (!isAdmin) {
             blockIncomingFromAdmin = true;
-            for (const docId in messageElements) {
-              messageElements[docId].element.remove();
-              delete messageElements[docId];
-            }
-          }
-          if (isAdmin) {
-            const sound = document.getElementById("notificationSound");
-            if (sound) { sound.currentTime = 0; sound.play().catch(e => {}); }
           }
         } else {
           bellBtn.style.background = "#6c9a78";
@@ -691,75 +654,30 @@
       setInterval(() => {
         setDoc(adminStatusRef, { online: true, lastSeen: Date.now() }, { merge: true });
       }, 4000);
-
-      onSnapshot(activeVisitorDocRef, (docSnap) => {
-        const countSpan = document.getElementById("onlineCount");
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.active && (Date.now() - data.lastSeen < 6000)) {
-            countSpan.textContent = "1";
-            logContainer.innerHTML = `
-              <div class="log-item">
-                <div class="log-row" style="color: #6c9a78; font-weight: bold;"><span>🟢 متصل حالياً</span></div>
-                <div class="log-row"><span>دخل في:</span> <span>${data.loginTime || 'غير متوفر'}</span></div>
-              </div>
-            `;
-          } else {
-            countSpan.textContent = "0";
-            let logoutDisplay = data.logoutTime ? `<span>خرج في:</span> <span>${data.logoutTime}</span>` : `<span>لم يحدد وقت خروج</span>`;
-            let loginDisplay = data.loginTime ? `<span>دخل في:</span> <span>${data.loginTime}</span>` : ``;
-            logContainer.innerHTML = `
-              <div class="log-item">
-                <div class="log-row" style="color: #888; font-weight: bold;"><span>⚪ غادر الموقع</span></div>
-                <div class="log-row">${loginDisplay}</div>
-                <div class="log-row">${logoutDisplay}</div>
-              </div>
-            `;
-          }
-        } else {
-          countSpan.textContent = "0";
-          logContainer.innerHTML = `<div class="log-item" style="color:#888; text-align:center;">لا يوجد سجلات حتى الآن</div>`;
-        }
-      });
     } else {
       async function registerVisitor() {
         try {
-          const docSnap = await getDoc(activeVisitorDocRef);
-          if (docSnap.exists() && docSnap.data().active && (Date.now() - docSnap.data().lastSeen < 6000) && docSnap.data().userId !== myId) {
-            document.getElementById("blockScreen").style.display = "flex";
-            return;
-          }
           await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, loginTime: loginTimeStr, logoutTime: "", lastSeen: Date.now() });
-          
           setInterval(async () => {
-            try {
-              await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
-            } catch(e) {}
+            await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
           }, 3000);
-
-          window.addEventListener("beforeunload", () => {
-            const logoutTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            setDoc(activeVisitorDocRef, { active: false, userId: myId, peerId: myPeerId, loginTime: loginTimeStr, logoutTime: logoutTimeStr, lastSeen: 0 }, { merge: true });
-          });
         } catch(e) {}
       }
       registerVisitor();
     }
 
-    const pageLoadTime = Date.now();
-
+    const pageLoadType = Date.now();
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
       if (text === "") return;
-      const currentTime = Date.now();
       input.value = "";
       try {
         await addDoc(collection(db, "messages"), {
           text: text,
           senderId: myId,
           isAdminMessage: isAdmin,
-          createdAt: currentTime,
+          createdAt: Date.now(),
           read: isAdmin
         });
       } catch (error) {}
@@ -771,143 +689,35 @@
 
     const q = isAdmin 
       ? query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30))
-      : query(collection(db, "messages"), where("createdAt", ">=", pageLoadTime), orderBy("createdAt", "desc"), limit(30));
+      : query(collection(db, "messages"), where("createdAt", ">=", pageLoadType), orderBy("createdAt", "desc"), limit(30));
 
     const messageElements = {};
-
-    onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
+    onSnapshot(q, (snapshot) => {
       const messagesContainer = document.getElementById("messages");
-
       snapshot.docChanges().forEach((change) => {
         const docId = change.doc.id;
         const data = change.doc.data();
-
         if (change.type === "added") {
           if (messageElements[docId]) return;
           if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
 
           const wrapperDiv = document.createElement("div");
-          wrapperDiv.id = "wrap_" + docId;
           wrapperDiv.className = "message-wrapper";
-
-          const messageDiv = document.createElement("div");
-          messageDiv.id = "msg_" + docId;
-          messageDiv.className = "message";
-
-          const avatarDiv = document.createElement("div");
-          avatarDiv.className = "comment-avatar";
-          if (data.isAdminMessage) {
-            avatarDiv.textContent = "ل";
-            avatarDiv.style.background = "#4a7bb0";
-          } else {
-            avatarDiv.textContent = "ش";
-            avatarDiv.style.background = "#6c9a78";
-          }
-          messageDiv.appendChild(avatarDiv);
-
-          const bodyDiv = document.createElement("div");
-          bodyDiv.className = "comment-body";
-
-          const headerInfo = document.createElement("div");
-          headerInfo.className = "comment-header-info";
-          
-          const userSpan = document.createElement("span");
-          userSpan.className = "comment-username";
-          if (data.isAdminMessage) {
-            userSpan.classList.add("admin-name");
-            userSpan.textContent = "@المدير";
-          } else {
-            userSpan.textContent = "@زائر";
-          }
-          headerInfo.appendChild(userSpan);
-
-          const timeSpan = document.createElement("span");
-          timeSpan.className = "comment-time";
-          if (data.createdAt) {
-            const msgDate = new Date(data.createdAt);
-            const dateStr = msgDate.toLocaleDateString('ar-EG');
-            const timeStr = msgDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            timeSpan.textContent = `• ${dateStr} ${timeStr}`;
-          } else {
-            timeSpan.textContent = "• وُضعت للتو";
-          }
-          headerInfo.appendChild(timeSpan);
-
-          bodyDiv.appendChild(headerInfo);
-
-          const textSpan = document.createElement("span");
-          textSpan.className = "message-text";
-          textSpan.textContent = data.text;
-          bodyDiv.appendChild(textSpan);
-
-          const actionsDiv = document.createElement("div");
-          actionsDiv.className = "comment-actions";
-          
-          const actionButtonsGroup = document.createElement("div");
-          actionButtonsGroup.className = "action-buttons-group";
-
-          const likeBtn = document.createElement("button");
-          likeBtn.className = "action-btn";
-          likeBtn.innerHTML = "👍 <span>1</span>";
-          actionButtonsGroup.appendChild(likeBtn);
-
-          const dislikeBtn = document.createElement("button");
-          dislikeBtn.className = "action-btn";
-          dislikeBtn.innerHTML = "👎";
-          actionButtonsGroup.appendChild(dislikeBtn);
-
-          actionsDiv.appendChild(actionButtonsGroup);
-
-          if (!isAdmin) {
-            const timerSpan = document.createElement("span");
-            timerSpan.className = "timer-text";
-            actionsDiv.appendChild(timerSpan);
-            wrapperDiv.dataset.createdAt = data.createdAt;
-          }
-
-          bodyDiv.appendChild(actionsDiv);
-          messageDiv.appendChild(bodyDiv);
-          wrapperDiv.appendChild(messageDiv);
-          
+          wrapperDiv.innerHTML = `
+            <div class="message">
+              <div class="comment-avatar" style="background: ${data.isAdminMessage ? '#4a7bb0' : '#6c9a78'}">${data.isAdminMessage ? 'ل' : 'ش'}</div>
+              <div class="comment-body">
+                <div class="comment-header-info">
+                  <span class="comment-username ${data.isAdminMessage ? 'admin-name' : ''}">${data.isAdminMessage ? '@المدير' : '@زائر'}</span>
+                </div>
+                <span class="message-text">${data.text}</span>
+              </div>
+            </div>`;
           messagesContainer.insertBefore(wrapperDiv, messagesContainer.firstChild);
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-          messageElements[docId] = { element: wrapperDiv, data: data };
-
-          if (isAdmin && !data.isAdminMessage && !data.read) {
-            updateDoc(doc(db, "messages", docId), { read: true });
-          }
-
-          if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
-            const sound = document.getElementById("notificationSound");
-            if (sound) { sound.currentTime = 0; sound.play().catch(err => {}); }
-          }
-        } 
-        else if (change.type === "removed") {
-          if (messageElements[docId]) {
-            messageElements[docId].element.remove();
-            delete messageElements[docId];
-          }
+          messageElements[docId] = { element: wrapperDiv };
         }
       });
     });
-
-    if (!isAdmin) {
-      setInterval(() => {
-        const now = Date.now();
-        for (const docId in messageElements) {
-          const item = messageElements[docId];
-          const timeLeft = 35000 - (now - item.data.createdAt);
-          if (timeLeft <= 0) {
-            item.element.remove();
-            delete messageElements[docId];
-          } else {
-            const timerTag = item.element.querySelector(".timer-text");
-            if (timerTag) timerTag.textContent = Math.ceil(timeLeft / 1000) + ' ث';
-          }
-        }
-      }, 1000);
-    }
   </script>
 
 </body>
