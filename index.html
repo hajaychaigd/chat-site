@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>الردود</title>
   
-  <!-- مكتبة PeerJS للاتصال الصوتي المباشر -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <style>
@@ -34,7 +33,6 @@
       position: relative;
     }
 
-    /* الشريط العلوي */
     .header {
       background: #fafbfc;
       color: #333333;
@@ -92,10 +90,8 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 2px 6px rgba(108, 154, 120, 0.2);
-      transition: background 0.2s;
     }
 
-    /* القائمة المنسدلة */
     .menu-btn {
       background: none;
       border: none;
@@ -105,10 +101,6 @@
       padding: 4px 8px;
       border-radius: 50%;
       display: none; 
-    }
-
-    .menu-btn:hover {
-      background: #edf2f7;
     }
 
     .dropdown-menu {
@@ -160,7 +152,6 @@
       display: inline-block;
     }
 
-    /* شريط التسبيحات المتحرك */
     .ticker-container {
       background: #fcfcfc;
       color: #4a7bb0;
@@ -192,7 +183,6 @@
       100% { transform: translateX(-50%); }
     }
 
-    /* منطقة التعليقات */
     .messages {
       flex: 1;
       padding: 16px;
@@ -310,7 +300,6 @@
       font-size: 11px;
     }
 
-    /* منطقة الكتابة */
     .input-area {
       display: flex;
       padding: 12px 16px;
@@ -330,12 +319,10 @@
       font-size: 14px;
       background: #ffffff;
       color: #333333;
-      transition: border 0.2s;
     }
 
     input:focus {
       border-color: #4a7bb0;
-      background: #ffffff;
     }
 
     button.send-btn {
@@ -350,11 +337,6 @@
       align-items: center;
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(74, 123, 176, 0.2);
-      transition: background 0.2s;
-    }
-
-    button.send-btn:hover {
-      background: #3b6594;
     }
 
     #blockScreen {
@@ -374,10 +356,8 @@
       z-index: 9999;
       font-size: 16px;
       font-weight: bold;
-      line-height: 1.6;
     }
 
-    /* نافذة الاتصال الصوتي المنبثقة */
     #callModal {
       position: fixed;
       top: 0;
@@ -398,7 +378,6 @@
       border-radius: 20px;
       text-align: center;
       width: 280px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
   </style>
 </head>
@@ -409,7 +388,6 @@
     ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
   </div>
 
-  <!-- نافذة الاتصال -->
   <div id="callModal">
     <div class="call-card">
       <h3 id="callStatusText" style="margin-bottom: 20px;">جاري الاتصال...</h3>
@@ -431,7 +409,6 @@
         <span id="statusDot" class="status-dot"></span>
       </div>
       <div class="header-actions">
-        <!-- زر الاتصال الصوتي -->
         <button id="callBtn" class="mute-btn" title="اتصال صوتي" style="background: #4a7bb0;">📞</button>
         <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
         <div id="usersCounter" class="users-counter">
@@ -532,7 +509,6 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // --- منطق الاتصال الصوتي عبر PeerJS ---
     let peer;
     let currentCall = null;
     let localStream = null;
@@ -594,7 +570,6 @@
       if (currentCall) currentCall.close();
       closeCall();
     });
-    // -------------------------------------
 
     bellBtn.addEventListener("click", async function() {
       if (isAdmin) return;
@@ -699,20 +674,17 @@
       registerVisitor();
     }
 
-    const pageLoadTime = Date.now();
-
     window.sendMessage = async function() {
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
       if (text === "") return;
-      const currentTime = Date.now();
       input.value = "";
       try {
         await addDoc(collection(db, "messages"), {
           text: text,
           senderId: myId,
           isAdminMessage: isAdmin,
-          createdAt: currentTime,
+          createdAt: Date.now(),
           read: isAdmin
         });
       } catch (error) {}
@@ -722,9 +694,7 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    // استعلام مباشر لجلب آخر 50 رسالة مع الاستماع الحي اللحظي بدون أي قيود تعيق التحديث
     const q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(50));
-
     const messageElements = {};
 
     onSnapshot(q, (snapshot) => {
@@ -737,9 +707,6 @@
         if (change.type === "added") {
           if (messageElements[docId]) return;
           if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
-          
-          // للزائر فقط: تجاهل الرسائل القديمة التي أُرسلت قبل فتح صفحته
-          if (!isAdmin && data.createdAt < pageLoadTime) return;
 
           const wrapperDiv = document.createElement("div");
           wrapperDiv.id = "wrap_" + docId;
@@ -787,7 +754,6 @@
             timeSpan.textContent = "• وُضعت للتو";
           }
           headerInfo.appendChild(timeSpan);
-
           bodyDiv.appendChild(headerInfo);
 
           const textSpan = document.createElement("span");
@@ -833,7 +799,7 @@
             updateDoc(doc(db, "messages", docId), { read: true });
           }
 
-          if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
+          if (isAdmin && data.senderId !== myId) {
             const sound = document.getElementById("notificationSound");
             if (sound) { sound.currentTime = 0; sound.play().catch(err => {}); }
           }
