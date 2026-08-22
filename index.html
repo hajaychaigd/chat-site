@@ -850,7 +850,7 @@
         const now = Date.now();
         for (const docId in messageElements) {
           const item = messageElements[docId];
-          const timeLeft = 35000 - (now - item.data.createdAt);
+          const timeLeft = 60000 - (now - item.data.createdAt);
           if (timeLeft <= 0) {
             item.element.remove();
             delete messageElements[docId];
