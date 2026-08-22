@@ -722,7 +722,6 @@
       if (event.key === "Enter") sendMessage();
     });
 
-    // استعلام خاص حسب نوع المستخدم (المدير يرى آخر 30 رسالة، الزائر يرى فقط الرسائل التي تُرسل ابتداءً من لحظة فتحه للصفحة)
     const q = isAdmin 
       ? query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(30))
       : query(collection(db, "messages"), where("createdAt", ">=", pageLoadTime), orderBy("createdAt", "desc"), limit(30));
@@ -769,13 +768,12 @@
           userSpan.className = "comment-username";
           if (data.isAdminMessage) {
             userSpan.classList.add("admin-name");
-            userSpan.textContent = "@المدير";
+            userSpan.textContent = "لا اله الا الله ٧ح٦م";
           } else {
-            userSpan.textContent = "@زائر";
+            userSpan.textContent = "@شيتوس-لوجعغ";
           }
           headerInfo.appendChild(userSpan);
 
-          // عرض التاريخ والوقت الحقيقي للرسالة
           const timeSpan = document.createElement("span");
           timeSpan.className = "comment-time";
           if (data.createdAt) {
