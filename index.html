@@ -469,7 +469,10 @@
         <div class="game-cell" data-index="7"></div>
         <div class="game-cell" data-index="8"></div>
       </div>
-      <button class="close-game-btn" id="closeGameModal">إغلاق</button>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+        <button class="close-game-btn" id="resetGameBtn" style="background: #4a7bb0;">إعادة اللعب</button>
+        <button class="close-game-btn" id="closeGameModal">إغلاق</button>
+      </div>
     </div>
   </div>
 
@@ -583,6 +586,7 @@
     const gameBtn = document.getElementById("gameBtn");
     const gameModal = document.getElementById("gameModal");
     const closeGameModal = document.getElementById("closeGameModal");
+    const resetGameBtn = document.getElementById("resetGameBtn");
     const gameStatus = document.getElementById("gameStatus");
     const cells = document.querySelectorAll(".game-cell");
     const gameDocRef = doc(db, "status", "xo_game");
@@ -593,6 +597,16 @@
 
     closeGameModal.addEventListener("click", () => {
       gameModal.style.display = "none";
+    });
+
+    resetGameBtn.addEventListener("click", async () => {
+      try {
+        await setDoc(gameDocRef, {
+          board: ["", "", "", "", "", "", "", "", ""],
+          turn: "X",
+          active: true
+        });
+      } catch (e) {}
     });
 
     let boardState = ["", "", "", "", "", "", "", "", ""];
@@ -793,7 +807,6 @@
 
     let q;
     if (isAdmin) {
-      // تعديل الاستعلام للمدير مع تحديد حد أقصى للرسائل لسرعة التحميل وعدم التعليق
       q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(50));
     } else {
       q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
@@ -888,7 +901,6 @@
           messageDiv.appendChild(bodyDiv);
           wrapperDiv.appendChild(messageDiv);
           
-          // للمدير يتم ترتيب الرسائل تصاعدياً
           if (isAdmin) {
             messagesContainer.prepend(wrapperDiv);
           } else {
