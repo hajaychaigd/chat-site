@@ -597,6 +597,7 @@
       <button class="game-option-btn" id="openXoBtn">❌⭕ لعبة X-O</button>
       <button class="game-option-btn" id="openRpsBtn">✊✌️🖐️ حجر ورقة مقص</button>
       <button class="game-option-btn" id="openDominoBtn">🁉 لعبة الضومنة</button>
+      <button class="game-option-btn" id="openGuessBtn">🔢 لعبة تخمين الأرقام</button>
       <button class="custom-btn danger" id="closeGamesMenu" style="margin-top: 5px;">إغلاق</button>
     </div>
   </div>
@@ -679,6 +680,28 @@
         <button class="custom-btn danger" id="resetScoreDominoBtn" title="تصفير السكور">تصفير السكور 🔄</button>
       </div>
       <button class="custom-btn danger" id="backToMenuFromDomino" style="margin-top: 2px;">القائمة</button>
+    </div>
+  </div>
+
+  <!-- نافذة لعبة تخمين الأرقام -->
+  <div id="guessModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">تخمين الأرقام (من 1 إلى 100) 🔢</div>
+      <div class="score-board">
+        <span>المحاولات: <b id="guessAttempts">0</b></span>
+        <span>الفائزون: <b id="guessScore">0</b></span>
+      </div>
+      <div id="guessStatus" style="font-size: 12px; font-weight: bold; color: #4a7bb0;">ابدأ بكتابة رقم وتخمينه!</div>
+      
+      <div style="margin: 10px 0;">
+        <input type="number" id="guessInputNumber" min="1" max="100" placeholder="أدخل رقماً بين 1 و 100" style="width: 100%; text-align: center; padding: 8px; border-radius: 8px; border: 1px solid #dcdfe4;">
+      </div>
+
+      <div class="btn-group">
+        <button class="custom-btn" id="submitGuessBtn">إرسال التخمين</button>
+        <button class="custom-btn danger" id="resetGuessBtn">لعبة جديدة</button>
+      </div>
+      <button class="custom-btn danger" id="backToMenuFromGuess" style="margin-top: 2px;">القائمة</button>
     </div>
   </div>
 
@@ -794,14 +817,17 @@
     const openXoBtn = document.getElementById("openXoBtn");
     const openRpsBtn = document.getElementById("openRpsBtn");
     const openDominoBtn = document.getElementById("openDominoBtn");
+    const openGuessBtn = document.getElementById("openGuessBtn");
 
     const xoModal = document.getElementById("xoModal");
     const rpsModal = document.getElementById("rpsModal");
     const dominoModal = document.getElementById("dominoModal");
+    const guessModal = document.getElementById("guessModal");
 
     const backToMenuFromXo = document.getElementById("backToMenuFromXo");
     const backToMenuFromRps = document.getElementById("backToMenuFromRps");
     const backToMenuFromDomino = document.getElementById("backToMenuFromDomino");
+    const backToMenuFromGuess = document.getElementById("backToMenuFromGuess");
 
     gameBtn.addEventListener("click", () => gamesMenuModal.style.display = "flex");
     closeGamesMenu.addEventListener("click", () => gamesMenuModal.style.display = "none");
@@ -809,10 +835,12 @@
     openXoBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; xoModal.style.display = "flex"; });
     openRpsBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; rpsModal.style.display = "flex"; });
     openDominoBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; dominoModal.style.display = "flex"; });
+    openGuessBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; guessModal.style.display = "flex"; });
 
     backToMenuFromXo.addEventListener("click", () => { xoModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
     backToMenuFromRps.addEventListener("click", () => { rpsModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
     backToMenuFromDomino.addEventListener("click", () => { dominoModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
+    backToMenuFromGuess.addEventListener("click", () => { guessModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
 
     // --- كود لعبة X-O ---
     const resetGameBtn = document.getElementById("resetGameBtn");
@@ -1127,6 +1155,97 @@
 
         dominoHandContainer.appendChild(btn);
       });
+    });
+
+    // --- كود لعبة تخمين الأرقام ---
+    const guessDocRef = doc(db, "status", "guess_game");
+    const guessInputNumber = document.getElementById("guessInputNumber");
+    const submitGuessBtn = document.getElementById("submitGuessBtn");
+    const resetGuessBtn = document.getElementById("resetGuessBtn");
+    const guessStatus = document.getElementById("guessStatus");
+    const guessAttempts = document.getElementById("guessAttempts");
+    const guessScore = document.getElementById("guessScore");
+
+    resetGuessBtn.addEventListener("click", async () => {
+      try {
+        const randomNum = Math.floor(Math.random() * 100) + 1;
+        await setDoc(guessDocRef, {
+          targetNumber: randomNum,
+          attempts: 0,
+          statusText: "بدأت لعبة جديدة! خمن الرقم من 1 إلى 100",
+          won: false,
+          score: 0
+        });
+      } catch (e) {}
+    });
+
+    submitGuessBtn.addEventListener("click", async () => {
+      let val = parseInt(guessInputNumber.value);
+      if (isNaN(val) || val < 1 || val > 100) {
+        alert("الرجاء إدخال رقم صحيح بين 1 و 100");
+        return;
+      }
+      guessInputNumber.value = "";
+
+      try {
+        const docSnap = await getDoc(guessDocRef);
+        if (!docSnap.exists()) return;
+        let data = docSnap.data();
+
+        if (data.won) {
+          alert("لقد تم تخمين الرقم بالفعل! اضغط على لعبة جديدة.");
+          return;
+        }
+
+        let target = data.targetNumber;
+        let att = (data.attempts || 0) + 1;
+        let msg = "";
+        let isWon = false;
+        let currentScore = data.score || 0;
+
+        if (val === target) {
+          msg = `🎉 مبروك! الرقم الصحيح هو ${target}. تم التخمين في ${att} محاولة.`;
+          isWon = true;
+          currentScore++;
+        } else if (val < target) {
+          msg = `📈 الرقم ${val} صغير جداً، ارفع الرقم!`;
+        } else {
+          msg = `📉 الرقم ${val} كبير جداً، انزل بالرقم!`;
+        }
+
+        await setDoc(guessDocRef, {
+          targetNumber: target,
+          attempts: att,
+          statusText: msg,
+          won: isWon,
+          score: currentScore
+        });
+      } catch (e) {}
+    });
+
+    onSnapshot(guessDocRef, async (docSnap) => {
+      if (!docSnap.exists()) {
+        const randomNum = Math.floor(Math.random() * 100) + 1;
+        await setDoc(guessDocRef, {
+          targetNumber: randomNum,
+          attempts: 0,
+          statusText: "خمن الرقم من 1 إلى 100",
+          won: false,
+          score: 0
+        });
+        return;
+      }
+
+      const data = docSnap.data();
+      guessAttempts.textContent = data.attempts || 0;
+      guessScore.textContent = data.score || 0;
+      guessStatus.textContent = data.statusText || "خمن الرقم...";
+      
+      if (data.won) {
+        guessStatus.style.color = "#6c9a78";
+      } else {
+        guessStatus.style.color = "#4a7bb0";
+      }
     });
 
     bellBtn.addEventListener("click", async function() {
