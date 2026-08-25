@@ -529,7 +529,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -793,7 +793,8 @@
 
     let q;
     if (isAdmin) {
-      q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+      // تعديل الاستعلام للمدير مع تحديد حد أقصى للرسائل لسرعة التحميل وعدم التعليق
+      q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(50));
     } else {
       q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
     }
@@ -887,8 +888,13 @@
           messageDiv.appendChild(bodyDiv);
           wrapperDiv.appendChild(messageDiv);
           
-          messagesContainer.appendChild(wrapperDiv);
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          // للمدير يتم ترتيب الرسائل تصاعدياً
+          if (isAdmin) {
+            messagesContainer.prepend(wrapperDiv);
+          } else {
+            messagesContainer.appendChild(wrapperDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          }
 
           messageElements[docId] = { element: wrapperDiv, data: data };
 
