@@ -97,7 +97,7 @@
       box-shadow: 0 2px 6px rgba(74, 123, 176, 0.2);
     }
 
-    /* القائمة المنسدلة */
+    /* القائمة المنسدلة (تظهر للمدير فقط) */
     .menu-btn {
       background: none;
       border: none;
@@ -162,8 +162,8 @@
       display: inline-block;
     }
 
-    /* النوافذ المنبثقة للألعاب */
-    .modal-overlay {
+    /* نافذة لعبة X-O المنبثقة */
+    #gameModal {
       position: fixed;
       top: 0;
       left: 0;
@@ -176,70 +176,27 @@
       z-index: 10000;
     }
 
-    .modal-box {
+    .game-box {
       background: #ffffff;
       padding: 20px;
       border-radius: 16px;
-      width: 320px;
+      width: 300px;
       text-align: center;
       box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
     }
 
-    .modal-title {
-      font-size: 16px;
-      font-weight: bold;
-      color: #4a7bb0;
-    }
-
-    /* لوحة عرض السكور العام */
-    .score-board {
-      background: #f0f4f8;
-      border: 1px solid #dcdfe4;
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-around;
-      color: #333;
-    }
-
-    .game-option-btn {
-      background: #f0f4f8;
-      border: 1px solid #dcdfe4;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      color: #333;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .game-option-btn:hover {
-      background: #e2e8f0;
-    }
-
-    /* لعبة X-O */
     .game-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin: 5px 0;
+      margin: 15px 0;
     }
 
     .game-cell {
       background: #f0f4f8;
       border: 1px solid #dcdfe4;
-      height: 65px;
-      font-size: 26px;
+      height: 70px;
+      font-size: 28px;
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -254,115 +211,21 @@
       background: #e2e8f0;
     }
 
-    /* لعبة حجر ورقة مقص */
-    .rps-choices {
-      display: flex;
-      justify-content: space-around;
-      margin: 10px 0;
-    }
-
-    .rps-btn {
-      background: #f0f4f8;
-      border: 2px solid #4a7bb0;
-      font-size: 24px;
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.1s, background 0.2s;
-    }
-
-    .rps-btn:hover {
-      background: #e2e8f0;
-      transform: scale(1.05);
-    }
-
-    .rps-result-box {
-      font-size: 12px;
-      background: #f9fafb;
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #eef2f5;
-      margin-bottom: 2px;
-      line-height: 1.4;
-    }
-
-    /* لعبة الضومنة (Dominoes) */
-    .domino-board {
-      background: #f0f4f8;
-      border: 1px solid #dcdfe4;
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 12px;
-      min-height: 55px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      flex-wrap: wrap;
-      max-height: 90px;
-      overflow-y: auto;
-    }
-
-    .domino-tile {
-      background: #ffffff;
-      border: 2px solid #4a7bb0;
-      padding: 3px 6px;
-      border-radius: 5px;
+    .game-status {
+      font-size: 14px;
       font-weight: bold;
-      font-size: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 10px;
+      color: #4a7bb0;
     }
 
-    .domino-hand {
-      display: flex;
-      gap: 5px;
-      justify-content: center;
-      margin-top: 4px;
-      flex-wrap: wrap;
-    }
-
-    .domino-tile-btn {
-      background: #fff;
-      border: 2px solid #6c9a78;
-      padding: 5px 8px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 12px;
-      transition: transform 0.1s, background 0.2s;
-    }
-
-    .domino-tile-btn:hover {
-      background: #f0f4f8;
-      transform: scale(1.05);
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-    }
-
-    .custom-btn {
-      background: #4a7bb0;
+    .close-game-btn {
+      background: #d97777;
       color: white;
       border: none;
-      padding: 6px 14px;
+      padding: 6px 16px;
       border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
-      font-weight: 500;
-    }
-
-    .custom-btn.danger {
-      background: #d97777;
     }
 
     /* شريط التسبيحات المتحرك */
@@ -397,7 +260,7 @@
       100% { transform: translateX(-50%); }
     }
 
-    /* منطقة التعليقات */
+    /* منطقة التعليقات المنسقة */
     .messages {
       flex: 1;
       padding: 16px;
@@ -590,27 +453,11 @@
     ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
   </div>
 
-  <!-- قائمة اختيار الألعاب -->
-  <div id="gamesMenuModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-title">اختر لعبة للترفيه 🎮</div>
-      <button class="game-option-btn" id="openXoBtn">❌⭕ لعبة X-O</button>
-      <button class="game-option-btn" id="openRpsBtn">✊✌️🖐️ حجر ورقة مقص</button>
-      <button class="game-option-btn" id="openDominoBtn">🁉 لعبة الضومنة</button>
-      <button class="game-option-btn" id="openGuessBtn">🔢 لعبة تخمين الأرقام</button>
-      <button class="custom-btn danger" id="closeGamesMenu" style="margin-top: 5px;">إغلاق</button>
-    </div>
-  </div>
-
   <!-- نافذة لعبة X-O -->
-  <div id="xoModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-title">لعبة X-O التفاعلية</div>
-      <div class="score-board">
-        <span>المدير (X): <b id="adminScoreXo">0</b></span>
-        <span>الزائر (O): <b id="visitorScoreXo">0</b></span>
-      </div>
-      <div id="gameStatus" style="font-size: 12px; font-weight: bold; color: #4a7bb0;">دور: X (المدير)</div>
+  <div id="gameModal">
+    <div class="game-box">
+      <div style="font-weight: bold; margin-bottom: 10px;">لعبة X-O التفاعلية</div>
+      <div id="gameStatus" class="game-status">دور: X (المدير)</div>
       <div class="game-grid" id="gameGrid">
         <div class="game-cell" data-index="0"></div>
         <div class="game-cell" data-index="1"></div>
@@ -622,90 +469,15 @@
         <div class="game-cell" data-index="7"></div>
         <div class="game-cell" data-index="8"></div>
       </div>
-      <div class="btn-group">
-        <button class="custom-btn" id="resetGameBtn">إعادة الجولة</button>
-        <button class="custom-btn danger" id="resetScoreXoBtn" title="تصفير السكور">تصفير السكور 🔄</button>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+        <button class="close-game-btn" id="resetGameBtn" style="background: #4a7bb0;">إعادة اللعب</button>
+        <button class="close-game-btn" id="closeGameModal">إغلاق</button>
       </div>
-      <button class="custom-btn danger" id="backToMenuFromXo" style="margin-top: 2px;">القائمة</button>
-    </div>
-  </div>
-
-  <!-- نافذة لعبة حجر ورقة مقص -->
-  <div id="rpsModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-title">حجر 🪨 ورقة 📄 مقص ✂️</div>
-      <div class="score-board">
-        <span>المدير: <b id="adminScoreRps">0</b></span>
-        <span>الزائر: <b id="visitorScoreRps">0</b></span>
-      </div>
-      <div id="rpsStatus" style="font-size: 12px; font-weight: bold; color: #4a7bb0;">اختر سلاحك:</div>
-      
-      <div class="rps-choices" id="rpsButtonsArea">
-        <button class="rps-btn" data-choice="rock" title="حجر">🪨</button>
-        <button class="rps-btn" data-choice="paper" title="ورقة">📄</button>
-        <button class="rps-btn" data-choice="scissors" title="مقص">✂️</button>
-      </div>
-
-      <div class="rps-result-box" id="rpsResultText">
-        في انتظار اختيارات اللاعبين...
-      </div>
-
-      <div class="btn-group">
-        <button class="custom-btn" id="resetRpsBtn">جولة جديدة</button>
-        <button class="custom-btn danger" id="resetScoreRpsBtn" title="تصفير السكور">تصفير السكور 🔄</button>
-      </div>
-      <button class="custom-btn danger" id="backToMenuFromRps" style="margin-top: 2px;">القائمة</button>
-    </div>
-  </div>
-
-  <!-- نافذة لعبة الضومنة -->
-  <div id="dominoModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-title">لعبة الضومنة السريعة 🁉</div>
-      <div class="score-board">
-        <span>المدير: <b id="adminScoreDomino">0</b></span>
-        <span>الزائر: <b id="visitorScoreDomino">0</b></span>
-      </div>
-      <div id="dominoStatus" style="font-size: 12px; font-weight: bold; color: #4a7bb0;">طاولة اللعب:</div>
-      
-      <div class="domino-board" id="dominoBoardContainer">
-        جاري تحميل الطاولة...
-      </div>
-
-      <div style="font-size: 12px; color: #555; margin-top: 2px;">أحجارك في اليد:</div>
-      <div class="domino-hand" id="dominoHandContainer"></div>
-
-      <div class="btn-group" style="margin-top: 8px;">
-        <button class="custom-btn" id="resetDominoBtn">لعبة جديدة</button>
-        <button class="custom-btn danger" id="resetScoreDominoBtn" title="تصفير السكور">تصفير السكور 🔄</button>
-      </div>
-      <button class="custom-btn danger" id="backToMenuFromDomino" style="margin-top: 2px;">القائمة</button>
-    </div>
-  </div>
-
-  <!-- نافذة لعبة تخمين الأرقام -->
-  <div id="guessModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-title">تخمين الأرقام (من 1 إلى 100) 🔢</div>
-      <div class="score-board">
-        <span>المحاولات: <b id="guessAttempts">0</b></span>
-        <span>الفائزون: <b id="guessScore">0</b></span>
-      </div>
-      <div id="guessStatus" style="font-size: 12px; font-weight: bold; color: #4a7bb0;">ابدأ بكتابة رقم وتخمينه!</div>
-      
-      <div style="margin: 10px 0;">
-        <input type="number" id="guessInputNumber" min="1" max="100" placeholder="أدخل رقماً بين 1 و 100" style="width: 100%; text-align: center; padding: 8px; border-radius: 8px; border: 1px solid #dcdfe4;">
-      </div>
-
-      <div class="btn-group">
-        <button class="custom-btn" id="submitGuessBtn">إرسال التخمين</button>
-        <button class="custom-btn danger" id="resetGuessBtn">لعبة جديدة</button>
-      </div>
-      <button class="custom-btn danger" id="backToMenuFromGuess" style="margin-top: 2px;">القائمة</button>
     </div>
   </div>
 
   <div class="app">
+
     <div class="header">
       <div class="header-title">
         <span class="back-arrow">←</span>
@@ -713,7 +485,7 @@
         <span id="statusDot" class="status-dot"></span>
       </div>
       <div class="header-actions">
-        <button id="gameBtn" class="game-btn" title="ألعاب ترفيهية">🎮</button>
+        <button id="gameBtn" class="game-btn" title="لعبة X-O">🎮</button>
         <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
@@ -753,6 +525,7 @@
         <svg height="18" viewBox="0 0 24 24" width="18" fill="#ffffff"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
+
   </div>
 
   <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
@@ -809,86 +582,53 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // --- إدارة فتح وقفل نوافذ الألعاب ---
-    const gameBtn = document.getElementById("gameBtn");
-    const gamesMenuModal = document.getElementById("gamesMenuModal");
-    const closeGamesMenu = document.getElementById("closeGamesMenu");
-    
-    const openXoBtn = document.getElementById("openXoBtn");
-    const openRpsBtn = document.getElementById("openRpsBtn");
-    const openDominoBtn = document.getElementById("openDominoBtn");
-    const openGuessBtn = document.getElementById("openGuessBtn");
-
-    const xoModal = document.getElementById("xoModal");
-    const rpsModal = document.getElementById("rpsModal");
-    const dominoModal = document.getElementById("dominoModal");
-    const guessModal = document.getElementById("guessModal");
-
-    const backToMenuFromXo = document.getElementById("backToMenuFromXo");
-    const backToMenuFromRps = document.getElementById("backToMenuFromRps");
-    const backToMenuFromDomino = document.getElementById("backToMenuFromDomino");
-    const backToMenuFromGuess = document.getElementById("backToMenuFromGuess");
-
-    gameBtn.addEventListener("click", () => gamesMenuModal.style.display = "flex");
-    closeGamesMenu.addEventListener("click", () => gamesMenuModal.style.display = "none");
-
-    openXoBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; xoModal.style.display = "flex"; });
-    openRpsBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; rpsModal.style.display = "flex"; });
-    openDominoBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; dominoModal.style.display = "flex"; });
-    openGuessBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; guessModal.style.display = "flex"; });
-
-    backToMenuFromXo.addEventListener("click", () => { xoModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
-    backToMenuFromRps.addEventListener("click", () => { rpsModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
-    backToMenuFromDomino.addEventListener("click", () => { dominoModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
-    backToMenuFromGuess.addEventListener("click", () => { guessModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
-
     // --- كود لعبة X-O ---
+    const gameBtn = document.getElementById("gameBtn");
+    const gameModal = document.getElementById("gameModal");
+    const closeGameModal = document.getElementById("closeGameModal");
     const resetGameBtn = document.getElementById("resetGameBtn");
-    const resetScoreXoBtn = document.getElementById("resetScoreXoBtn");
     const gameStatus = document.getElementById("gameStatus");
-    const adminScoreXo = document.getElementById("adminScoreXo");
-    const visitorScoreXo = document.getElementById("visitorScoreXo");
     const cells = document.querySelectorAll(".game-cell");
     const gameDocRef = doc(db, "status", "xo_game");
 
+    gameBtn.addEventListener("click", () => {
+      gameModal.style.display = "flex";
+    });
+
+    closeGameModal.addEventListener("click", () => {
+      gameModal.style.display = "none";
+    });
+
     resetGameBtn.addEventListener("click", async () => {
       try {
-        const snap = await getDoc(gameDocRef);
-        let data = snap.exists() ? snap.data() : { adminScore: 0, visitorScore: 0 };
-        await setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true, adminScore: data.adminScore || 0, visitorScore: data.visitorScore || 0 });
+        await setDoc(gameDocRef, {
+          board: ["", "", "", "", "", "", "", "", ""],
+          turn: "X",
+          active: true
+        });
       } catch (e) {}
     });
 
-    resetScoreXoBtn.addEventListener("click", async () => {
-      try {
-        await setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true, adminScore: 0, visitorScore: 0 });
-      } catch (e) {}
-    });
-
-    let boardState = ["","","","","","","","",""];
+    let boardState = ["", "", "", "", "", "", "", "", ""];
     let currentTurn = "X";
     let gameActive = true;
 
     cells.forEach((cell, index) => {
       cell.addEventListener("click", async () => {
         if (!gameActive || boardState[index] !== "") return;
+
         let mySymbol = isAdmin ? "X" : "O";
         if (currentTurn !== mySymbol) return;
 
         boardState[index] = mySymbol;
         currentTurn = currentTurn === "X" ? "O" : "X";
-        
-        let winner = checkWinner(boardState);
-        let snap = await getDoc(gameDocRef);
-        let data = snap.exists() ? snap.data() : { adminScore: 0, visitorScore: 0 };
-        let aScore = data.adminScore || 0;
-        let vScore = data.visitorScore || 0;
-
-        if (winner === "X") aScore++;
-        else if (winner === "O") vScore++;
 
         try {
-          await setDoc(gameDocRef, { board: boardState, turn: currentTurn, active: true, adminScore: aScore, visitorScore: vScore });
+          await setDoc(gameDocRef, {
+            board: boardState,
+            turn: currentTurn,
+            active: true
+          });
         } catch (e) {}
       });
     });
@@ -896,12 +636,12 @@
     onSnapshot(gameDocRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        boardState = data.board || ["","","","","","","","",""];
+        boardState = data.board || ["", "", "", "", "", "", "", "", ""];
         currentTurn = data.turn || "X";
-        adminScoreXo.textContent = data.adminScore || 0;
-        visitorScoreXo.textContent = data.visitorScore || 0;
 
-        cells.forEach((cell, i) => { cell.textContent = boardState[i]; });
+        cells.forEach((cell, i) => {
+          cell.textContent = boardState[i];
+        });
 
         let winner = checkWinner(boardState);
         if (winner) {
@@ -915,338 +655,29 @@
           gameActive = true;
         }
       } else {
-        setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true, adminScore: 0, visitorScore: 0 });
+        setDoc(gameDocRef, {
+          board: ["", "", "", "", "", "", "", "", ""],
+          turn: "X",
+          active: true
+        });
       }
     });
 
     function checkWinner(board) {
-      const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-      for (let l of lines) {
-        if (board[l[0]] && board[l[0]] === board[l[1]] && board[l[0]] === board[l[2]]) return board[l[0]];
+      const winningLines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+      for (let line of winningLines) {
+        const [a, b, c] = line;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return board[a];
+        }
       }
       return null;
     }
-
-    // --- كود لعبة حجر ورقة مقص ---
-    const rpsDocRef = doc(db, "status", "rps_game");
-    const rpsStatus = document.getElementById("rpsStatus");
-    const rpsResultText = document.getElementById("rpsResultText");
-    const resetRpsBtn = document.getElementById("resetRpsBtn");
-    const resetScoreRpsBtn = document.getElementById("resetScoreRpsBtn");
-    const adminScoreRps = document.getElementById("adminScoreRps");
-    const visitorScoreRps = document.getElementById("visitorScoreRps");
-    const rpsButtons = document.querySelectorAll(".rps-btn");
-    const emojiMap = { rock: "🪨 حجر", paper: "📄 ورقة", scissors: "✂️ مقص" };
-
-    rpsButtons.forEach(btn => {
-      btn.addEventListener("click", async () => {
-        let choice = btn.dataset.choice;
-        try {
-          const docSnap = await getDoc(rpsDocRef);
-          let data = docSnap.exists() ? docSnap.data() : { adminChoice: "", visitorChoice: "", adminScore: 0, visitorScore: 0 };
-          if (isAdmin) data.adminChoice = choice;
-          else data.visitorChoice = choice;
-
-          if (data.adminChoice && data.visitorChoice && !data.scored) {
-            let aC = data.adminChoice;
-            let vC = data.visitorChoice;
-            if (aC !== vC) {
-              if ((aC === "rock" && vC === "scissors") || (aC === "paper" && vC === "rock") || (aC === "scissors" && vC === "paper")) {
-                data.adminScore = (data.adminScore || 0) + 1;
-              } else {
-                data.visitorScore = (data.visitorScore || 0) + 1;
-              }
-            }
-            data.scored = true;
-          }
-
-          await setDoc(rpsDocRef, data);
-        } catch(e) {}
-      });
-    });
-
-    resetRpsBtn.addEventListener("click", async () => {
-      try {
-        const docSnap = await getDoc(rpsDocRef);
-        let data = docSnap.exists() ? docSnap.data() : { adminScore: 0, visitorScore: 0 };
-        await setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "", scored: false, adminScore: data.adminScore || 0, visitorScore: data.visitorScore || 0 });
-      } catch(e) {}
-    });
-
-    resetScoreRpsBtn.addEventListener("click", async () => {
-      try {
-        await setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "", scored: false, adminScore: 0, visitorScore: 0 });
-      } catch(e) {}
-    });
-
-    onSnapshot(rpsDocRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        let adminC = data.adminChoice || "";
-        let visitorC = data.visitorChoice || "";
-        adminScoreRps.textContent = data.adminScore || 0;
-        visitorScoreRps.textContent = data.visitorScore || 0;
-
-        if (!adminC && !visitorC) {
-          rpsStatus.textContent = "اختر سلاحك في الخفاء:";
-          rpsResultText.innerHTML = "في انتظار اختيارات الطرفين...";
-          return;
-        }
-
-        let mySelection = isAdmin ? adminC : visitorC;
-        if (mySelection) rpsStatus.textContent = `لقد اخترت: ${emojiMap[mySelection]}`;
-
-        if (adminC && visitorC) {
-          let winnerText = "";
-          if (adminC === visitorC) winnerText = "🤝 تعادل في هذه الجولة!";
-          else if ((adminC === "rock" && visitorC === "scissors") || (adminC === "paper" && visitorC === "rock") || (adminC === "scissors" && visitorC === "paper"))
-            winnerText = "🏆 الفائز في الجولة: المدير";
-          else winnerText = "🏆 الفائز في الجولة: الزائر";
-
-          rpsResultText.innerHTML = `<b>المدير اختر:</b> ${emojiMap[adminC]}<br><b>الزائر اختر:</b> ${emojiMap[visitorC]}<br><b style="color: #4a7bb0; font-size: 13px;">${winnerText}</b>`;
-        } else {
-          let waitingFor = !adminC ? "المدير" : "الزائر";
-          rpsResultText.innerHTML = `بانتظار اختيار ${waitingFor}...`;
-        }
-      } else {
-        setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "", scored: false, adminScore: 0, visitorScore: 0 });
-      }
-    });
-
-    // --- كود لعبة الضومنة ---
-    const dominoDocRef = doc(db, "status", "domino_game");
-    const dominoBoardContainer = document.getElementById("dominoBoardContainer");
-    const dominoHandContainer = document.getElementById("dominoHandContainer");
-    const resetDominoBtn = document.getElementById("resetDominoBtn");
-    const resetScoreDominoBtn = document.getElementById("resetScoreDominoBtn");
-    const dominoStatus = document.getElementById("dominoStatus");
-    const adminScoreDomino = document.getElementById("adminScoreDomino");
-    const visitorScoreDomino = document.getElementById("visitorScoreDomino");
-
-    function getRandomTile() {
-      let a = Math.floor(Math.random() * 7);
-      let b = Math.floor(Math.random() * 7);
-      return [a, b];
-    }
-
-    resetDominoBtn.addEventListener("click", async () => {
-      try {
-        const docSnap = await getDoc(dominoDocRef);
-        let data = docSnap.exists() ? docSnap.data() : { adminScore: 0, visitorScore: 0 };
-        await setDoc(dominoDocRef, {
-          board: [[3, 3]],
-          adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
-          visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
-          turn: "admin",
-          adminScore: data.adminScore || 0,
-          visitorScore: data.visitorScore || 0
-        });
-      } catch(e) {}
-    });
-
-    resetScoreDominoBtn.addEventListener("click", async () => {
-      try {
-        await setDoc(dominoDocRef, {
-          board: [[3, 3]],
-          adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
-          visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
-          turn: "admin",
-          adminScore: 0,
-          visitorScore: 0
-        });
-      } catch(e) {}
-    });
-
-    onSnapshot(dominoDocRef, async (docSnap) => {
-      if (!docSnap.exists()) {
-        await setDoc(dominoDocRef, {
-          board: [[3, 3]],
-          adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
-          visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
-          turn: "admin",
-          adminScore: 0,
-          visitorScore: 0
-        });
-        return;
-      }
-
-      const data = docSnap.data();
-      let board = data.board || [[3, 3]];
-      let adminHand = data.adminHand || [];
-      let visitorHand = data.visitorHand || [];
-      let turn = data.turn || "admin";
-      
-      adminScoreDomino.textContent = data.adminScore || 0;
-      visitorScoreDomino.textContent = data.visitorScore || 0;
-
-      dominoBoardContainer.innerHTML = "";
-      board.forEach(tile => {
-        let tileEl = document.createElement("div");
-        tileEl.className = "domino-tile";
-        tileEl.textContent = `[${tile[0]}|${tile[1]}]`;
-        dominoBoardContainer.appendChild(tileEl);
-      });
-
-      let myHand = isAdmin ? adminHand : visitorHand;
-      let isMyTurn = (isAdmin && turn === "admin") || (!isAdmin && turn === "visitor");
-
-      if (adminHand.length === 0 || visitorHand.length === 0) {
-        let winnerText = adminHand.length === 0 ? "🎉 المدير فاز بالجولة!" : "🎉 الزائر فاز بالجولة!";
-        dominoStatus.textContent = winnerText;
-        dominoHandContainer.innerHTML = "";
-        return;
-      }
-
-      dominoStatus.textContent = isMyTurn ? "دورك الآن! اختر حجراً للمطابقة:" : "دور الطرف الآخر...";
-
-      dominoHandContainer.innerHTML = "";
-      myHand.forEach((tile, index) => {
-        let btn = document.createElement("button");
-        btn.className = "domino-tile-btn";
-        btn.textContent = `[${tile[0]}|${tile[1]}]`;
-        
-        btn.addEventListener("click", async () => {
-          if (!isMyTurn) return;
-          
-          let leftVal = board[0][0];
-          let rightVal = board[board.length - 1][1];
-          let newBoard = [...board];
-
-          if (tile[0] === leftVal || tile[1] === leftVal || tile[0] === rightVal || tile[1] === rightVal) {
-            if (tile[1] === leftVal) {
-              newBoard.unshift(tile);
-            } else if (tile[0] === leftVal) {
-              newBoard.unshift([tile[1], tile[0]]);
-            } else if (tile[0] === rightVal) {
-              newBoard.push(tile);
-            } else if (tile[1] === rightVal) {
-              newBoard.push([tile[1], tile[0]]);
-            }
-
-            let newAdminHand = [...adminHand];
-            let newVisitorHand = [...visitorHand];
-            let aScore = data.adminScore || 0;
-            let vScore = data.visitorScore || 0;
-
-            if (isAdmin) {
-              newAdminHand.splice(index, 1);
-              if (newAdminHand.length === 0) aScore++;
-            } else {
-              newVisitorHand.splice(index, 1);
-              if (newVisitorHand.length === 0) vScore++;
-            }
-
-            let nextTurn = isAdmin ? "visitor" : "admin";
-
-            try {
-              await setDoc(dominoDocRef, {
-                board: newBoard,
-                adminHand: newAdminHand,
-                visitorHand: newVisitorHand,
-                turn: nextTurn,
-                adminScore: aScore,
-                visitorScore: vScore
-              });
-            } catch(e) {}
-          } else {
-            alert("❌ هذا الحجر لا يتطابق مع أطراف الطاولة!");
-          }
-        });
-
-        dominoHandContainer.appendChild(btn);
-      });
-    });
-
-    // --- كود لعبة تخمين الأرقام ---
-    const guessDocRef = doc(db, "status", "guess_game");
-    const guessInputNumber = document.getElementById("guessInputNumber");
-    const submitGuessBtn = document.getElementById("submitGuessBtn");
-    const resetGuessBtn = document.getElementById("resetGuessBtn");
-    const guessStatus = document.getElementById("guessStatus");
-    const guessAttempts = document.getElementById("guessAttempts");
-    const guessScore = document.getElementById("guessScore");
-
-    resetGuessBtn.addEventListener("click", async () => {
-      try {
-        const randomNum = Math.floor(Math.random() * 100) + 1;
-        await setDoc(guessDocRef, {
-          targetNumber: randomNum,
-          attempts: 0,
-          statusText: "بدأت لعبة جديدة! خمن الرقم من 1 إلى 100",
-          won: false,
-          score: 0
-        });
-      } catch (e) {}
-    });
-
-    submitGuessBtn.addEventListener("click", async () => {
-      let val = parseInt(guessInputNumber.value);
-      if (isNaN(val) || val < 1 || val > 100) {
-        alert("الرجاء إدخال رقم صحيح بين 1 و 100");
-        return;
-      }
-      guessInputNumber.value = "";
-
-      try {
-        const docSnap = await getDoc(guessDocRef);
-        if (!docSnap.exists()) return;
-        let data = docSnap.data();
-
-        if (data.won) {
-          alert("لقد تم تخمين الرقم بالفعل! اضغط على لعبة جديدة.");
-          return;
-        }
-
-        let target = data.targetNumber;
-        let att = (data.attempts || 0) + 1;
-        let msg = "";
-        let isWon = false;
-        let currentScore = data.score || 0;
-
-        if (val === target) {
-          msg = `🎉 مبروك! الرقم الصحيح هو ${target}. تم التخمين في ${att} محاولة.`;
-          isWon = true;
-          currentScore++;
-        } else if (val < target) {
-          msg = `📈 الرقم ${val} صغير جداً، ارفع الرقم!`;
-        } else {
-          msg = `📉 الرقم ${val} كبير جداً، انزل بالرقم!`;
-        }
-
-        await setDoc(guessDocRef, {
-          targetNumber: target,
-          attempts: att,
-          statusText: msg,
-          won: isWon,
-          score: currentScore
-        });
-      } catch (e) {}
-    });
-
-    onSnapshot(guessDocRef, async (docSnap) => {
-      if (!docSnap.exists()) {
-        const randomNum = Math.floor(Math.random() * 100) + 1;
-        await setDoc(guessDocRef, {
-          targetNumber: randomNum,
-          attempts: 0,
-          statusText: "خمن الرقم من 1 إلى 100",
-          won: false,
-          score: 0
-        });
-        return;
-      }
-
-      const data = docSnap.data();
-      guessAttempts.textContent = data.attempts || 0;
-      guessScore.textContent = data.score || 0;
-      guessStatus.textContent = data.statusText || "خمن الرقم...";
-      
-      if (data.won) {
-        guessStatus.style.color = "#6c9a78";
-      } else {
-        guessStatus.style.color = "#4a7bb0";
-      }
-    });
+    // ----------------------
 
     bellBtn.addEventListener("click", async function() {
       if (isAdmin) return;
@@ -1311,209 +742,4 @@
             `;
           } else {
             countSpan.textContent = "0";
-            let logoutDisplay = data.logoutTime ? `<span>خرج في:</span> <span>${data.logoutTime}</span>` : `<span>لم يحدد وقت خروج</span>`;
-            let loginDisplay = data.loginTime ? `<span>دخل في:</span> <span>${data.loginTime}</span>` : ``;
-            logContainer.innerHTML = `
-              <div class="log-item">
-                <div class="log-row" style="color: #888; font-weight: bold;"><span>⚪ غادر الموقع</span></div>
-                <div class="log-row">${loginDisplay}</div>
-                <div class="log-row">${logoutDisplay}</div>
-              </div>
-            `;
-          }
-        } else {
-          countSpan.textContent = "0";
-          logContainer.innerHTML = `<div class="log-item" style="color:#888; text-align:center;">لا يوجد سجلات حتى الآن</div>`;
-        }
-      });
-    } else {
-      async function registerVisitor() {
-        try {
-          const docSnap = await getDoc(activeVisitorDocRef);
-          if (docSnap.exists() && docSnap.data().active && (Date.now() - docSnap.data().lastSeen < 6000) && docSnap.data().userId !== myId) {
-            document.getElementById("blockScreen").style.display = "flex";
-            return;
-          }
-          await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, logoutTime: "", lastSeen: Date.now() });
-          
-          setInterval(async () => {
-            try {
-              await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
-            } catch(e) {}
-          }, 3000);
-
-          window.addEventListener("beforeunload", () => {
-            const logoutTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            setDoc(activeVisitorDocRef, { active: false, userId: myId, loginTime: loginTimeStr, logoutTime: logoutTimeStr, lastSeen: 0 }, { merge: true });
-          });
-        } catch(e) {}
-      }
-      registerVisitor();
-    }
-
-    const pageLoadTime = Date.now();
-
-    window.sendMessage = async function() {
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
-      if (text === "") return;
-      const currentTime = Date.now();
-      input.value = "";
-      try {
-        await addDoc(collection(db, "messages"), {
-          text: text,
-          senderId: myId,
-          isAdminMessage: isAdmin,
-          createdAt: currentTime,
-          read: isAdmin
-        });
-      } catch (error) {}
-    };
-
-    document.getElementById("messageInput").addEventListener("keypress", function(event) {
-      if (event.key === "Enter") sendMessage();
-    });
-
-    let q;
-    if (isAdmin) {
-      q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(50));
-    } else {
-      q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
-    }
-
-    const messageElements = {};
-
-    onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
-      const messagesContainer = document.getElementById("messages");
-
-      snapshot.docChanges().forEach((change) => {
-        const docId = change.doc.id;
-        const data = change.doc.data();
-
-        if (change.type === "added") {
-          if (messageElements[docId]) return;
-          if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
-
-          const wrapperDiv = document.createElement("div");
-          wrapperDiv.id = "wrap_" + docId;
-          wrapperDiv.className = "message-wrapper";
-
-          const messageDiv = document.createElement("div");
-          messageDiv.id = "msg_" + docId;
-          messageDiv.className = "message";
-
-          const avatarDiv = document.createElement("div");
-          avatarDiv.className = "comment-avatar";
-          if (data.isAdminMessage) {
-            avatarDiv.textContent = "ل";
-            avatarDiv.style.background = "#4a7bb0";
-          } else {
-            avatarDiv.textContent = "ش";
-            avatarDiv.style.background = "#6c9a78";
-          }
-          messageDiv.appendChild(avatarDiv);
-
-          const bodyDiv = document.createElement("div");
-          bodyDiv.className = "comment-body";
-
-          const headerInfo = document.createElement("div");
-          headerInfo.className = "comment-header-info";
-          
-          const userSpan = document.createElement("span");
-          userSpan.className = "comment-username";
-          if (data.isAdminMessage) {
-            userSpan.classList.add("admin-name");
-            userSpan.textContent = "@المدير";
-          } else {
-            userSpan.textContent = "@زائر";
-          }
-          headerInfo.appendChild(userSpan);
-
-          const timeSpan = document.createElement("span");
-          timeSpan.className = "comment-time";
-          timeSpan.textContent = "• الآن";
-          headerInfo.appendChild(timeSpan);
-
-          bodyDiv.appendChild(headerInfo);
-
-          const textSpan = document.createElement("span");
-          textSpan.className = "message-text";
-          textSpan.textContent = data.text;
-          bodyDiv.appendChild(textSpan);
-
-          const actionsDiv = document.createElement("div");
-          actionsDiv.className = "comment-actions";
-          
-          const actionButtonsGroup = document.createElement("div");
-          actionButtonsGroup.className = "action-buttons-group";
-
-          const likeBtn = document.createElement("button");
-          likeBtn.className = "action-btn";
-          likeBtn.innerHTML = "👍 <span>1</span>";
-          actionButtonsGroup.appendChild(likeBtn);
-
-          const dislikeBtn = document.createElement("button");
-          dislikeBtn.className = "action-btn";
-          dislikeBtn.innerHTML = "👎";
-          actionButtonsGroup.appendChild(dislikeBtn);
-
-          actionsDiv.appendChild(actionButtonsGroup);
-
-          if (!isAdmin) {
-            const timerSpan = document.createElement("span");
-            timerSpan.className = "timer-text";
-            actionsDiv.appendChild(timerSpan);
-            wrapperDiv.dataset.createdAt = data.createdAt;
-          }
-
-          bodyDiv.appendChild(actionsDiv);
-          messageDiv.appendChild(bodyDiv);
-          wrapperDiv.appendChild(messageDiv);
-          
-          if (isAdmin) {
-            messagesContainer.prepend(wrapperDiv);
-          } else {
-            messagesContainer.appendChild(wrapperDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-          }
-
-          messageElements[docId] = { element: wrapperDiv, data: data };
-
-          if (isAdmin && !data.isAdminMessage && !data.read) {
-            updateDoc(doc(db, "messages", docId), { read: true });
-          }
-
-          if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
-            const sound = document.getElementById("notificationSound");
-            if (sound) { sound.currentTime = 0; sound.play().catch(err => {}); }
-          }
-        } 
-        else if (change.type === "removed") {
-          if (messageElements[docId]) {
-            messageElements[docId].element.remove();
-            delete messageElements[docId];
-          }
-        }
-      });
-    });
-
-    if (!isAdmin) {
-      setInterval(() => {
-        const now = Date.now();
-        for (const docId in messageElements) {
-          const item = messageElements[docId];
-          const timeLeft = 35000 - (now - item.data.createdAt);
-          if (timeLeft <= 0) {
-            item.element.remove();
-            delete messageElements[docId];
-          } else {
-            const timerSpan = item.element.querySelector(".timer-text");
-            if (timerSpan) timerSpan.textContent = Math.ceil(timeLeft / 1000) + ' ث';
-          }
-        }
-      }, 1000);
-    }
-  </script>
-
-</body>
-</html>
+            let logoutDisp
