@@ -31,7 +31,10 @@
       position: relative;
     }
 
-    /* شريط العلوي */
+    /* =========================
+       الشريط العلوي
+    ========================= */
+
     .header {
       background: #fafbfc;
       color: #333333;
@@ -60,7 +63,7 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       position: relative;
     }
 
@@ -74,6 +77,8 @@
       gap: 5px;
       color: #555555;
     }
+
+    /* زر الجرس */
 
     .mute-btn {
       background: #6c9a78;
@@ -92,7 +97,29 @@
       transition: background 0.2s;
     }
 
-    /* القائمة المنسدلة (تظهر للمدير فقط) */
+    /* زر اللعبة */
+
+    .game-btn {
+      background: #f0f4f8;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 17px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+
+    .game-btn:hover {
+      background: #e5ebf1;
+      transform: scale(1.05);
+    }
+
+    /* زر القائمة */
+
     .menu-btn {
       background: none;
       border: none;
@@ -101,12 +128,14 @@
       color: #555555;
       padding: 4px 8px;
       border-radius: 50%;
-      display: none; 
+      display: none;
     }
 
     .menu-btn:hover {
       background: #edf2f7;
     }
+
+    /* القائمة */
 
     .dropdown-menu {
       position: absolute;
@@ -157,7 +186,10 @@
       display: inline-block;
     }
 
-    /* شريط التسبيحات المتحرك */
+    /* =========================
+       شريط التسبيحات
+    ========================= */
+
     .ticker-container {
       background: #fcfcfc;
       color: #4a7bb0;
@@ -185,11 +217,19 @@
     }
 
     @keyframes tickerAnimation {
-      0% { transform: translateX(0%); }
-      100% { transform: translateX(-50%); }
+      0% {
+        transform: translateX(0%);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
     }
 
-    /* منطقة التعليقات المنسقة */
+    /* =========================
+       الرسائل
+    ========================= */
+
     .messages {
       flex: 1;
       padding: 16px;
@@ -307,7 +347,10 @@
       font-size: 11px;
     }
 
-    /* منطقة الكتابة السفلى */
+    /* =========================
+       منطقة الكتابة
+    ========================= */
+
     .input-area {
       display: flex;
       padding: 12px 16px;
@@ -354,6 +397,10 @@
       background: #3b6594;
     }
 
+    /* =========================
+       شاشة الحظر
+    ========================= */
+
     #blockScreen {
       position: fixed;
       top: 0;
@@ -373,383 +420,545 @@
       font-weight: bold;
       line-height: 1.6;
     }
+
+    /* =========================
+       لعبة XO
+    ========================= */
+
+    .game-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    }
+
+    .game-modal.show {
+      display: flex;
+    }
+
+    .game-box {
+      width: 100%;
+      max-width: 350px;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      direction: rtl;
+    }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .game-close {
+      border: none;
+      background: #f1f3f5;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .game-status {
+      text-align: center;
+      font-size: 14px;
+      color: #555555;
+      margin-bottom: 15px;
+      min-height: 22px;
+    }
+
+    .game-board {
+      width: 270px;
+      height: 270px;
+      max-width: 100%;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .cell {
+      border: none;
+      border-radius: 12px;
+      background: #f4f6f8;
+      font-size: 42px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #4a7bb0;
+      transition: 0.15s;
+    }
+
+    .cell:hover {
+      background: #e9eef3;
+    }
+
+    .cell:disabled {
+      cursor: default;
+    }
+
+    .cell.x {
+      color: #4a7bb0;
+    }
+
+    .cell.o {
+      color: #6c9a78;
+    }
+
+    .reset-game-btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #4a7bb0;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .reset-game-btn:hover {
+      background: #3b6594;
+    }
+
   </style>
 </head>
 
 <body>
 
+  <!-- شاشة منع دخول أكثر من زائر -->
   <div id="blockScreen">
-    ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
+    ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.
+    <br>
+    يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.
+    <br>
+    الرجاء المحاولة لاحقاً.
   </div>
+
 
   <div class="app">
 
+    <!-- =========================
+         الهيدر
+    ========================= -->
+
     <div class="header">
+
       <div class="header-title">
+
         <span class="back-arrow">←</span>
+
         <span>الردود</span>
+
         <span id="statusDot" class="status-dot"></span>
+
       </div>
+
+
       <div class="header-actions">
-        <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
-        <div id="usersCounter" class="users-counter">
-          <span>👤</span> <span id="onlineCount">0</span>
+
+        <!-- زر اللعبة -->
+        <button
+          id="gameBtn"
+          class="game-btn"
+          title="لعبة XO">
+          🎮
+        </button>
+
+
+        <!-- زر الجرس -->
+        <button
+          id="bellBtn"
+          class="mute-btn"
+          title="تنبيهات الجرس">
+          🔔
+        </button>
+
+
+        <!-- عدد المستخدمين -->
+        <div
+          id="usersCounter"
+          class="users-counter">
+
+          <span>👤</span>
+
+          <span id="onlineCount">0</span>
+
         </div>
-        <button id="menuBtn" class="menu-btn">⋮</button>
-        <div id="dropdownMenu" class="dropdown-menu">
-          <div class="dropdown-title">سجل دخول وخروج الزائر</div>
-          <div id="visitorLogContainer">
-            <div class="log-item">جاري التحميل...</div>
+
+
+        <!-- القائمة الخاصة بالمدير -->
+        <button
+          id="menuBtn"
+          class="menu-btn">
+          ⋮
+        </button>
+
+
+        <div
+          id="dropdownMenu"
+          class="dropdown-menu">
+
+          <div class="dropdown-title">
+            سجل دخول وخروج الزائر
           </div>
+
+          <div id="visitorLogContainer">
+            <div class="log-item">
+              جاري التحميل...
+            </div>
+          </div>
+
         </div>
+
       </div>
+
     </div>
 
-    <div id="tickerContainer" class="ticker-container">
+
+    <!-- =========================
+         شريط التسبيحات
+    ========================= -->
+
+    <div
+      id="tickerContainer"
+      class="ticker-container">
+
       <div class="ticker-track">
+
         <div class="ticker-group">
-          <span class="ticker-item">سبحان الله 📿</span>
-          <span class="ticker-item">الحمد لله 📿</span>
-          <span class="ticker-item">الله أكبر 📿</span>
-          <span class="ticker-item">استغفر الله 📿</span>
+
+          <span class="ticker-item">
+            سبحان الله 📿
+          </span>
+
+          <span class="ticker-item">
+            الحمد لله 📿
+          </span>
+
+          <span class="ticker-item">
+            الله أكبر 📿
+          </span>
+
+          <span class="ticker-item">
+            استغفر الله 📿
+          </span>
+
         </div>
+
+
         <div class="ticker-group">
-          <span class="ticker-item">سبحان الله 📿</span>
-          <span class="ticker-item">الحمد لله 📿</span>
-          <span class="ticker-item">الله أكبر 📿</span>
-          <span class="ticker-item">استغفر الله 📿</span>
+
+          <span class="ticker-item">
+            سبحان الله 📿
+          </span>
+
+          <span class="ticker-item">
+            الحمد لله 📿
+          </span>
+
+          <span class="ticker-item">
+            الله أكبر 📿
+          </span>
+
+          <span class="ticker-item">
+            استغفر الله 📿
+          </span>
+
         </div>
+
       </div>
+
     </div>
 
-    <div class="messages" id="messages"></div>
+
+    <!-- =========================
+         الرسائل
+    ========================= -->
+
+    <div
+      class="messages"
+      id="messages">
+    </div>
+
+
+    <!-- =========================
+         الكتابة
+    ========================= -->
 
     <div class="input-area">
-      <input type="text" id="messageInput" placeholder="اكتب ردك هنا...">
-      <button class="send-btn" onclick="sendMessage()" title="إرسال">
-        <svg height="18" viewBox="0 0 24 24" width="18" fill="#ffffff"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+
+      <input
+        type="text"
+        id="messageInput"
+        placeholder="اكتب ردك هنا...">
+
+      <button
+        class="send-btn"
+        onclick="sendMessage()"
+        title="إرسال">
+
+        <svg
+          height="18"
+          viewBox="0 0 24 24"
+          width="18"
+          fill="#ffffff">
+
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+
+        </svg>
+
       </button>
+
     </div>
 
   </div>
 
-  <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+  <!-- =========================
+       نافذة لعبة XO
+  ========================= -->
+
+  <div
+    id="gameModal"
+    class="game-modal">
+
+    <div class="game-box">
+
+      <div class="game-header">
+
+        <span>
+          ❌⭕ لعبة XO
+        </span>
+
+        <button
+          id="closeGameBtn"
+          class="game-close">
+          ✕
+        </button>
+
+      </div>
+
+
+      <div
+        id="gameStatus"
+        class="game-status">
+        جاري تحميل اللعبة...
+      </div>
+
+
+      <div
+        id="gameBoard"
+        class="game-board">
+
+        <button class="cell" data-index="0"></button>
+        <button class="cell" data-index="1"></button>
+        <button class="cell" data-index="2"></button>
+
+        <button class="cell" data-index="3"></button>
+        <button class="cell" data-index="4"></button>
+        <button class="cell" data-index="5"></button>
+
+        <button class="cell" data-index="6"></button>
+        <button class="cell" data-index="7"></button>
+        <button class="cell" data-index="8"></button>
+
+      </div>
+
+
+      <button
+        id="resetGameBtn"
+        class="reset-game-btn">
+
+        🔄 لعبة جديدة
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- صوت الإشعار -->
+
+  <audio
+    id="notificationSound"
+    src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+    preload="auto">
+  </audio>
+
+
+  <!-- =========================
+       Firebase
+  ========================= -->
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      query,
+      orderBy,
+      where,
+      onSnapshot,
+      doc,
+      setDoc,
+      getDoc,
+      updateDoc
+    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+
+    /* =========================
+       إعداد Firebase
+    ========================= */
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
-      authDomain: "chat-site-2911b.firebaseapp.com",
-      databaseURL: "https://chat-site-2911b-default-rtdb.firebaseio.com",
-      projectId: "chat-site-2911b",
-      storageBucket: "chat-site-2911b.firebasestorage.app",
-      messagingSenderId: "7306613696",
-      appId: "1:7306613696:web:5479f7634c7e903bbdae25",
-      measurementId: "G-KZ4L2JHQN4"
+
+      apiKey:
+        "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
+
+      authDomain:
+        "chat-site-2911b.firebaseapp.com",
+
+      databaseURL:
+        "https://chat-site-2911b-default-rtdb.firebaseio.com",
+
+      projectId:
+        "chat-site-2911b",
+
+      storageBucket:
+        "chat-site-2911b.firebasestorage.app",
+
+      messagingSenderId:
+        "7306613696",
+
+      appId:
+        "1:7306613696:web:5479f7634c7e903bbdae25",
+
+      measurementId:
+        "G-KZ4L2JHQN4"
+
     };
 
+
     const app = initializeApp(firebaseConfig);
+
     const db = getFirestore(app);
+
+
+    /* =========================
+       تحديد المدير
+    ========================= */
 
     let blockIncomingFromAdmin = false;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === 'mysecret123') {
-      localStorage.setItem("is_admin", "true");
+
+    const urlParams =
+      new URLSearchParams(window.location.search);
+
+
+    if (
+      urlParams.get("admin") ===
+      "mysecret123"
+    ) {
+
+      localStorage.setItem(
+        "is_admin",
+        "true"
+      );
+
     }
 
-    const isAdmin = localStorage.getItem("is_admin") === "true";
-    const bellBtn = document.getElementById("bellBtn");
-    const menuBtn = document.getElementById("menuBtn");
-    const dropdownMenu = document.getElementById("dropdownMenu");
+
+    const isAdmin =
+      localStorage.getItem("is_admin") ===
+      "true";
+
+
+    /* =========================
+       العناصر
+    ========================= */
+
+    const bellBtn =
+      document.getElementById("bellBtn");
+
+    const menuBtn =
+      document.getElementById("menuBtn");
+
+    const dropdownMenu =
+      document.getElementById("dropdownMenu");
+
+
+    /* =========================
+       إظهار عناصر المدير
+    ========================= */
 
     if (isAdmin) {
-      document.getElementById("usersCounter").style.display = "flex";
+
+      document.getElementById(
+        "usersCounter"
+      ).style.display = "flex";
+
       menuBtn.style.display = "block";
+
     } else {
-      document.getElementById("tickerContainer").style.display = "block";
+
+      document.getElementById(
+        "tickerContainer"
+      ).style.display = "block";
+
     }
 
-    menuBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      dropdownMenu.style.display = dropdownMenu.style.display === "flex" ? "none" : "flex";
-    });
 
-    window.addEventListener("click", () => {
-      dropdownMenu.style.display = "none";
-    });
+    /* =========================
+       قائمة المدير
+    ========================= */
 
-    let myId = localStorage.getItem("chat_user_id");
-    if (!myId) {
-      myId = 'user_' + Math.random().toString(36).substring(2);
-      localStorage.setItem("chat_user_id", myId);
-    }
+    menuBtn.addEventListener(
+      "click",
+      (e) => {
 
-    bellBtn.addEventListener("click", async function() {
-      if (isAdmin) return;
-      const bellStatusRef = doc(db, "status", "bell_alert");
-      try {
-        const docSnap = await getDoc(bellStatusRef);
-        let currentState = "green";
-        if (docSnap.exists()) currentState = docSnap.data().state || "green";
-        let newState = (currentState === "red") ? "green" : "red";
-        await setDoc(bellStatusRef, { state: newState, timestamp: Date.now() });
-      } catch (e) {}
-    });
+        e.stopPropagation();
 
-    const bellStatusRef = doc(db, "status", "bell_alert");
-    onSnapshot(bellStatusRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const state = docSnap.data().state || "green";
-        if (state === "red") {
-          bellBtn.style.background = "#d97777";
-          bellBtn.style.boxShadow = "0 0 10px #d97777";
-          if (!isAdmin) {
-            blockIncomingFromAdmin = true;
-            for (const docId in messageElements) {
-              messageElements[docId].element.remove();
-              delete messageElements[docId];
-            }
-          }
-          if (isAdmin) {
-            const sound = document.getElementById("notificationSound");
-            if (sound) { sound.currentTime = 0; sound.play().catch(e => {}); }
-          }
-        } else {
-          bellBtn.style.background = "#6c9a78";
-          bellBtn.style.boxShadow = "0 0 8px rgba(108, 154, 120, 0.3)";
-          if (!isAdmin) blockIncomingFromAdmin = false;
-        }
+        dropdownMenu.style.display =
+          dropdownMenu.style.display === "flex"
+            ? "none"
+            : "flex";
+
       }
-    });
+    );
 
-    const activeVisitorDocRef = doc(db, "status", "active_visitor");
-    const logContainer = document.getElementById("visitorLogContainer");
-    const loginTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
 
-    if (isAdmin) {
-      const adminStatusRef = doc(db, "status", "admin_status");
-      setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
-      setInterval(() => {
-        setDoc(adminStatusRef, { online: true, lastSeen: Date.now() }, { merge: true });
-      }, 4000);
+    window.addEventListener(
+      "click",
+      () => {
 
-      onSnapshot(activeVisitorDocRef, (docSnap) => {
-        const countSpan = document.getElementById("onlineCount");
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.active && (Date.now() - data.lastSeen < 6000)) {
-            countSpan.textContent = "1";
-            logContainer.innerHTML = `
-              <div class="log-item">
-                <div class="log-row" style="color: #6c9a78; font-weight: bold;"><span>🟢 متصل حالياً</span></div>
-                <div class="log-row"><span>دخل في:</span> <span>${data.loginTime || 'غير متوفر'}</span></div>
-              </div>
-            `;
-          } else {
-            countSpan.textContent = "0";
-            let logoutDisplay = data.logoutTime ? `<span>خرج في:</span> <span>${data.logoutTime}</span>` : `<span>لم يحدد وقت خروج</span>`;
-            let loginDisplay = data.loginTime ? `<span>دخل في:</span> <span>${data.loginTime}</span>` : ``;
-            logContainer.innerHTML = `
-              <div class="log-item">
-                <div class="log-row" style="color: #888; font-weight: bold;"><span>⚪ غادر الموقع</span></div>
-                <div class="log-row">${loginDisplay}</div>
-                <div class="log-row">${logoutDisplay}</div>
-              </div>
-            `;
-          }
-        } else {
-          countSpan.textContent = "0";
-          logContainer.innerHTML = `<div class="log-item" style="color:#888; text-align:center;">لا يوجد سجلات حتى الآن</div>`;
-        }
-      });
-    } else {
-      async function registerVisitor() {
-        try {
-          const docSnap = await getDoc(activeVisitorDocRef);
-          if (docSnap.exists() && docSnap.data().active && (Date.now() - docSnap.data().lastSeen < 6000) && docSnap.data().userId !== myId) {
-            document.getElementById("blockScreen").style.display = "flex";
-            return;
-          }
-          await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, logoutTime: "", lastSeen: Date.now() });
-          
-          setInterval(async () => {
-            try {
-              await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
-            } catch(e) {}
-          }, 3000);
+        dropdownMenu.style.display =
+          "none";
 
-          window.addEventListener("beforeunload", () => {
-            const logoutTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            setDoc(activeVisitorDocRef, { active: false, userId: myId, loginTime: loginTimeStr, logoutTime: logoutTimeStr, lastSeen: 0 }, { merge: true });
-          });
-        } catch(e) {}
       }
-      registerVisitor();
-    }
+    );
 
-    const pageLoadTime = Date.now();
 
-    window.sendMessage = async function() {
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
-      if (text === "") return;
-      const currentTime = Date.now();
-      input.value = "";
-      try {
-        await addDoc(collection(db, "messages"), {
-          text: text,
-          senderId: myId,
-          isAdminMessage: isAdmin,
-          createdAt: currentTime,
-          read: isAdmin
-        });
-      } catch (error) {}
-    };
+    /* =========================
+       ID المستخدم
+    ========================= */
 
-    document.getElementById("messageInput").addEventListener("keypress", function(event) {
-      if (event.key === "Enter") sendMessage();
-    });
-
-    let q;
-    if (isAdmin) {
-      // تعديل الاستعلام للمدير لجلب الرسائل بمرونة وسرعة أعلى دون قيود ثقيلة
-      q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-    } else {
-      q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
-    }
-
-    const messageElements = {};
-
-    onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
-      const messagesContainer = document.getElementById("messages");
-
-      snapshot.docChanges().forEach((change) => {
-        const docId = change.doc.id;
-        const data = change.doc.data();
-
-        if (change.type === "added") {
-          if (messageElements[docId]) return;
-          if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
-
-          const wrapperDiv = document.createElement("div");
-          wrapperDiv.id = "wrap_" + docId;
-          wrapperDiv.className = "message-wrapper";
-
-          const messageDiv = document.createElement("div");
-          messageDiv.id = "msg_" + docId;
-          messageDiv.className = "message";
-
-          const avatarDiv = document.createElement("div");
-          avatarDiv.className = "comment-avatar";
-          if (data.isAdminMessage) {
-            avatarDiv.textContent = "ل";
-            avatarDiv.style.background = "#4a7bb0";
-          } else {
-            avatarDiv.textContent = "ش";
-            avatarDiv.style.background = "#6c9a78";
-          }
-          messageDiv.appendChild(avatarDiv);
-
-          const bodyDiv = document.createElement("div");
-          bodyDiv.className = "comment-body";
-
-          const headerInfo = document.createElement("div");
-          headerInfo.className = "comment-header-info";
-          
-          const userSpan = document.createElement("span");
-          userSpan.className = "comment-username";
-          if (data.isAdminMessage) {
-            userSpan.classList.add("admin-name");
-            userSpan.textContent = "@المدير";
-          } else {
-            userSpan.textContent = "@زائر";
-          }
-          headerInfo.appendChild(userSpan);
-
-          const timeSpan = document.createElement("span");
-          timeSpan.className = "comment-time";
-          timeSpan.textContent = "• الآن";
-          headerInfo.appendChild(timeSpan);
-
-          bodyDiv.appendChild(headerInfo);
-
-          const textSpan = document.createElement("span");
-          textSpan.className = "message-text";
-          textSpan.textContent = data.text;
-          bodyDiv.appendChild(textSpan);
-
-          const actionsDiv = document.createElement("div");
-          actionsDiv.className = "comment-actions";
-          
-          const actionButtonsGroup = document.createElement("div");
-          actionButtonsGroup.className = "action-buttons-group";
-
-          const likeBtn = document.createElement("button");
-          likeBtn.className = "action-btn";
-          likeBtn.innerHTML = "👍 <span>1</span>";
-          actionButtonsGroup.appendChild(likeBtn);
-
-          const dislikeBtn = document.createElement("button");
-          dislikeBtn.className = "action-btn";
-          dislikeBtn.innerHTML = "👎";
-          actionButtonsGroup.appendChild(dislikeBtn);
-
-          actionsDiv.appendChild(actionButtonsGroup);
-
-          if (!isAdmin) {
-            const timerSpan = document.createElement("span");
-            timerSpan.className = "timer-text";
-            actionsDiv.appendChild(timerSpan);
-            wrapperDiv.dataset.createdAt = data.createdAt;
-          }
-
-          bodyDiv.appendChild(actionsDiv);
-          messageDiv.appendChild(bodyDiv);
-          wrapperDiv.appendChild(messageDiv);
-          
-          messagesContainer.appendChild(wrapperDiv);
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-          messageElements[docId] = { element: wrapperDiv, data: data };
-
-          if (isAdmin && !data.isAdminMessage && !data.read) {
-            updateDoc(doc(db, "messages", docId), { read: true });
-          }
-
-          if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
-            const sound = document.getElementById("notificationSound");
-            if (sound) { sound.currentTime = 0; sound.play().catch(err => {}); }
-          }
-        } 
-        else if (change.type === "removed") {
-          if (messageElements[docId]) {
-            messageElements[docId].element.remove();
-            delete messageElements[docId];
-          }
-        }
-      });
-    });
-
-    if (!isAdmin) {
-      setInterval(() => {
-        const now = Date.now();
-        for (const docId in messageElements) {
-          const item = messageElements[docId];
-          const timeLeft = 35000 - (now - item.data.createdAt);
-          if (timeLeft <= 0) {
-            item.element.remove();
-            delete messageElements[docId];
-          } else {
-            const timerSpan = item.element.querySelector(".timer-text");
-            if (timerSpan) timerSpan.textContent = Math.ceil(timeLeft / 1000) + ' ث';
-          }
-        }
-      }, 1000);
-    }
-  </script>
-
-</body>
-</html>
+    let myId =
+      localStorage.getItem(
+       
