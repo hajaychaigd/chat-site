@@ -623,8 +623,9 @@
       </div>
       <div class="btn-group">
         <button class="custom-btn" id="resetGameBtn">إعادة الجولة</button>
-        <button class="custom-btn danger" id="backToMenuFromXo">القائمة</button>
+        <button class="custom-btn danger" id="resetScoreXoBtn" title="تصفير السكور">تصفير السكور 🔄</button>
       </div>
+      <button class="custom-btn danger" id="backToMenuFromXo" style="margin-top: 2px;">القائمة</button>
     </div>
   </div>
 
@@ -650,8 +651,9 @@
 
       <div class="btn-group">
         <button class="custom-btn" id="resetRpsBtn">جولة جديدة</button>
-        <button class="custom-btn danger" id="backToMenuFromRps">القائمة</button>
+        <button class="custom-btn danger" id="resetScoreRpsBtn" title="تصفير السكور">تصفير السكور 🔄</button>
       </div>
+      <button class="custom-btn danger" id="backToMenuFromRps" style="margin-top: 2px;">القائمة</button>
     </div>
   </div>
 
@@ -674,8 +676,9 @@
 
       <div class="btn-group" style="margin-top: 8px;">
         <button class="custom-btn" id="resetDominoBtn">لعبة جديدة</button>
-        <button class="custom-btn danger" id="backToMenuFromDomino">القائمة</button>
+        <button class="custom-btn danger" id="resetScoreDominoBtn" title="تصفير السكور">تصفير السكور 🔄</button>
       </div>
+      <button class="custom-btn danger" id="backToMenuFromDomino" style="margin-top: 2px;">القائمة</button>
     </div>
   </div>
 
@@ -811,8 +814,9 @@
     backToMenuFromRps.addEventListener("click", () => { rpsModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
     backToMenuFromDomino.addEventListener("click", () => { dominoModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
 
-    // --- كود لعبة X-O (مع السكور) ---
+    // --- كود لعبة X-O ---
     const resetGameBtn = document.getElementById("resetGameBtn");
+    const resetScoreXoBtn = document.getElementById("resetScoreXoBtn");
     const gameStatus = document.getElementById("gameStatus");
     const adminScoreXo = document.getElementById("adminScoreXo");
     const visitorScoreXo = document.getElementById("visitorScoreXo");
@@ -824,6 +828,12 @@
         const snap = await getDoc(gameDocRef);
         let data = snap.exists() ? snap.data() : { adminScore: 0, visitorScore: 0 };
         await setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true, adminScore: data.adminScore || 0, visitorScore: data.visitorScore || 0 });
+      } catch (e) {}
+    });
+
+    resetScoreXoBtn.addEventListener("click", async () => {
+      try {
+        await setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true, adminScore: 0, visitorScore: 0 });
       } catch (e) {}
     });
 
@@ -889,11 +899,12 @@
       return null;
     }
 
-    // --- كود لعبة حجر ورقة مقص (مع السكور) ---
+    // --- كود لعبة حجر ورقة مقص ---
     const rpsDocRef = doc(db, "status", "rps_game");
     const rpsStatus = document.getElementById("rpsStatus");
     const rpsResultText = document.getElementById("rpsResultText");
     const resetRpsBtn = document.getElementById("resetRpsBtn");
+    const resetScoreRpsBtn = document.getElementById("resetScoreRpsBtn");
     const adminScoreRps = document.getElementById("adminScoreRps");
     const visitorScoreRps = document.getElementById("visitorScoreRps");
     const rpsButtons = document.querySelectorAll(".rps-btn");
@@ -908,7 +919,6 @@
           if (isAdmin) data.adminChoice = choice;
           else data.visitorChoice = choice;
 
-          // إذا اختار الاثنان، احسب النتيجة والسكور تلقائياً
           if (data.adminChoice && data.visitorChoice && !data.scored) {
             let aC = data.adminChoice;
             let vC = data.visitorChoice;
@@ -932,6 +942,12 @@
         const docSnap = await getDoc(rpsDocRef);
         let data = docSnap.exists() ? docSnap.data() : { adminScore: 0, visitorScore: 0 };
         await setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "", scored: false, adminScore: data.adminScore || 0, visitorScore: data.visitorScore || 0 });
+      } catch(e) {}
+    });
+
+    resetScoreRpsBtn.addEventListener("click", async () => {
+      try {
+        await setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "", scored: false, adminScore: 0, visitorScore: 0 });
       } catch(e) {}
     });
 
@@ -969,11 +985,12 @@
       }
     });
 
-    // --- كود لعبة الضومنة (مع السكور) ---
+    // --- كود لعبة الضومنة ---
     const dominoDocRef = doc(db, "status", "domino_game");
     const dominoBoardContainer = document.getElementById("dominoBoardContainer");
     const dominoHandContainer = document.getElementById("dominoHandContainer");
     const resetDominoBtn = document.getElementById("resetDominoBtn");
+    const resetScoreDominoBtn = document.getElementById("resetScoreDominoBtn");
     const dominoStatus = document.getElementById("dominoStatus");
     const adminScoreDomino = document.getElementById("adminScoreDomino");
     const visitorScoreDomino = document.getElementById("visitorScoreDomino");
@@ -995,6 +1012,19 @@
           turn: "admin",
           adminScore: data.adminScore || 0,
           visitorScore: data.visitorScore || 0
+        });
+      } catch(e) {}
+    });
+
+    resetScoreDominoBtn.addEventListener("click", async () => {
+      try {
+        await setDoc(dominoDocRef, {
+          board: [[3, 3]],
+          adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
+          visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
+          turn: "admin",
+          adminScore: 0,
+          visitorScore: 0
         });
       } catch(e) {}
     });
@@ -1021,7 +1051,6 @@
       adminScoreDomino.textContent = data.adminScore || 0;
       visitorScoreDomino.textContent = data.visitorScore || 0;
 
-      // عرض الطاولة
       dominoBoardContainer.innerHTML = "";
       board.forEach(tile => {
         let tileEl = document.createElement("div");
@@ -1033,7 +1062,6 @@
       let myHand = isAdmin ? adminHand : visitorHand;
       let isMyTurn = (isAdmin && turn === "admin") || (!isAdmin && turn === "visitor");
 
-      // فحص إذا انتهت اللعبة (أحد اللاعبين خلص أحجاره)
       if (adminHand.length === 0 || visitorHand.length === 0) {
         let winnerText = adminHand.length === 0 ? "🎉 المدير فاز بالجولة!" : "🎉 الزائر فاز بالجولة!";
         dominoStatus.textContent = winnerText;
@@ -1043,7 +1071,6 @@
 
       dominoStatus.textContent = isMyTurn ? "دورك الآن! اختر حجراً للمطابقة:" : "دور الطرف الآخر...";
 
-      // عرض أيدي اللاعب
       dominoHandContainer.innerHTML = "";
       myHand.forEach((tile, index) => {
         let btn = document.createElement("button");
