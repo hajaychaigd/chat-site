@@ -162,8 +162,8 @@
       display: inline-block;
     }
 
-    /* نافذة لعبة X-O المنبثقة */
-    #gameModal {
+    /* النوافذ المنبثقة للألعاب */
+    .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -176,20 +176,50 @@
       z-index: 10000;
     }
 
-    .game-box {
+    .modal-box {
       background: #ffffff;
       padding: 20px;
       border-radius: 16px;
-      width: 300px;
+      width: 310px;
       text-align: center;
       box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
+    .modal-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #4a7bb0;
+    }
+
+    .game-option-btn {
+      background: #f0f4f8;
+      border: 1px solid #dcdfe4;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #333;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .game-option-btn:hover {
+      background: #e2e8f0;
+    }
+
+    /* لعبة X-O */
     .game-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin: 15px 0;
+      margin: 10px 0;
     }
 
     .game-cell {
@@ -211,21 +241,61 @@
       background: #e2e8f0;
     }
 
-    .game-status {
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #4a7bb0;
+    /* لعبة حجر ورقة مقص */
+    .rps-choices {
+      display: flex;
+      justify-content: space-around;
+      margin: 15px 0;
     }
 
-    .close-game-btn {
-      background: #d97777;
+    .rps-btn {
+      background: #f0f4f8;
+      border: 2px solid #4a7bb0;
+      font-size: 26px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s, background 0.2s;
+    }
+
+    .rps-btn:hover {
+      background: #e2e8f0;
+      transform: scale(1.05);
+    }
+
+    .rps-result-box {
+      font-size: 13px;
+      background: #f9fafb;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #eef2f5;
+      margin-bottom: 5px;
+      line-height: 1.5;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .custom-btn {
+      background: #4a7bb0;
       color: white;
       border: none;
-      padding: 6px 16px;
+      padding: 6px 14px;
       border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
+      font-weight: 500;
+    }
+
+    .custom-btn.danger {
+      background: #d97777;
     }
 
     /* شريط التسبيحات المتحرك */
@@ -260,7 +330,7 @@
       100% { transform: translateX(-50%); }
     }
 
-    /* منطقة التعليقات المنسقة */
+    /* منطقة التعليقات */
     .messages {
       flex: 1;
       padding: 16px;
@@ -453,11 +523,21 @@
     ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
   </div>
 
-  <!-- نافذة لعبة X-O -->
-  <div id="gameModal">
-    <div class="game-box">
-      <div style="font-weight: bold; margin-bottom: 10px;">لعبة X-O التفاعلية</div>
-      <div id="gameStatus" class="game-status">دور: X (المدير)</div>
+  <!-- 1. قائمة اختيار الألعاب -->
+  <div id="gamesMenuModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">اختر لعبة للترفيه 🎮</div>
+      <button class="game-option-btn" id="openXoBtn">❌⭕ لعبة X-O</button>
+      <button class="game-option-btn" id="openRpsBtn">✊✌️🖐️ حجر ورقة مقص</button>
+      <button class="custom-btn danger" id="closeGamesMenu" style="margin-top: 5px;">إغلاق</button>
+    </div>
+  </div>
+
+  <!-- 2. نافذة لعبة X-O -->
+  <div id="xoModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">لعبة X-O التفاعلية</div>
+      <div id="gameStatus" style="font-size: 13px; font-weight: bold; color: #4a7bb0;">دور: X (المدير)</div>
       <div class="game-grid" id="gameGrid">
         <div class="game-cell" data-index="0"></div>
         <div class="game-cell" data-index="1"></div>
@@ -469,15 +549,37 @@
         <div class="game-cell" data-index="7"></div>
         <div class="game-cell" data-index="8"></div>
       </div>
-      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
-        <button class="close-game-btn" id="resetGameBtn" style="background: #4a7bb0;">إعادة اللعب</button>
-        <button class="close-game-btn" id="closeGameModal">إغلاق</button>
+      <div class="btn-group">
+        <button class="custom-btn" id="resetGameBtn">إعادة اللعب</button>
+        <button class="custom-btn danger" id="backToMenuFromXo">القائمة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. نافذة لعبة حجر ورقة مقص -->
+  <div id="rpsModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">حجر 🪨 ورقة 📄 مقص ✂️</div>
+      <div id="rpsStatus" style="font-size: 13px; font-weight: bold; color: #4a7bb0;">اختر سلاحك:</div>
+      
+      <div class="rps-choices" id="rpsButtonsArea">
+        <button class="rps-btn" data-choice="rock" title="حجر">🪨</button>
+        <button class="rps-btn" data-choice="paper" title="ورقة">📄</button>
+        <button class="rps-btn" data-choice="scissors" title="مقص">✂️</button>
+      </div>
+
+      <div class="rps-result-box" id="rpsResultText">
+        في انتظار اختيارات اللاعبين...
+      </div>
+
+      <div class="btn-group">
+        <button class="custom-btn" id="resetRpsBtn">جولة جديدة</button>
+        <button class="custom-btn danger" id="backToMenuFromRps">القائمة</button>
       </div>
     </div>
   </div>
 
   <div class="app">
-
     <div class="header">
       <div class="header-title">
         <span class="back-arrow">←</span>
@@ -485,7 +587,7 @@
         <span id="statusDot" class="status-dot"></span>
       </div>
       <div class="header-actions">
-        <button id="gameBtn" class="game-btn" title="لعبة X-O">🎮</button>
+        <button id="gameBtn" class="game-btn" title="ألعاب ترفيهية">🎮</button>
         <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
         <div id="usersCounter" class="users-counter">
           <span>👤</span> <span id="onlineCount">0</span>
@@ -525,7 +627,6 @@
         <svg height="18" viewBox="0 0 24 24" width="18" fill="#ffffff"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
-
   </div>
 
   <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
@@ -582,53 +683,66 @@
       localStorage.setItem("chat_user_id", myId);
     }
 
-    // --- كود لعبة X-O ---
+    // --- إدارة فتح وقفل نوافذ الألعاب ---
     const gameBtn = document.getElementById("gameBtn");
-    const gameModal = document.getElementById("gameModal");
-    const closeGameModal = document.getElementById("closeGameModal");
+    const gamesMenuModal = document.getElementById("gamesMenuModal");
+    const closeGamesMenu = document.getElementById("closeGamesMenu");
+    const openXoBtn = document.getElementById("openXoBtn");
+    const openRpsBtn = document.getElementById("openRpsBtn");
+    const xoModal = document.getElementById("xoModal");
+    const rpsModal = document.getElementById("rpsModal");
+    const backToMenuFromXo = document.getElementById("backToMenuFromXo");
+    const backToMenuFromRps = document.getElementById("backToMenuFromRps");
+
+    gameBtn.addEventListener("click", () => gamesMenuModal.style.display = "flex");
+    closeGamesMenu.addEventListener("click", () => gamesMenuModal.style.display = "none");
+
+    openXoBtn.addEventListener("click", () => {
+      gamesMenuModal.style.display = "none";
+      xoModal.style.display = "flex";
+    });
+
+    openRpsBtn.addEventListener("click", () => {
+      gamesMenuModal.style.display = "none";
+      rpsModal.style.display = "flex";
+    });
+
+    backToMenuFromXo.addEventListener("click", () => {
+      xoModal.style.display = "none";
+      gamesMenuModal.style.display = "flex";
+    });
+
+    backToMenuFromRps.addEventListener("click", () => {
+      rpsModal.style.display = "none";
+      gamesMenuModal.style.display = "flex";
+    });
+
+    // --- كود لعبة X-O ---
     const resetGameBtn = document.getElementById("resetGameBtn");
     const gameStatus = document.getElementById("gameStatus");
     const cells = document.querySelectorAll(".game-cell");
     const gameDocRef = doc(db, "status", "xo_game");
 
-    gameBtn.addEventListener("click", () => {
-      gameModal.style.display = "flex";
-    });
-
-    closeGameModal.addEventListener("click", () => {
-      gameModal.style.display = "none";
-    });
-
     resetGameBtn.addEventListener("click", async () => {
       try {
-        await setDoc(gameDocRef, {
-          board: ["", "", "", "", "", "", "", "", ""],
-          turn: "X",
-          active: true
-        });
+        await setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true });
       } catch (e) {}
     });
 
-    let boardState = ["", "", "", "", "", "", "", "", ""];
+    let boardState = ["","","","","","","","",""];
     let currentTurn = "X";
     let gameActive = true;
 
     cells.forEach((cell, index) => {
       cell.addEventListener("click", async () => {
         if (!gameActive || boardState[index] !== "") return;
-
         let mySymbol = isAdmin ? "X" : "O";
         if (currentTurn !== mySymbol) return;
 
         boardState[index] = mySymbol;
         currentTurn = currentTurn === "X" ? "O" : "X";
-
         try {
-          await setDoc(gameDocRef, {
-            board: boardState,
-            turn: currentTurn,
-            active: true
-          });
+          await setDoc(gameDocRef, { board: boardState, turn: currentTurn, active: true });
         } catch (e) {}
       });
     });
@@ -636,12 +750,9 @@
     onSnapshot(gameDocRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        boardState = data.board || ["", "", "", "", "", "", "", "", ""];
+        boardState = data.board || ["","","","","","","","",""];
         currentTurn = data.turn || "X";
-
-        cells.forEach((cell, i) => {
-          cell.textContent = boardState[i];
-        });
+        cells.forEach((cell, i) => { cell.textContent = boardState[i]; });
 
         let winner = checkWinner(boardState);
         if (winner) {
@@ -655,29 +766,94 @@
           gameActive = true;
         }
       } else {
-        setDoc(gameDocRef, {
-          board: ["", "", "", "", "", "", "", "", ""],
-          turn: "X",
-          active: true
-        });
+        setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true });
       }
     });
 
     function checkWinner(board) {
-      const winningLines = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
-      ];
-      for (let line of winningLines) {
-        const [a, b, c] = line;
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-          return board[a];
-        }
+      const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      for (let l of lines) {
+        if (board[l[0]] && board[l[0]] === board[l[1]] && board[l[0]] === board[l[2]]) return board[l[0]];
       }
       return null;
     }
-    // ----------------------
+
+    // --- كود لعبة حجر ورقة مقص (RPS) ---
+    const rpsDocRef = doc(db, "status", "rps_game");
+    const rpsStatus = document.getElementById("rpsStatus");
+    const rpsResultText = document.getElementById("rpsResultText");
+    const resetRpsBtn = document.getElementById("resetRpsBtn");
+    const rpsButtons = document.querySelectorAll(".rps-btn");
+
+    const emojiMap = { rock: "🪨 حجر", paper: "📄 ورقة", scissors: "✂️ مقص" };
+
+    rpsButtons.forEach(btn => {
+      btn.addEventListener("click", async () => {
+        let choice = btn.dataset.choice;
+        try {
+          const docSnap = await getDoc(rpsDocRef);
+          let data = docSnap.exists() ? docSnap.data() : { adminChoice: "", visitorChoice: "" };
+          
+          if (isAdmin) {
+            data.adminChoice = choice;
+          } else {
+            data.visitorChoice = choice;
+          }
+          await setDoc(rpsDocRef, data);
+        } catch(e) {}
+      });
+    });
+
+    resetRpsBtn.addEventListener("click", async () => {
+      try {
+        await setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "" });
+      } catch(e) {}
+    });
+
+    onSnapshot(rpsDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        let adminC = data.adminChoice || "";
+        let visitorC = data.visitorChoice || "";
+
+        if (!adminC && !visitorC) {
+          rpsStatus.textContent = "اختر سلاحك في الخفاء:";
+          rpsResultText.innerHTML = "في انتظار اختيارات الطرفين...";
+          return;
+        }
+
+        let mySelection = isAdmin ? adminC : visitorC;
+        if (mySelection) {
+          rpsStatus.textContent = `لقد اخترت: ${emojiMap[mySelection]}`;
+        }
+
+        if (adminC && visitorC) {
+          let winnerText = "";
+          if (adminC === visitorC) {
+            winnerText = "🤝 تعادل في هذه الجولة!";
+          } else if (
+            (adminC === "rock" && visitorC === "scissors") ||
+            (adminC === "paper" && visitorC === "rock") ||
+            (adminC === "scissors" && visitorC === "paper")
+          ) {
+            winnerText = "🏆 الفائز هو: المدير (X)";
+          } else {
+            winnerText = "🏆 الفائز هو: الزائر (O)";
+          }
+          rpsResultText.innerHTML = `
+            <b>المدير اختر:</b> ${emojiMap[adminC]}<br>
+            <b>الزائر اختر:</b> ${emojiMap[visitorC]}<br>
+            <b style="color: #4a7bb0; font-size: 14px;">${winnerText}</b>
+          `;
+        } else {
+          let waitingFor = !adminC ? "المدير" : "الزائر";
+          rpsResultText.innerHTML = `بانتظار اختيار ${waitingFor}...`;
+        }
+      } else {
+        setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "" });
+      }
+    });
+    // ------------------------------------
 
     bellBtn.addEventListener("click", async function() {
       if (isAdmin) return;
