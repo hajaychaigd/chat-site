@@ -281,33 +281,35 @@
     .domino-board {
       background: #f0f4f8;
       border: 1px solid #dcdfe4;
-      padding: 12px;
+      padding: 10px;
       border-radius: 8px;
-      font-size: 14px;
-      min-height: 50px;
+      font-size: 13px;
+      min-height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       flex-wrap: wrap;
+      max-height: 110px;
+      overflow-y: auto;
     }
 
     .domino-tile {
       background: #ffffff;
       border: 2px solid #4a7bb0;
-      padding: 6px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
       font-weight: bold;
-      font-size: 15px;
+      font-size: 13px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .domino-hand {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       justify-content: center;
       margin-top: 5px;
       flex-wrap: wrap;
@@ -316,11 +318,11 @@
     .domino-tile-btn {
       background: #fff;
       border: 2px solid #6c9a78;
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
       transition: transform 0.1s, background 0.2s;
     }
 
@@ -575,7 +577,7 @@
     ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
   </div>
 
-  <!-- 1. قائمة اختيار الألعاب -->
+  <!-- قائمة اختيار الألعاب -->
   <div id="gamesMenuModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-title">اختر لعبة للترفيه 🎮</div>
@@ -586,7 +588,7 @@
     </div>
   </div>
 
-  <!-- 2. نافذة لعبة X-O -->
+  <!-- نافذة لعبة X-O -->
   <div id="xoModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-title">لعبة X-O التفاعلية</div>
@@ -609,7 +611,7 @@
     </div>
   </div>
 
-  <!-- 3. نافذة لعبة حجر ورقة مقص -->
+  <!-- نافذة لعبة حجر ورقة مقص -->
   <div id="rpsModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-title">حجر 🪨 ورقة 📄 مقص ✂️</div>
@@ -632,7 +634,7 @@
     </div>
   </div>
 
-  <!-- 4. نافذة لعبة الضومنة -->
+  <!-- نافذة لعبة الضومنة -->
   <div id="dominoModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-title">لعبة الضومنة السريعة 🁉</div>
@@ -643,9 +645,7 @@
       </div>
 
       <div style="font-size: 12px; color: #555; margin-top: 4px;">أحجارك في اليد:</div>
-      <div class="domino-hand" id="dominoHandContainer">
-        <!-- الأحجار الخاصة باللاعب -->
-      </div>
+      <div class="domino-hand" id="dominoHandContainer"></div>
 
       <div class="btn-group" style="margin-top: 10px;">
         <button class="custom-btn" id="resetDominoBtn">لعبة جديدة</button>
@@ -900,7 +900,7 @@
       }
     });
 
-    // --- كود لعبة الضومنة (Dominoes) ---
+    // --- كود لعبة الضومنة (Dominoes) المُصحح ---
     const dominoDocRef = doc(db, "status", "domino_game");
     const dominoBoardContainer = document.getElementById("dominoBoardContainer");
     const dominoHandContainer = document.getElementById("dominoHandContainer");
@@ -916,7 +916,7 @@
     resetDominoBtn.addEventListener("click", async () => {
       try {
         await setDoc(dominoDocRef, {
-          board: [[3, 4]],
+          board: [[3, 3]],
           adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
           visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
           turn: "admin"
@@ -924,80 +924,92 @@
       } catch(e) {}
     });
 
-    onSnapshot(dominoDocRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        let board = data.board || [[3, 4]];
-        let adminHand = data.adminHand || [];
-        let visitorHand = data.visitorHand || [];
-        let turn = data.turn || "admin";
-
-        // عرض الطاولة
-        dominoBoardContainer.innerHTML = "";
-        board.forEach(tile => {
-          let tileEl = document.createElement("div");
-          tileEl.className = "domino-tile";
-          tileEl.textContent = `[ ${tile[0]} | ${tile[1]} ]`;
-          dominoBoardContainer.appendChild(tileEl);
-        });
-
-        // عرض اليد الخاصة باللاعب الحالي
-        dominoHandContainer.innerHTML = "";
-        let myHand = isAdmin ? adminHand : visitorHand;
-        let isMyTurn = (isAdmin && turn === "admin") || (!isAdmin && turn === "visitor");
-
-        dominoStatus.textContent = isMyTurn ? "دورك الآن! اختر حجراً للمطابقة:" : "دور الطرف الآخر...";
-
-        myHand.forEach((tile, index) => {
-          let btn = document.createElement("button");
-          btn.className = "domino-tile-btn";
-          btn.textContent = `[ ${tile[0]} | ${tile[1]} ]`;
-          
-          btn.addEventListener("click", async () => {
-            if (!isMyTurn) return;
-            let leftVal = board[0][0];
-            let rightVal = board[board.length - 1][1];
-
-            // فحص المطابقة البسيطة مع أطراف الطاولة
-            if (tile[0] === leftVal || tile[1] === leftVal || tile[0] === rightVal || tile[1] === rightVal) {
-              // تعديل الطاولة والأيدي
-              let newBoard = [...board];
-              if (tile[1] === leftVal) newBoard.unshift(tile);
-              else newBoard.push(tile);
-
-              let newAdminHand = [...adminHand];
-              let newVisitorHand = [...visitorHand];
-
-              if (isAdmin) newAdminHand.splice(index, 1);
-              else newVisitorHand.splice(index, 1);
-
-              let nextTurn = isAdmin ? "visitor" : "admin";
-
-              try {
-                await setDoc(dominoDocRef, {
-                  board: newBoard,
-                  adminHand: newAdminHand,
-                  visitorHand: newVisitorHand,
-                  turn: nextTurn
-                });
-              } catch(e) {}
-            } else {
-              alert("❌ هذا الحجر لا يتطابق مع أطراف الطاولة الحالية!");
-            }
-          });
-
-          dominoHandContainer.appendChild(btn);
-        });
-
-      } else {
-        // تهيئة أولية للعبة
-        setDoc(dominoDocRef, {
-          board: [[3, 4]],
+    onSnapshot(dominoDocRef, async (docSnap) => {
+      if (!docSnap.exists()) {
+        await setDoc(dominoDocRef, {
+          board: [[3, 3]],
           adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
           visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
           turn: "admin"
         });
+        return;
       }
+
+      const data = docSnap.data();
+      let board = data.board || [[3, 3]];
+      let adminHand = data.adminHand || [];
+      let visitorHand = data.visitorHand || [];
+      let turn = data.turn || "admin";
+
+      // عرض الطاولة
+      dominoBoardContainer.innerHTML = "";
+      board.forEach(tile => {
+        let tileEl = document.createElement("div");
+        tileEl.className = "domino-tile";
+        tileEl.textContent = `[${tile[0]}|${tile[1]}]`;
+        dominoBoardContainer.appendChild(tileEl);
+      });
+
+      let myHand = isAdmin ? adminHand : visitorHand;
+      let isMyTurn = (isAdmin && turn === "admin") || (!isAdmin && turn === "visitor");
+
+      dominoStatus.textContent = isMyTurn ? "دورك الآن! اختر حجراً للمطابقة:" : "دور الطرف الآخر...";
+
+      // عرض أيدي اللاعب
+      dominoHandContainer.innerHTML = "";
+      myHand.forEach((tile, index) => {
+        let btn = document.createElement("button");
+        btn.className = "domino-tile-btn";
+        btn.textContent = `[${tile[0]}|${tile[1]}]`;
+        
+        btn.addEventListener("click", async () => {
+          if (!isMyTurn) return;
+          
+          let leftVal = board[0][0];
+          let rightVal = board[board.length - 1][1];
+
+          let matched = false;
+          let newBoard = [...board];
+
+          if (tile[0] === leftVal || tile[1] === leftVal || tile[0] === rightVal || tile[1] === rightVal) {
+            matched = true;
+            // مطابقة ذكية وتبديل اتجاه الحجر إذا لزم الأمر
+            if (tile[1] === leftVal) {
+              newBoard.unshift(tile);
+            } else if (tile[0] === leftVal) {
+              newBoard.unshift([tile[1], tile[0]]);
+            } else if (tile[0] === rightVal) {
+              newBoard.push(tile);
+            } else if (tile[1] === rightVal) {
+              newBoard.push([tile[1], tile[0]]);
+            }
+
+            let newAdminHand = [...adminHand];
+            let newVisitorHand = [...visitorHand];
+
+            if (isAdmin) {
+              newAdminHand.splice(index, 1);
+            } else {
+              newVisitorHand.splice(index, 1);
+            }
+
+            let nextTurn = isAdmin ? "visitor" : "admin";
+
+            try {
+              await setDoc(dominoDocRef, {
+                board: newBoard,
+                adminHand: newAdminHand,
+                visitorHand: newVisitorHand,
+                turn: nextTurn
+              });
+            } catch(e) {}
+          } else {
+            alert("❌ هذا الحجر لا يتطابق مع أطراف الطاولة!");
+          }
+        });
+
+        dominoHandContainer.appendChild(btn);
+      });
     });
     // ------------------------------------
 
