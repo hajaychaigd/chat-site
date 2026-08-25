@@ -97,7 +97,7 @@
       box-shadow: 0 2px 6px rgba(74, 123, 176, 0.2);
     }
 
-    /* القائمة المنسدلة (تظهر للمدير فقط) */
+    /* القائمة المنسدلة */
     .menu-btn {
       background: none;
       border: none;
@@ -180,7 +180,7 @@
       background: #ffffff;
       padding: 20px;
       border-radius: 16px;
-      width: 310px;
+      width: 320px;
       text-align: center;
       box-shadow: 0 5px 20px rgba(0,0,0,0.15);
       display: flex;
@@ -275,6 +275,58 @@
       border: 1px solid #eef2f5;
       margin-bottom: 5px;
       line-height: 1.5;
+    }
+
+    /* لعبة الضومنة (Dominoes) */
+    .domino-board {
+      background: #f0f4f8;
+      border: 1px solid #dcdfe4;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .domino-tile {
+      background: #ffffff;
+      border: 2px solid #4a7bb0;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .domino-hand {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 5px;
+      flex-wrap: wrap;
+    }
+
+    .domino-tile-btn {
+      background: #fff;
+      border: 2px solid #6c9a78;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.1s, background 0.2s;
+    }
+
+    .domino-tile-btn:hover {
+      background: #f0f4f8;
+      transform: scale(1.05);
     }
 
     .btn-group {
@@ -529,6 +581,7 @@
       <div class="modal-title">اختر لعبة للترفيه 🎮</div>
       <button class="game-option-btn" id="openXoBtn">❌⭕ لعبة X-O</button>
       <button class="game-option-btn" id="openRpsBtn">✊✌️🖐️ حجر ورقة مقص</button>
+      <button class="game-option-btn" id="openDominoBtn">🁉 لعبة الضومنة</button>
       <button class="custom-btn danger" id="closeGamesMenu" style="margin-top: 5px;">إغلاق</button>
     </div>
   </div>
@@ -575,6 +628,28 @@
       <div class="btn-group">
         <button class="custom-btn" id="resetRpsBtn">جولة جديدة</button>
         <button class="custom-btn danger" id="backToMenuFromRps">القائمة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. نافذة لعبة الضومنة -->
+  <div id="dominoModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">لعبة الضومنة السريعة 🁉</div>
+      <div id="dominoStatus" style="font-size: 12px; font-weight: bold; color: #4a7bb0;">طاولة اللعب:</div>
+      
+      <div class="domino-board" id="dominoBoardContainer">
+        جاري تحميل الطاولة...
+      </div>
+
+      <div style="font-size: 12px; color: #555; margin-top: 4px;">أحجارك في اليد:</div>
+      <div class="domino-hand" id="dominoHandContainer">
+        <!-- الأحجار الخاصة باللاعب -->
+      </div>
+
+      <div class="btn-group" style="margin-top: 10px;">
+        <button class="custom-btn" id="resetDominoBtn">لعبة جديدة</button>
+        <button class="custom-btn danger" id="backToMenuFromDomino">القائمة</button>
       </div>
     </div>
   </div>
@@ -687,35 +762,29 @@
     const gameBtn = document.getElementById("gameBtn");
     const gamesMenuModal = document.getElementById("gamesMenuModal");
     const closeGamesMenu = document.getElementById("closeGamesMenu");
+    
     const openXoBtn = document.getElementById("openXoBtn");
     const openRpsBtn = document.getElementById("openRpsBtn");
+    const openDominoBtn = document.getElementById("openDominoBtn");
+
     const xoModal = document.getElementById("xoModal");
     const rpsModal = document.getElementById("rpsModal");
+    const dominoModal = document.getElementById("dominoModal");
+
     const backToMenuFromXo = document.getElementById("backToMenuFromXo");
     const backToMenuFromRps = document.getElementById("backToMenuFromRps");
+    const backToMenuFromDomino = document.getElementById("backToMenuFromDomino");
 
     gameBtn.addEventListener("click", () => gamesMenuModal.style.display = "flex");
     closeGamesMenu.addEventListener("click", () => gamesMenuModal.style.display = "none");
 
-    openXoBtn.addEventListener("click", () => {
-      gamesMenuModal.style.display = "none";
-      xoModal.style.display = "flex";
-    });
+    openXoBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; xoModal.style.display = "flex"; });
+    openRpsBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; rpsModal.style.display = "flex"; });
+    openDominoBtn.addEventListener("click", () => { gamesMenuModal.style.display = "none"; dominoModal.style.display = "flex"; });
 
-    openRpsBtn.addEventListener("click", () => {
-      gamesMenuModal.style.display = "none";
-      rpsModal.style.display = "flex";
-    });
-
-    backToMenuFromXo.addEventListener("click", () => {
-      xoModal.style.display = "none";
-      gamesMenuModal.style.display = "flex";
-    });
-
-    backToMenuFromRps.addEventListener("click", () => {
-      rpsModal.style.display = "none";
-      gamesMenuModal.style.display = "flex";
-    });
+    backToMenuFromXo.addEventListener("click", () => { xoModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
+    backToMenuFromRps.addEventListener("click", () => { rpsModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
+    backToMenuFromDomino.addEventListener("click", () => { dominoModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
 
     // --- كود لعبة X-O ---
     const resetGameBtn = document.getElementById("resetGameBtn");
@@ -724,9 +793,7 @@
     const gameDocRef = doc(db, "status", "xo_game");
 
     resetGameBtn.addEventListener("click", async () => {
-      try {
-        await setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true });
-      } catch (e) {}
+      try { await setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true }); } catch (e) {}
     });
 
     let boardState = ["","","","","","","","",""];
@@ -741,9 +808,7 @@
 
         boardState[index] = mySymbol;
         currentTurn = currentTurn === "X" ? "O" : "X";
-        try {
-          await setDoc(gameDocRef, { board: boardState, turn: currentTurn, active: true });
-        } catch (e) {}
+        try { await setDoc(gameDocRef, { board: boardState, turn: currentTurn, active: true }); } catch (e) {}
       });
     });
 
@@ -784,7 +849,6 @@
     const rpsResultText = document.getElementById("rpsResultText");
     const resetRpsBtn = document.getElementById("resetRpsBtn");
     const rpsButtons = document.querySelectorAll(".rps-btn");
-
     const emojiMap = { rock: "🪨 حجر", paper: "📄 ورقة", scissors: "✂️ مقص" };
 
     rpsButtons.forEach(btn => {
@@ -793,21 +857,15 @@
         try {
           const docSnap = await getDoc(rpsDocRef);
           let data = docSnap.exists() ? docSnap.data() : { adminChoice: "", visitorChoice: "" };
-          
-          if (isAdmin) {
-            data.adminChoice = choice;
-          } else {
-            data.visitorChoice = choice;
-          }
+          if (isAdmin) data.adminChoice = choice;
+          else data.visitorChoice = choice;
           await setDoc(rpsDocRef, data);
         } catch(e) {}
       });
     });
 
     resetRpsBtn.addEventListener("click", async () => {
-      try {
-        await setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "" });
-      } catch(e) {}
+      try { await setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "" }); } catch(e) {}
     });
 
     onSnapshot(rpsDocRef, (docSnap) => {
@@ -823,34 +881,122 @@
         }
 
         let mySelection = isAdmin ? adminC : visitorC;
-        if (mySelection) {
-          rpsStatus.textContent = `لقد اخترت: ${emojiMap[mySelection]}`;
-        }
+        if (mySelection) rpsStatus.textContent = `لقد اخترت: ${emojiMap[mySelection]}`;
 
         if (adminC && visitorC) {
           let winnerText = "";
-          if (adminC === visitorC) {
-            winnerText = "🤝 تعادل في هذه الجولة!";
-          } else if (
-            (adminC === "rock" && visitorC === "scissors") ||
-            (adminC === "paper" && visitorC === "rock") ||
-            (adminC === "scissors" && visitorC === "paper")
-          ) {
+          if (adminC === visitorC) winnerText = "🤝 تعادل في هذه الجولة!";
+          else if ((adminC === "rock" && visitorC === "scissors") || (adminC === "paper" && visitorC === "rock") || (adminC === "scissors" && visitorC === "paper"))
             winnerText = "🏆 الفائز هو: المدير (X)";
-          } else {
-            winnerText = "🏆 الفائز هو: الزائر (O)";
-          }
-          rpsResultText.innerHTML = `
-            <b>المدير اختر:</b> ${emojiMap[adminC]}<br>
-            <b>الزائر اختر:</b> ${emojiMap[visitorC]}<br>
-            <b style="color: #4a7bb0; font-size: 14px;">${winnerText}</b>
-          `;
+          else winnerText = "🏆 الفائز هو: الزائر (O)";
+
+          rpsResultText.innerHTML = `<b>المدير اختر:</b> ${emojiMap[adminC]}<br><b>الزائر اختر:</b> ${emojiMap[visitorC]}<br><b style="color: #4a7bb0; font-size: 14px;">${winnerText}</b>`;
         } else {
           let waitingFor = !adminC ? "المدير" : "الزائر";
           rpsResultText.innerHTML = `بانتظار اختيار ${waitingFor}...`;
         }
       } else {
         setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "" });
+      }
+    });
+
+    // --- كود لعبة الضومنة (Dominoes) ---
+    const dominoDocRef = doc(db, "status", "domino_game");
+    const dominoBoardContainer = document.getElementById("dominoBoardContainer");
+    const dominoHandContainer = document.getElementById("dominoHandContainer");
+    const resetDominoBtn = document.getElementById("resetDominoBtn");
+    const dominoStatus = document.getElementById("dominoStatus");
+
+    function getRandomTile() {
+      let a = Math.floor(Math.random() * 7);
+      let b = Math.floor(Math.random() * 7);
+      return [a, b];
+    }
+
+    resetDominoBtn.addEventListener("click", async () => {
+      try {
+        await setDoc(dominoDocRef, {
+          board: [[3, 4]],
+          adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
+          visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
+          turn: "admin"
+        });
+      } catch(e) {}
+    });
+
+    onSnapshot(dominoDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        let board = data.board || [[3, 4]];
+        let adminHand = data.adminHand || [];
+        let visitorHand = data.visitorHand || [];
+        let turn = data.turn || "admin";
+
+        // عرض الطاولة
+        dominoBoardContainer.innerHTML = "";
+        board.forEach(tile => {
+          let tileEl = document.createElement("div");
+          tileEl.className = "domino-tile";
+          tileEl.textContent = `[ ${tile[0]} | ${tile[1]} ]`;
+          dominoBoardContainer.appendChild(tileEl);
+        });
+
+        // عرض اليد الخاصة باللاعب الحالي
+        dominoHandContainer.innerHTML = "";
+        let myHand = isAdmin ? adminHand : visitorHand;
+        let isMyTurn = (isAdmin && turn === "admin") || (!isAdmin && turn === "visitor");
+
+        dominoStatus.textContent = isMyTurn ? "دورك الآن! اختر حجراً للمطابقة:" : "دور الطرف الآخر...";
+
+        myHand.forEach((tile, index) => {
+          let btn = document.createElement("button");
+          btn.className = "domino-tile-btn";
+          btn.textContent = `[ ${tile[0]} | ${tile[1]} ]`;
+          
+          btn.addEventListener("click", async () => {
+            if (!isMyTurn) return;
+            let leftVal = board[0][0];
+            let rightVal = board[board.length - 1][1];
+
+            // فحص المطابقة البسيطة مع أطراف الطاولة
+            if (tile[0] === leftVal || tile[1] === leftVal || tile[0] === rightVal || tile[1] === rightVal) {
+              // تعديل الطاولة والأيدي
+              let newBoard = [...board];
+              if (tile[1] === leftVal) newBoard.unshift(tile);
+              else newBoard.push(tile);
+
+              let newAdminHand = [...adminHand];
+              let newVisitorHand = [...visitorHand];
+
+              if (isAdmin) newAdminHand.splice(index, 1);
+              else newVisitorHand.splice(index, 1);
+
+              let nextTurn = isAdmin ? "visitor" : "admin";
+
+              try {
+                await setDoc(dominoDocRef, {
+                  board: newBoard,
+                  adminHand: newAdminHand,
+                  visitorHand: newVisitorHand,
+                  turn: nextTurn
+                });
+              } catch(e) {}
+            } else {
+              alert("❌ هذا الحجر لا يتطابق مع أطراف الطاولة الحالية!");
+            }
+          });
+
+          dominoHandContainer.appendChild(btn);
+        });
+
+      } else {
+        // تهيئة أولية للعبة
+        setDoc(dominoDocRef, {
+          board: [[3, 4]],
+          adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
+          visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
+          turn: "admin"
+        });
       }
     });
     // ------------------------------------
