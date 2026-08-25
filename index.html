@@ -194,6 +194,19 @@
       color: #4a7bb0;
     }
 
+    /* لوحة عرض السكور العام */
+    .score-board {
+      background: #f0f4f8;
+      border: 1px solid #dcdfe4;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-around;
+      color: #333;
+    }
+
     .game-option-btn {
       background: #f0f4f8;
       border: 1px solid #dcdfe4;
@@ -219,14 +232,14 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin: 10px 0;
+      margin: 5px 0;
     }
 
     .game-cell {
       background: #f0f4f8;
       border: 1px solid #dcdfe4;
-      height: 70px;
-      font-size: 28px;
+      height: 65px;
+      font-size: 26px;
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -245,15 +258,15 @@
     .rps-choices {
       display: flex;
       justify-content: space-around;
-      margin: 15px 0;
+      margin: 10px 0;
     }
 
     .rps-btn {
       background: #f0f4f8;
       border: 2px solid #4a7bb0;
-      font-size: 26px;
-      width: 60px;
-      height: 60px;
+      font-size: 24px;
+      width: 55px;
+      height: 55px;
       border-radius: 50%;
       cursor: pointer;
       display: flex;
@@ -268,61 +281,61 @@
     }
 
     .rps-result-box {
-      font-size: 13px;
+      font-size: 12px;
       background: #f9fafb;
-      padding: 10px;
+      padding: 8px;
       border-radius: 8px;
       border: 1px solid #eef2f5;
-      margin-bottom: 5px;
-      line-height: 1.5;
+      margin-bottom: 2px;
+      line-height: 1.4;
     }
 
     /* لعبة الضومنة (Dominoes) */
     .domino-board {
       background: #f0f4f8;
       border: 1px solid #dcdfe4;
-      padding: 10px;
+      padding: 8px;
       border-radius: 8px;
-      font-size: 13px;
-      min-height: 60px;
+      font-size: 12px;
+      min-height: 55px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      gap: 4px;
       flex-wrap: wrap;
-      max-height: 110px;
+      max-height: 90px;
       overflow-y: auto;
     }
 
     .domino-tile {
       background: #ffffff;
       border: 2px solid #4a7bb0;
-      padding: 4px 8px;
-      border-radius: 6px;
+      padding: 3px 6px;
+      border-radius: 5px;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 12px;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .domino-hand {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       justify-content: center;
-      margin-top: 5px;
+      margin-top: 4px;
       flex-wrap: wrap;
     }
 
     .domino-tile-btn {
       background: #fff;
       border: 2px solid #6c9a78;
-      padding: 6px 10px;
-      border-radius: 8px;
+      padding: 5px 8px;
+      border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 12px;
       transition: transform 0.1s, background 0.2s;
     }
 
@@ -592,7 +605,11 @@
   <div id="xoModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-title">لعبة X-O التفاعلية</div>
-      <div id="gameStatus" style="font-size: 13px; font-weight: bold; color: #4a7bb0;">دور: X (المدير)</div>
+      <div class="score-board">
+        <span>المدير (X): <b id="adminScoreXo">0</b></span>
+        <span>الزائر (O): <b id="visitorScoreXo">0</b></span>
+      </div>
+      <div id="gameStatus" style="font-size: 12px; font-weight: bold; color: #4a7bb0;">دور: X (المدير)</div>
       <div class="game-grid" id="gameGrid">
         <div class="game-cell" data-index="0"></div>
         <div class="game-cell" data-index="1"></div>
@@ -605,7 +622,7 @@
         <div class="game-cell" data-index="8"></div>
       </div>
       <div class="btn-group">
-        <button class="custom-btn" id="resetGameBtn">إعادة اللعب</button>
+        <button class="custom-btn" id="resetGameBtn">إعادة الجولة</button>
         <button class="custom-btn danger" id="backToMenuFromXo">القائمة</button>
       </div>
     </div>
@@ -615,7 +632,11 @@
   <div id="rpsModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-title">حجر 🪨 ورقة 📄 مقص ✂️</div>
-      <div id="rpsStatus" style="font-size: 13px; font-weight: bold; color: #4a7bb0;">اختر سلاحك:</div>
+      <div class="score-board">
+        <span>المدير: <b id="adminScoreRps">0</b></span>
+        <span>الزائر: <b id="visitorScoreRps">0</b></span>
+      </div>
+      <div id="rpsStatus" style="font-size: 12px; font-weight: bold; color: #4a7bb0;">اختر سلاحك:</div>
       
       <div class="rps-choices" id="rpsButtonsArea">
         <button class="rps-btn" data-choice="rock" title="حجر">🪨</button>
@@ -638,16 +659,20 @@
   <div id="dominoModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-title">لعبة الضومنة السريعة 🁉</div>
+      <div class="score-board">
+        <span>المدير: <b id="adminScoreDomino">0</b></span>
+        <span>الزائر: <b id="visitorScoreDomino">0</b></span>
+      </div>
       <div id="dominoStatus" style="font-size: 12px; font-weight: bold; color: #4a7bb0;">طاولة اللعب:</div>
       
       <div class="domino-board" id="dominoBoardContainer">
         جاري تحميل الطاولة...
       </div>
 
-      <div style="font-size: 12px; color: #555; margin-top: 4px;">أحجارك في اليد:</div>
+      <div style="font-size: 12px; color: #555; margin-top: 2px;">أحجارك في اليد:</div>
       <div class="domino-hand" id="dominoHandContainer"></div>
 
-      <div class="btn-group" style="margin-top: 10px;">
+      <div class="btn-group" style="margin-top: 8px;">
         <button class="custom-btn" id="resetDominoBtn">لعبة جديدة</button>
         <button class="custom-btn danger" id="backToMenuFromDomino">القائمة</button>
       </div>
@@ -786,14 +811,20 @@
     backToMenuFromRps.addEventListener("click", () => { rpsModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
     backToMenuFromDomino.addEventListener("click", () => { dominoModal.style.display = "none"; gamesMenuModal.style.display = "flex"; });
 
-    // --- كود لعبة X-O ---
+    // --- كود لعبة X-O (مع السكور) ---
     const resetGameBtn = document.getElementById("resetGameBtn");
     const gameStatus = document.getElementById("gameStatus");
+    const adminScoreXo = document.getElementById("adminScoreXo");
+    const visitorScoreXo = document.getElementById("visitorScoreXo");
     const cells = document.querySelectorAll(".game-cell");
     const gameDocRef = doc(db, "status", "xo_game");
 
     resetGameBtn.addEventListener("click", async () => {
-      try { await setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true }); } catch (e) {}
+      try {
+        const snap = await getDoc(gameDocRef);
+        let data = snap.exists() ? snap.data() : { adminScore: 0, visitorScore: 0 };
+        await setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true, adminScore: data.adminScore || 0, visitorScore: data.visitorScore || 0 });
+      } catch (e) {}
     });
 
     let boardState = ["","","","","","","","",""];
@@ -808,7 +839,19 @@
 
         boardState[index] = mySymbol;
         currentTurn = currentTurn === "X" ? "O" : "X";
-        try { await setDoc(gameDocRef, { board: boardState, turn: currentTurn, active: true }); } catch (e) {}
+        
+        let winner = checkWinner(boardState);
+        let snap = await getDoc(gameDocRef);
+        let data = snap.exists() ? snap.data() : { adminScore: 0, visitorScore: 0 };
+        let aScore = data.adminScore || 0;
+        let vScore = data.visitorScore || 0;
+
+        if (winner === "X") aScore++;
+        else if (winner === "O") vScore++;
+
+        try {
+          await setDoc(gameDocRef, { board: boardState, turn: currentTurn, active: true, adminScore: aScore, visitorScore: vScore });
+        } catch (e) {}
       });
     });
 
@@ -817,6 +860,9 @@
         const data = docSnap.data();
         boardState = data.board || ["","","","","","","","",""];
         currentTurn = data.turn || "X";
+        adminScoreXo.textContent = data.adminScore || 0;
+        visitorScoreXo.textContent = data.visitorScore || 0;
+
         cells.forEach((cell, i) => { cell.textContent = boardState[i]; });
 
         let winner = checkWinner(boardState);
@@ -831,7 +877,7 @@
           gameActive = true;
         }
       } else {
-        setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true });
+        setDoc(gameDocRef, { board: ["","","","","","","","",""], turn: "X", active: true, adminScore: 0, visitorScore: 0 });
       }
     });
 
@@ -843,11 +889,13 @@
       return null;
     }
 
-    // --- كود لعبة حجر ورقة مقص (RPS) ---
+    // --- كود لعبة حجر ورقة مقص (مع السكور) ---
     const rpsDocRef = doc(db, "status", "rps_game");
     const rpsStatus = document.getElementById("rpsStatus");
     const rpsResultText = document.getElementById("rpsResultText");
     const resetRpsBtn = document.getElementById("resetRpsBtn");
+    const adminScoreRps = document.getElementById("adminScoreRps");
+    const visitorScoreRps = document.getElementById("visitorScoreRps");
     const rpsButtons = document.querySelectorAll(".rps-btn");
     const emojiMap = { rock: "🪨 حجر", paper: "📄 ورقة", scissors: "✂️ مقص" };
 
@@ -856,16 +904,35 @@
         let choice = btn.dataset.choice;
         try {
           const docSnap = await getDoc(rpsDocRef);
-          let data = docSnap.exists() ? docSnap.data() : { adminChoice: "", visitorChoice: "" };
+          let data = docSnap.exists() ? docSnap.data() : { adminChoice: "", visitorChoice: "", adminScore: 0, visitorScore: 0 };
           if (isAdmin) data.adminChoice = choice;
           else data.visitorChoice = choice;
+
+          // إذا اختار الاثنان، احسب النتيجة والسكور تلقائياً
+          if (data.adminChoice && data.visitorChoice && !data.scored) {
+            let aC = data.adminChoice;
+            let vC = data.visitorChoice;
+            if (aC !== vC) {
+              if ((aC === "rock" && vC === "scissors") || (aC === "paper" && vC === "rock") || (aC === "scissors" && vC === "paper")) {
+                data.adminScore = (data.adminScore || 0) + 1;
+              } else {
+                data.visitorScore = (data.visitorScore || 0) + 1;
+              }
+            }
+            data.scored = true;
+          }
+
           await setDoc(rpsDocRef, data);
         } catch(e) {}
       });
     });
 
     resetRpsBtn.addEventListener("click", async () => {
-      try { await setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "" }); } catch(e) {}
+      try {
+        const docSnap = await getDoc(rpsDocRef);
+        let data = docSnap.exists() ? docSnap.data() : { adminScore: 0, visitorScore: 0 };
+        await setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "", scored: false, adminScore: data.adminScore || 0, visitorScore: data.visitorScore || 0 });
+      } catch(e) {}
     });
 
     onSnapshot(rpsDocRef, (docSnap) => {
@@ -873,6 +940,8 @@
         const data = docSnap.data();
         let adminC = data.adminChoice || "";
         let visitorC = data.visitorChoice || "";
+        adminScoreRps.textContent = data.adminScore || 0;
+        visitorScoreRps.textContent = data.visitorScore || 0;
 
         if (!adminC && !visitorC) {
           rpsStatus.textContent = "اختر سلاحك في الخفاء:";
@@ -887,25 +956,27 @@
           let winnerText = "";
           if (adminC === visitorC) winnerText = "🤝 تعادل في هذه الجولة!";
           else if ((adminC === "rock" && visitorC === "scissors") || (adminC === "paper" && visitorC === "rock") || (adminC === "scissors" && visitorC === "paper"))
-            winnerText = "🏆 الفائز هو: المدير (X)";
-          else winnerText = "🏆 الفائز هو: الزائر (O)";
+            winnerText = "🏆 الفائز في الجولة: المدير";
+          else winnerText = "🏆 الفائز في الجولة: الزائر";
 
-          rpsResultText.innerHTML = `<b>المدير اختر:</b> ${emojiMap[adminC]}<br><b>الزائر اختر:</b> ${emojiMap[visitorC]}<br><b style="color: #4a7bb0; font-size: 14px;">${winnerText}</b>`;
+          rpsResultText.innerHTML = `<b>المدير اختر:</b> ${emojiMap[adminC]}<br><b>الزائر اختر:</b> ${emojiMap[visitorC]}<br><b style="color: #4a7bb0; font-size: 13px;">${winnerText}</b>`;
         } else {
           let waitingFor = !adminC ? "المدير" : "الزائر";
           rpsResultText.innerHTML = `بانتظار اختيار ${waitingFor}...`;
         }
       } else {
-        setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "" });
+        setDoc(rpsDocRef, { adminChoice: "", visitorChoice: "", scored: false, adminScore: 0, visitorScore: 0 });
       }
     });
 
-    // --- كود لعبة الضومنة (Dominoes) المُصحح ---
+    // --- كود لعبة الضومنة (مع السكور) ---
     const dominoDocRef = doc(db, "status", "domino_game");
     const dominoBoardContainer = document.getElementById("dominoBoardContainer");
     const dominoHandContainer = document.getElementById("dominoHandContainer");
     const resetDominoBtn = document.getElementById("resetDominoBtn");
     const dominoStatus = document.getElementById("dominoStatus");
+    const adminScoreDomino = document.getElementById("adminScoreDomino");
+    const visitorScoreDomino = document.getElementById("visitorScoreDomino");
 
     function getRandomTile() {
       let a = Math.floor(Math.random() * 7);
@@ -915,11 +986,15 @@
 
     resetDominoBtn.addEventListener("click", async () => {
       try {
+        const docSnap = await getDoc(dominoDocRef);
+        let data = docSnap.exists() ? docSnap.data() : { adminScore: 0, visitorScore: 0 };
         await setDoc(dominoDocRef, {
           board: [[3, 3]],
           adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
           visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
-          turn: "admin"
+          turn: "admin",
+          adminScore: data.adminScore || 0,
+          visitorScore: data.visitorScore || 0
         });
       } catch(e) {}
     });
@@ -930,7 +1005,9 @@
           board: [[3, 3]],
           adminHand: [getRandomTile(), getRandomTile(), getRandomTile()],
           visitorHand: [getRandomTile(), getRandomTile(), getRandomTile()],
-          turn: "admin"
+          turn: "admin",
+          adminScore: 0,
+          visitorScore: 0
         });
         return;
       }
@@ -940,6 +1017,9 @@
       let adminHand = data.adminHand || [];
       let visitorHand = data.visitorHand || [];
       let turn = data.turn || "admin";
+      
+      adminScoreDomino.textContent = data.adminScore || 0;
+      visitorScoreDomino.textContent = data.visitorScore || 0;
 
       // عرض الطاولة
       dominoBoardContainer.innerHTML = "";
@@ -952,6 +1032,14 @@
 
       let myHand = isAdmin ? adminHand : visitorHand;
       let isMyTurn = (isAdmin && turn === "admin") || (!isAdmin && turn === "visitor");
+
+      // فحص إذا انتهت اللعبة (أحد اللاعبين خلص أحجاره)
+      if (adminHand.length === 0 || visitorHand.length === 0) {
+        let winnerText = adminHand.length === 0 ? "🎉 المدير فاز بالجولة!" : "🎉 الزائر فاز بالجولة!";
+        dominoStatus.textContent = winnerText;
+        dominoHandContainer.innerHTML = "";
+        return;
+      }
 
       dominoStatus.textContent = isMyTurn ? "دورك الآن! اختر حجراً للمطابقة:" : "دور الطرف الآخر...";
 
@@ -967,13 +1055,9 @@
           
           let leftVal = board[0][0];
           let rightVal = board[board.length - 1][1];
-
-          let matched = false;
           let newBoard = [...board];
 
           if (tile[0] === leftVal || tile[1] === leftVal || tile[0] === rightVal || tile[1] === rightVal) {
-            matched = true;
-            // مطابقة ذكية وتبديل اتجاه الحجر إذا لزم الأمر
             if (tile[1] === leftVal) {
               newBoard.unshift(tile);
             } else if (tile[0] === leftVal) {
@@ -986,11 +1070,15 @@
 
             let newAdminHand = [...adminHand];
             let newVisitorHand = [...visitorHand];
+            let aScore = data.adminScore || 0;
+            let vScore = data.visitorScore || 0;
 
             if (isAdmin) {
               newAdminHand.splice(index, 1);
+              if (newAdminHand.length === 0) aScore++;
             } else {
               newVisitorHand.splice(index, 1);
+              if (newVisitorHand.length === 0) vScore++;
             }
 
             let nextTurn = isAdmin ? "visitor" : "admin";
@@ -1000,7 +1088,9 @@
                 board: newBoard,
                 adminHand: newAdminHand,
                 visitorHand: newVisitorHand,
-                turn: nextTurn
+                turn: nextTurn,
+                adminScore: aScore,
+                visitorScore: vScore
               });
             } catch(e) {}
           } else {
@@ -1011,7 +1101,6 @@
         dominoHandContainer.appendChild(btn);
       });
     });
-    // ------------------------------------
 
     bellBtn.addEventListener("click", async function() {
       if (isAdmin) return;
