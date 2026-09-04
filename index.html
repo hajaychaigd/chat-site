@@ -22,7 +22,7 @@ body{ display:flex; justify-content:center; }
 
 /* Header actions */
 .header-actions{ display:flex; align-items:center; gap:7px; position:relative; }
-.mute-btn, .call-btn{ width:38px; height:38px; border:0; border-radius:13px; color:white; cursor:pointer; font-size:16px; display:flex; justify-content:center; align-items:center; transition:.2s; text-decoration:none; }
+.mute-btn, .call-btn{ width:38px; height:38px; border:0; border-radius:13px; color:white; cursor:pointer; font-size:16px; display:flex; justify-content:center; align-items:center; transition:.2s; }
 .mute-btn{ background:var(--green); box-shadow:0 5px 13px rgba(111,155,124,.20); }
 .call-btn{ background:var(--primary); box-shadow:0 5px 13px rgba(88,120,164,.20); }
 .mute-btn:active, .call-btn:active{ transform:scale(.92); }
@@ -49,7 +49,7 @@ body{ display:flex; justify-content:center; }
 .message-wrapper{ position:relative; width:100%; display:flex; margin-bottom:4px; animation:messageIn .25s ease; }
 @keyframes messageIn{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:translateY(0); } }
 
-/* اتجاهات الواتساب الحقيقية: رسائلك يمين، والطرف الآخر يسار */
+/* اتجاهات الواتساب: رسائلك يمين، والطرف الآخر يسار */
 .message-wrapper.my-message { justify-content: flex-end; }
 .message-wrapper.other-message { justify-content: flex-start; }
 
@@ -76,12 +76,15 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 .send-btn{ background:var(--primary); color:white; box-shadow:0 5px 14px rgba(88,120,164,.22); }
 .send-btn:hover{ background:var(--primary-dark); }
 
-/* ================= BLOCK SCREEN ================= */
-#blockScreen{ position:fixed; inset:0; background:#f7f9fb; display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
-.block-card{ max-width:380px; background:white; border:1px solid var(--border); border-radius:25px; padding:30px 24px; box-shadow:0 15px 45px rgba(30,50,70,.10); }
-.block-icon{ width:65px; height:65px; border-radius:20px; background:#fff11; display:flex; justify-content:center; align-items:center; font-size:28px; margin:0 auto 18px; }
+/* ================= MODALS ================= */
+#blockScreen, #callScreen{ position:fixed; inset:0; background:rgba(247,249,251,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
+.block-card{ max-width:380px; width:100%; background:white; border:1px solid var(--border); border-radius:25px; padding:30px 24px; box-shadow:0 15px 45px rgba(30,50,70,.10); }
+.block-icon{ width:65px; height:65px; border-radius:20px; background:#fff1f1; display:flex; justify-content:center; align-items:center; font-size:28px; margin:0 auto 18px; }
 .block-title{ font-size:18px; font-weight:700; margin-bottom:10px; }
-.block-text{ font-size:13px; line-height:1.8; color:#8995a0; }
+.block-text{ font-size:13px; line-height:1.8; color:#8995a0; margin-bottom:20px; }
+.call-actions{ display:flex; gap:12px; justify-content:center; }
+.answer-call-btn{ background:var(--green); color:white; border:none; padding:10px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:14px; }
+.end-call-btn{ background:var(--red); color:white; border:none; padding:10px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:14px; }
 </style>
 </head>
 <body>
@@ -91,6 +94,17 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     <div class="block-icon">🔒</div>
     <div class="block-title">الشات مشغول حالياً</div>
     <div class="block-text">يوجد مستخدم آخر يتحدث مع المدير في الوقت الحالي.<br>الرجاء المحاولة لاحقاً.</div>
+  </div>
+</div>
+
+<div id="callScreen">
+  <div class="block-card">
+    <div class="block-icon" style="background:#eef2f6;">📞</div>
+    <div class="block-title">مكالمة مباشرة</div>
+    <div class="block-text" id="callStatusText">جاري الاتصال...</div>
+    <div class="call-actions" id="callActionsContainer">
+      <button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>
+    </div>
   </div>
 </div>
 
@@ -106,8 +120,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
       <span id="statusDot" class="status-dot"></span>
     </div>
     <div class="header-actions">
-      <!-- زر الاتصال المباشر (يمكنك استبدال رقم الهاتف أدناه برقمك الحقيقي بصيغة دولية مثل tel:+201xxxxxxxxx) -->
-      <a href="tel:+201000000000" id="callBtn" class="call-btn" title="اتصال هاتفي مباشر">📞</a>
+      <button id="callBtn" class="call-btn" title="اتصال مباشر" onclick="startCall()">📞</button>
       <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
       <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">0</span></div>
       <button id="menuBtn" class="menu-btn">⋮</button>
@@ -288,6 +301,54 @@ window.toggleRecord = async function(){
     micBtn.classList.remove("recording");
   }
 };
+
+/* ================= CALL SYSTEM ================= */
+const callSignalRef = doc(db, "status", "call_signal");
+
+window.startCall = async function(){
+  document.getElementById("callScreen").style.display = "flex";
+  document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر... 📞";
+  document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
+  try {
+    await setDoc(callSignalRef, { active: true, caller: myId, timestamp: Date.now() });
+  } catch(e){}
+};
+
+window.answerCall = async function(){
+  document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
+  document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
+  try {
+    await setDoc(callSignalRef, { active: true, caller: "connected", timestamp: Date.now() }, { merge: true });
+  } catch(e){}
+};
+
+window.endCall = async function(){
+  document.getElementById("callScreen").style.display = "none";
+  try {
+    await setDoc(callSignalRef, { active: false, caller: "", timestamp: Date.now() });
+  } catch(e){}
+};
+
+onSnapshot(callSignalRef, (docSnap) => {
+  if(!docSnap.exists()) return;
+  const data = docSnap.data();
+  if(data.active){
+    if(data.caller !== myId && data.caller !== "connected"){
+      document.getElementById("callScreen").style.display = "flex";
+      document.getElementById("callStatusText").textContent = "يتصل بك الطرف الآخر الآن... 📞";
+      document.getElementById("callActionsContainer").innerHTML = `
+        <button class="answer-call-btn" onclick="answerCall()">رد 🟢</button>
+        <button class="end-call-btn" onclick="endCall()">رفض 🔴</button>
+      `;
+    } else if(data.caller === "connected") {
+      document.getElementById("callScreen").style.display = "flex";
+      document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
+      document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
+    }
+  } else {
+    document.getElementById("callScreen").style.display = "none";
+  }
+});
 
 let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
 const messageElements={};
