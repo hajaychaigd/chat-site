@@ -49,9 +49,8 @@ body{ display:flex; justify-content:center; }
 .message-wrapper{ position:relative; width:100%; display:flex; margin-bottom:4px; animation:messageIn .25s ease; }
 @keyframes messageIn{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:translateY(0); } }
 
-/* رسائلك (يمين) */
+/* اتجاهات الواتساب الحقيقية: رسائلك يمين، والطرف الآخر يسار */
 .message-wrapper.my-message { justify-content: flex-end; }
-/* رسائل الطرف الآخر (يسار) */
 .message-wrapper.other-message { justify-content: flex-start; }
 
 .message{ max-width:80%; display:flex; align-items:flex-start; gap:10px; background:rgba(255,255,255,.95); border:1px solid #e9edf1; border-radius:18px; padding:11px; box-shadow:0 3px 12px rgba(30,50,70,.035); transition:.2s; }
@@ -80,7 +79,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 /* ================= BLOCK SCREEN ================= */
 #blockScreen{ position:fixed; inset:0; background:#f7f9fb; display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
 .block-card{ max-width:380px; background:white; border:1px solid var(--border); border-radius:25px; padding:30px 24px; box-shadow:0 15px 45px rgba(30,50,70,.10); }
-.block-icon{ width:65px; height:65px; border-radius:20px; background:#fff1f1; display:flex; justify-content:center; align-items:center; font-size:28px; margin:0 auto 18px; }
+.block-icon{ width:65px; height:65px; border-radius:20px; background:#fff11; display:flex; justify-content:center; align-items:center; font-size:28px; margin:0 auto 18px; }
 .block-title{ font-size:18px; font-weight:700; margin-bottom:10px; }
 .block-text{ font-size:13px; line-height:1.8; color:#8995a0; }
 </style>
@@ -107,8 +106,8 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
       <span id="statusDot" class="status-dot"></span>
     </div>
     <div class="header-actions">
-      <!-- زر اتصال مباشر عبر واتساب كبديل مستقر وسريع -->
-      <a href="https://wa.me/" id="callBtn" class="call-btn" title="اتصال مباشر" target="_blank">📞</a>
+      <!-- زر الاتصال المباشر (يمكنك استبدال رقم الهاتف أدناه برقمك الحقيقي بصيغة دولية مثل tel:+201xxxxxxxxx) -->
+      <a href="tel:+201000000000" id="callBtn" class="call-btn" title="اتصال هاتفي مباشر">📞</a>
       <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
       <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">0</span></div>
       <button id="menuBtn" class="menu-btn">⋮</button>
@@ -302,7 +301,6 @@ onSnapshot(q, (snapshot)=>{
       if(messageElements[docId]) return;
 
       const wrapperDiv = document.createElement("div");
-      // التنسيق: رسائلك تظهر يمين، ورسائل الطرف الآخر تظهر يسار
       const isMyMessage = (data.senderId === myId);
       wrapperDiv.className = "message-wrapper " + (isMyMessage ? "my-message" : "other-message");
       wrapperDiv.id = "wrap_" + docId;
@@ -340,7 +338,6 @@ onSnapshot(q, (snapshot)=>{
         bodyDiv.appendChild(textSpan);
       }
 
-      // ميزة حذف الرسائل من عند الزائر فقط بمرور 50 ثانية
       if(!isAdmin){
         const age = Date.now() - data.createdAt;
         if(age >= 50000) return;
