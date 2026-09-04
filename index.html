@@ -201,14 +201,41 @@ const bellBtn = document.getElementById("bellBtn");
 const menuBtn = document.getElementById("menuBtn");
 const dropdownMenu = document.getElementById("dropdownMenu");
 
-// إزالة التحقق المخزن مسبقاً لكي تظهر نافذة كلمة السر مع كل تحديث (ريفريش)
 if(!isAdmin) {
   document.getElementById("passwordScreen").style.display = "flex";
 }
 
-window.verifyVisitorPassword = function() {
+let myId = localStorage.getItem("chat_user_id");
+if(!myId){
+  myId = "user_"+Math.random().toString(36).substring(2);
+  localStorage.setItem("chat_user_id", myId);
+}
+
+const activeVisitorDocRef = doc(db, "status", "active_visitor");
+
+window.verifyVisitorPassword = async function() {
   const pass = document.getElementById("visitorPassInput").value.trim();
   if(pass === "2026") {
+    // التحقق مما إذا كان هناك زائر آخر متصل بالفعل
+    const visSnap = await getDoc(activeVisitorDocRef);
+    if(visSnap.exists()) {
+      const data = visSnap.data();
+      // إذا كان الزائر نشطاً وفي آخر 6 ثوانٍ (متصل حالياً) ولم يكن هو نفسه
+      if(data.active && (Date.now() - data.lastSeen < 6000) && data.userId !== myId) {
+        document.getElementById("passwordScreen").style.display = "none";
+        document.getElementById("blockScreen").style.display = "flex";
+        return;
+      }
+    }
+    
+    // تسجيل الزائر الحالي كزائر وحيد نشط
+    await setDoc(activeVisitorDocRef, { 
+      active: true, 
+      userId: myId, 
+      peerId: myPeerId, 
+      lastSeen: Date.now() 
+    });
+
     document.getElementById("passwordScreen").style.display = "none";
   } else {
     alert("كلمة السر غير صحيحة!");
@@ -227,12 +254,6 @@ menuBtn.addEventListener("click",(e)=>{
   dropdownMenu.style.display = dropdownMenu.style.display==="flex" ? "none" : "flex";
 });
 window.addEventListener("click",()=>{ dropdownMenu.style.display="none"; });
-
-let myId = localStorage.getItem("chat_user_id");
-if(!myId){
-  myId = "user_"+Math.random().toString(36).substring(2);
-  localStorage.setItem("chat_user_id", myId);
-}
 
 const myPeerId = (isAdmin ? "admin_main_peer_id_" : "visitor_peer_") + myId;
 const peer = new Peer(myPeerId, {
@@ -304,9 +325,7 @@ onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
 });
 
 window.triggerCall = async function(){
-  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") {
-    return;
-  }
+  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   } catch(err) {
@@ -316,7 +335,7 @@ window.triggerCall = async function(){
 
   let targetId = "";
   if(isAdmin) {
-    const visDoc = await getDoc(doc(db, "status", "active_visitor"));
+    const visDoc = await getDoc(activeVisitorDocRef);
     if(visDoc.exists() && visDoc.data().peerId) {
       targetId = visDoc.data().peerId;
     } else {
@@ -330,7 +349,7 @@ window.triggerCall = async function(){
       return;
     }
     targetId = adminDoc.data().peerId;
-    await setDoc(doc(db, "status", "active_visitor"), { peerId: myPeerId }, { merge: true });
+    await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, lastSeen: Date.now() }, { merge: true });
   }
 
   document.getElementById("callScreen").style.display = "flex";
@@ -401,31 +420,22 @@ window.endCall = async function(){
   }
 };
 
-const activeVisitorDocRef = doc(db,"status","active_visitor");
-const loginTimeStr = new Date().toLocaleTimeString("ar-EG", { hour:"2-digit", minute:"2-digit" });
-
 if(isAdmin){
   const adminStatusRef = doc(db,"status","admin_status");
   setDoc(adminStatusRef, { online:true, lastSeen:Date.now() });
   setInterval(()=>{ setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); },4000);
 } else {
-  async function registerVisitor(){
-    try{
-      await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, loginTime:loginTimeStr, logoutTime:"", lastSeen:Date.now() });
-      setInterval(async()=>{
-        try{
-          await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, loginTime:loginTimeStr, lastSeen:Date.now() }, {merge:true});
-        }catch(e){}
-      },3000);
-    }catch(e){}
-  }
-  registerVisitor();
+  setInterval(async()=>{
+    if(document.getElementById("passwordScreen").style.display === "none" && document.getElementById("blockScreen").style.display === "none"){
+      try{
+        await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
+      }catch(e){}
+    }
+  },3000);
 }
 
 window.sendMessage = async function(content, type="text"){
-  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") {
-    return;
-  }
+  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
   const input = document.getElementById("messageInput");
   const text = (type==="text") ? input.value.trim() : content;
   if(!text) return;
@@ -449,9 +459,7 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
 });
 
 window.handleImageUpload = function(event) {
-  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") {
-    return;
-  }
+  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
   const file = event.target.files[0];
   if(!file) return;
 
@@ -494,9 +502,7 @@ window.handleImageUpload = function(event) {
 let mediaRecorder;
 let audioChunks = [];
 window.toggleRecord = async function(){
-  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") {
-    return;
-  }
+  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
   const micBtn = document.getElementById("micBtn");
   if(!mediaRecorder || mediaRecorder.state === "inactive"){
     try {
