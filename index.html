@@ -38,18 +38,17 @@ body{ display:flex; justify-content:center; }
 .ticker-group{ display:inline-flex; align-items:center; gap:35px; padding-right:35px; flex-shrink:0; }
 @keyframes ticker{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
-.messages{ flex:1; overflow-y:auto; padding:20px 15px 16px; display:flex; flex-direction:column; gap:12px; background: radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%), #f7f9fb; }
+.messages{ flex:1; overflow-y:auto; padding:20px 15px 16px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; background: radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%), #f7f9fb; }
 .messages::-webkit-scrollbar{ width:4px; }
 .messages::-webkit-scrollbar-thumb{ background:#d8e0e7; border-radius:10px; }
 
-.load-more-container { text-align: center; padding: 5px; display: none; }
-.load-more-btn { background: #e2e8f0; border: none; padding: 6px 14px; border-radius: 10px; font-size: 11px; color: #55606d; cursor: pointer; }
+.message-wrapper{ position:relative; width:100%; display:flex; margin-bottom:4px; animation:messageIn .25s ease; }
+@keyframes messageIn{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:translateY(0); } }
 
-.message-wrapper{ position:relative; width:100%; display:flex; margin-bottom:4px; }
 .message-wrapper.my-message { justify-content: flex-end; }
 .message-wrapper.other-message { justify-content: flex-start; }
 
-.message{ max-width:85%; width: fit-content; display:flex; align-items:flex-start; gap:10px; background:rgba(255,255,255,.95); border:1px solid #e9edf1; border-radius:18px; padding:10px 12px; box-shadow:0 3px 12px rgba(30,50,70,.035); }
+.message{ max-width:85%; width: fit-content; display:flex; align-items:flex-start; gap:10px; background:rgba(255,255,255,.95); border:1px solid #e9edf1; border-radius:18px; padding:10px 12px; box-shadow:0 3px 12px rgba(30,50,70,.035); transition:.2s; }
 .message-wrapper.my-message .message { background: #eef4fb; border-color: #d6e3f2; }
 
 .comment-avatar{ width:30px; height:30px; min-width:30px; border-radius:10px; display:flex; justify-content:center; align-items:center; color:white; font-weight:700; font-size:12px; box-shadow:0 4px 10px rgba(30,50,70,.10); }
@@ -59,8 +58,10 @@ body{ display:flex; justify-content:center; }
 .comment-username.admin-name{ background:var(--primary) !important; }
 
 .message-text{ font-size:14px; line-height:1.5; color:#303b47; word-break:break-word; }
+
 .message-body-audio { width: 220px; max-width: 100%; display: flex; flex-direction: column; gap: 5px; }
 .message-body-audio audio { width: 100%; height: 36px; border-radius: 8px; outline: none; }
+
 .message-body-image { max-width: 200px; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
 .message-body-image img { width: 100%; height: auto; max-height: 250px; border-radius: 8px; display: block; object-fit: cover; }
 
@@ -75,7 +76,9 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 .mic-btn.recording{ background:var(--red); color:white; animation:pulse 1s infinite; }
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 .image-btn{ background:#f2f5f8; color:#647180; font-size:18px; }
+.image-btn:hover{ background:#e6ecf2; }
 .send-btn{ background:var(--primary); color:white; box-shadow:0 5px 14px rgba(88,120,164,.22); }
+.send-btn:hover{ background:var(--primary-dark); }
 
 #blockScreen, #callScreen{ position:fixed; inset:0; background:rgba(247,249,251,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
 .block-card{ max-width:380px; width:100%; background:white; border:1px solid var(--border); border-radius:25px; padding:30px 24px; box-shadow:0 15px 45px rgba(30,50,70,.10); }
@@ -147,11 +150,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     </div>
   </div>
 
-  <div class="messages" id="messages">
-    <div id="loadMoreContainer" class="load-more-container">
-      <button id="loadMoreBtn" class="load-more-btn" onclick="loadMoreMessages()">تحميل الرسائل السابقة</button>
-    </div>
-  </div>
+  <div class="messages" id="messages"></div>
 
   <div class="input-area">
     <input type="text" id="messageInput" placeholder="اكتب رسالتك أو سجل ريكورد..." autocomplete="off">
@@ -166,7 +165,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, startAfter, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -185,6 +184,7 @@ const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search);
 if(urlParams.get("admin")==="mysecret123"){ localStorage.setItem("is_admin","true"); }
 const isAdmin = localStorage.getItem("is_admin")==="true";
+const bellBtn = document.getElementById("bellBtn");
 const menuBtn = document.getElementById("menuBtn");
 const dropdownMenu = document.getElementById("dropdownMenu");
 
@@ -209,7 +209,12 @@ if(!myId){
 
 const myPeerId = (isAdmin ? "admin_main_peer_id_" : "visitor_peer_") + myId;
 const peer = new Peer(myPeerId, {
-  config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+  }
 });
 
 if(isAdmin){
@@ -240,6 +245,7 @@ function stopTimer() {
   document.getElementById("callTimerDisplay").style.display = "none";
 }
 
+// استقبال مكالمات PeerJS التقليدية
 peer.on('call', (call) => {
   currentCall = call;
   document.getElementById("callScreen").style.display = "flex";
@@ -250,69 +256,145 @@ peer.on('call', (call) => {
   `;
 });
 
+// مراقبة جدول المكالمات في فايربيس لإظهار شاشة الرنين فوراً عند الطرفين
+onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    if (data.receiver === myPeerId && data.status === "ringing") {
+      document.getElementById("callScreen").style.display = "flex";
+      document.getElementById("callStatusText").textContent = "يتصل بك الطرف الآخر الآن... 📞";
+      document.getElementById("callActionsContainer").innerHTML = `
+        <button class="answer-call-btn" onclick="acceptCall()">رد 🟢</button>
+        <button class="end-call-btn" onclick="endCall()">رفض 🔴</button>
+      `;
+    } else if (data.caller === myPeerId && data.status === "ended") {
+      endCall();
+    }
+  } else {
+    // إذا تم مسح وثيقة المكالمة يتم إغلاق الشاشة تلقائياً
+    if(document.getElementById("callScreen").style.display === "flex") {
+      endCall();
+    }
+  }
+});
+
 window.triggerCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   } catch(err) {
-    alert("تعذر الوصول للميكروفون.");
+    alert("تعذر الوصول للميكروفون. يرجى السماح بالصلاحيات.");
     return;
   }
+
   let targetId = "";
   if(isAdmin) {
     const visDoc = await getDoc(doc(db, "status", "active_visitor"));
-    if(visDoc.exists() && visDoc.data().peerId) targetId = visDoc.data().peerId;
-    else { alert("لا يوجد زائر نشط حالياً."); return; }
+    if(visDoc.exists() && visDoc.data().peerId) {
+      targetId = visDoc.data().peerId;
+    } else {
+      alert("لا يوجد زائر نشط حالياً للاتصال به.");
+      return;
+    }
   } else {
     const adminDoc = await getDoc(doc(db, "status", "admin_info"));
-    if (!adminDoc.exists() || !adminDoc.data().peerId) { alert("المدير غير متصل."); return; }
+    if (!adminDoc.exists() || !adminDoc.data().peerId) {
+      alert("المدير غير متصل حالياً لاستقبال المكالمات.");
+      return;
+    }
     targetId = adminDoc.data().peerId;
     await setDoc(doc(db, "status", "active_visitor"), { peerId: myPeerId }, { merge: true });
   }
 
   document.getElementById("callScreen").style.display = "flex";
-  document.getElementById("callStatusText").textContent = "جاري الاتصال... 📞";
+  document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر... 📞";
   document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
 
-  await setDoc(doc(db, "status", "active_call"), { caller: myPeerId, receiver: targetId, status: "ringing", timestamp: Date.now() });
+  // إرسال إشعار الرنين عبر فايربيس فوراً
+  await setDoc(doc(db, "status", "active_call"), {
+    caller: myPeerId,
+    receiver: targetId,
+    status: "ringing",
+    timestamp: Date.now()
+  });
 
   const call = peer.call(targetId, localStream);
   currentCall = call;
+  
   call.on('stream', (remoteStream) => {
-    document.getElementById("remoteAudio").srcObject = remoteStream;
-    document.getElementById("remoteAudio").play().catch(e => {});
+    const remoteAudio = document.getElementById("remoteAudio");
+    remoteAudio.srcObject = remoteStream;
+    remoteAudio.play().catch(e => console.log(e));
     document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
     startTimer();
   });
+
+  call.on('close', () => { endCall(); });
+  call.on('error', () => { endCall(); });
 };
 
 window.acceptCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    
+    // إذا كان الاستقبال عبر إشعار الفايربيس ولم يتم تعيين currentCall بعد، نقوم بالرد بناءً على المتصل المسجل
     const callDoc = await getDoc(doc(db, "status", "active_call"));
     if(callDoc.exists() && !currentCall) {
-      currentCall = peer.call(callDoc.data().caller, localStream);
+      const callerPeerId = callDoc.data().caller;
+      currentCall = peer.call(callerPeerId, localStream);
     } else if(currentCall) {
       currentCall.answer(localStream);
     }
+
     if(currentCall) {
       currentCall.on('stream', (remoteStream) => {
-        document.getElementById("remoteAudio").srcObject = remoteStream;
-        document.getElementById("remoteAudio").play().catch(e => {});
+        const remoteAudio = document.getElementById("remoteAudio");
+        remoteAudio.srcObject = remoteStream;
+        remoteAudio.play().catch(e => console.log(e));
         document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
         document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
         startTimer();
       });
     }
-  } catch(err) { endCall(); }
+  } catch(err) {
+    alert("تعذر تشغيل الميكروفون.");
+    endCall();
+  }
 };
 
 window.endCall = async function(){
   document.getElementById("callScreen").style.display = "none";
   stopTimer();
-  try { await deleteDoc(doc(db, "status", "active_call")); } catch(e) {}
+  try {
+    await deleteDoc(doc(db, "status", "active_call"));
+  } catch(e) {}
+  
   if(currentCall) { currentCall.close(); currentCall = null; }
-  if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  if(localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+    localStream = null;
+  }
 };
+
+const activeVisitorDocRef = doc(db,"status","active_visitor");
+const loginTimeStr = new Date().toLocaleTimeString("ar-EG", { hour:"2-digit", minute:"2-digit" });
+
+if(isAdmin){
+  const adminStatusRef = doc(db,"status","admin_status");
+  setDoc(adminStatusRef, { online:true, lastSeen:Date.now() });
+  setInterval(()=>{ setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); },4000);
+} else {
+  async function registerVisitor(){
+    try{
+      await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, loginTime:loginTimeStr, logoutTime:"", lastSeen:Date.now() });
+      setInterval(async()=>{
+        try{
+          await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, loginTime:loginTimeStr, lastSeen:Date.now() }, {merge:true});
+        }catch(e){}
+      },3000);
+    }catch(e){}
+  }
+  registerVisitor();
+}
 
 window.sendMessage = async function(content, type="text"){
   const input = document.getElementById("messageInput");
@@ -328,7 +410,9 @@ window.sendMessage = async function(content, type="text"){
       isImage: (type==="image"),
       createdAt: Date.now()
     });
-  }catch(error){ alert("فشل الإرسال."); }
+  }catch(error){
+    alert("فشل الإرسال: تأكد من تفعيل قواعد القراءة والكتابة في فايربيس.");
+  }
 };
 
 document.getElementById("messageInput").addEventListener("keypress", function(event){
@@ -338,20 +422,38 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
 window.handleImageUpload = function(event) {
   const file = event.target.files[0];
   if(!file) return;
+
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
     img.src = e.target.result;
     img.onload = function() {
       const canvas = document.createElement('canvas');
-      const MAX = 400;
-      let w = img.width, h = img.height;
-      if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
-      else { if (h > MAX) { w *= MAX / h; h = MAX; } }
-      canvas.width = w; canvas.height = h;
+      const MAX_WIDTH = 500;
+      const MAX_HEIGHT = 500;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width *= MAX_HEIGHT / height;
+          height = MAX_HEIGHT;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      window.sendMessage(canvas.toDataURL('image/jpeg', 0.5), "image");
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+      window.sendMessage(compressedDataUrl, "image");
+      event.target.value = "";
     };
   };
   reader.readAsDataURL(file);
@@ -366,203 +468,130 @@ window.toggleRecord = async function(){
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-      mediaRecorder.onstop = () => {
+      mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const reader = new FileReader();
-        reader.readAsDataURL(new Blob(audioChunks, { type: 'audio/webm' }));
-        reader.onloadend = () => window.sendMessage(reader.result, "audio");
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = function() {
+          window.sendMessage(reader.result, "audio");
+        };
       };
       mediaRecorder.start();
       micBtn.classList.add("recording");
-    } catch(err) { alert("تعذر الوصول للميكروفون."); }
+    } catch(err) {
+      alert("تعذر الوصول للميكروفون.");
+    }
   } else {
     mediaRecorder.stop();
     micBtn.classList.remove("recording");
   }
 };
 
-const messageElements = {};
-let oldestDoc = null;
-let hasMoreMessages = true;
-let isInitialLoaded = false;
-let loadTimeThreshold = Date.now(); // لحفظ وقت فتح الصفحة لمنع جلب رسائل قديمة عشوائية
+let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
+const messageElements={};
 
-function buildMessageHTML(docId, data) {
-  if (messageElements[docId]) return messageElements[docId];
-
-  const wrapperDiv = document.createElement("div");
-  const isMyMessage = (data.senderId === myId);
-  wrapperDiv.className = "message-wrapper " + (isMyMessage ? "my-message" : "other-message");
-  wrapperDiv.id = "wrap_" + docId;
-  
-  const messageDiv = document.createElement("div");
-  messageDiv.className = "message";
-  
-  const avatarDiv = document.createElement("div");
-  avatarDiv.className = "comment-avatar";
-  avatarDiv.textContent = data.isAdminMessage ? "ل" : "ش";
-  avatarDiv.style.background = data.isAdminMessage ? "#5878a4" : "#6f9b7c";
-  messageDiv.appendChild(avatarDiv);
-
-  const bodyDiv = document.createElement("div");
-  bodyDiv.className = "comment-body";
-  
-  const headerInfo = document.createElement("div");
-  headerInfo.className = "comment-header-info";
-  const userSpan = document.createElement("span");
-  userSpan.className = "comment-username" + (data.isAdminMessage ? " admin-name" : "");
-  userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
-  headerInfo.appendChild(userSpan);
-  bodyDiv.appendChild(headerInfo);
-
-  if(data.isAudio){
-    const audioWrapper = document.createElement("div");
-    audioWrapper.className = "message-body-audio";
-    const audioEl = document.createElement("audio");
-    audioEl.controls = true;
-    audioEl.src = data.text;
-    audioWrapper.appendChild(audioEl);
-    bodyDiv.appendChild(audioWrapper);
-  } else if(data.isImage){
-    const imgWrapper = document.createElement("div");
-    imgWrapper.className = "message-body-image";
-    const imgEl = document.createElement("img");
-    imgEl.src = data.text;
-    imgWrapper.appendChild(imgEl);
-    bodyDiv.appendChild(imgWrapper);
-  } else {
-    const textSpan = document.createElement("span");
-    textSpan.className = "message-text";
-    textSpan.textContent = data.text;
-    bodyDiv.appendChild(textSpan);
-  }
-
-  if(!isAdmin){
-    const age = Date.now() - data.createdAt;
-    if(age >= 50000) return null;
-    const actionsDiv = document.createElement("div");
-    actionsDiv.className = "comment-actions";
-    const timerSpan = document.createElement("span");
-    timerSpan.className = "timer-text";
-    timerSpan.id = "timer_" + docId;
-    actionsDiv.appendChild(timerSpan);
-    bodyDiv.appendChild(actionsDiv);
-  }
-
-  messageDiv.appendChild(bodyDiv);
-  wrapperDiv.appendChild(messageDiv);
-
-  messageElements[docId] = { element: wrapperDiv, data: data };
-  return wrapperDiv;
-}
-
-async function loadInitialMessages() {
+onSnapshot(q, (snapshot)=>{
   const messagesContainer = document.getElementById("messages");
-  const qInitial = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(25));
-  const snapshot = await getDocs(qInitial);
+  snapshot.docChanges().forEach((change)=>{
+    const docId = change.doc.id;
+    const data = change.doc.data();
+    if(change.type==="added"){
+      if(messageElements[docId]) return;
 
-  if (snapshot.empty) {
-    hasMoreMessages = false;
-    isInitialLoaded = true;
-    listenForNewMessages();
-    return;
-  }
-
-  const docsArray = [];
-  snapshot.forEach(d => docsArray.push(d));
-  oldestDoc = snapshot.docs[snapshot.docs.length - 1];
-
-  docsArray.reverse().forEach(d => {
-    const el = buildMessageHTML(d.id, d.data());
-    if(el) messagesContainer.appendChild(el);
-  });
-
-  if (snapshot.docs.length < 25) {
-    hasMoreMessages = false;
-  } else {
-    document.getElementById("loadMoreContainer").style.display = "block";
-  }
-
-  // ضبط الشات مباشرة على أحدث رسالة في الأسفل تماماً
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  isInitialLoaded = true;
-  listenForNewMessages();
-}
-
-window.loadMoreMessages = async function() {
-  if (!oldestDoc || !hasMoreMessages) return;
-
-  const messagesContainer = document.getElementById("messages");
-  const loadMoreContainer = document.getElementById("loadMoreContainer");
-  const previousHeight = messagesContainer.scrollHeight;
-
-  const qMore = query(collection(db, "messages"), orderBy("createdAt", "desc"), startAfter(oldestDoc), limit(25));
-  const snapshot = await getDocs(qMore);
-
-  if (snapshot.empty) {
-    hasMoreMessages = false;
-    loadMoreContainer.style.display = "none";
-    return;
-  }
-
-  const docsArray = [];
-  snapshot.forEach(d => docsArray.push(d));
-  oldestDoc = snapshot.docs[snapshot.docs.length - 1];
-
-  docsArray.reverse().forEach(d => {
-    const el = buildMessageHTML(d.id, d.data());
-    if(el) messagesContainer.insertBefore(el, loadMoreContainer.nextSibling);
-  });
-
-  if (snapshot.docs.length < 25) {
-    hasMoreMessages = false;
-    loadMoreContainer.style.display = "none";
-  }
-
-  messagesContainer.scrollTop = messagesContainer.scrollHeight - previousHeight;
-};
-
-function listenForNewMessages() {
-  // الاستماع فقط للرسائل الجديدة التي يتم إرسالها بعد فتح الصفحة لمنع التداخل العشوائي
-  const qLive = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-  onSnapshot(qLive, (snapshot) => {
-    if (!isInitialLoaded) return;
-    const messagesContainer = document.getElementById("messages");
-    const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 120;
-
-    snapshot.docChanges().forEach((change) => {
-      const docId = change.doc.id;
-      const data = change.doc.data();
+      const wrapperDiv = document.createElement("div");
+      const isMyMessage = (data.senderId === myId);
+      wrapperDiv.className = "message-wrapper " + (isMyMessage ? "my-message" : "other-message");
+      wrapperDiv.id = "wrap_" + docId;
       
-      // نتأكد أن الرسالة جديدة وليست ضمن الرسائل القديمة التي تم تحميلها بالفعل وقت الفتح
-      if (change.type === "added" && data.createdAt > loadTimeThreshold) {
-        if (!messageElements[docId]) {
-          const el = buildMessageHTML(docId, data);
-          if (el) {
-            messagesContainer.appendChild(el);
-            // النزول لآخر رسالة فوراً إذا أرسلتها أو كنت في أسفل الشات
-            if (isAtBottom || data.senderId === myId) {
-              messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-          }
-        }
-      } else if (change.type === "removed") {
-        if (messageElements[docId]) {
-          messageElements[docId].element.remove();
-          delete messageElements[docId];
-        }
-      }
-    });
-  });
-}
+      const messageDiv = document.createElement("div");
+      messageDiv.className= "message";
+      
+      const avatarDiv = document.createElement("div");
+      avatarDiv.className= "comment-avatar";
+      avatarDiv.textContent = data.isAdminMessage ? "ل" : "ش";
+      avatarDiv.style.background = data.isAdminMessage ? "#5878a4" : "#6f9b7c";
+      messageDiv.appendChild(avatarDiv);
 
-document.getElementById("messages").addEventListener("scroll", function() {
-  if (this.scrollTop === 0 && hasMoreMessages) {
-    loadMoreMessages();
-  }
+      const bodyDiv = document.createElement("div");
+      bodyDiv.className= "comment-body";
+      
+      const headerInfo = document.createElement("div");
+      headerInfo.className= "comment-header-info";
+      const userSpan = document.createElement("span");
+      userSpan.className= "comment-username" + (data.isAdminMessage ? " admin-name" : "");
+      userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
+      headerInfo.appendChild(userSpan);
+      bodyDiv.appendChild(headerInfo);
+
+      if(data.isAudio){
+        const audioWrapper = document.createElement("div");
+        audioWrapper.className = "message-body-audio";
+        const audioEl = document.createElement("audio");
+        audioEl.controls = true;
+        audioEl.src = data.text;
+        audioWrapper.appendChild(audioEl);
+        bodyDiv.appendChild(audioWrapper);
+      } else if(data.isImage){
+        const imgWrapper = document.createElement("div");
+        imgWrapper.className = "message-body-image";
+        const imgEl = document.createElement("img");
+        imgEl.src = data.text;
+        imgWrapper.appendChild(imgEl);
+        bodyDiv.appendChild(imgWrapper);
+      } else {
+        const textSpan = document.createElement("span");
+        textSpan.className = "message-text";
+        textSpan.textContent = data.text;
+        bodyDiv.appendChild(textSpan);
+      }
+
+      if(!isAdmin){
+        const age = Date.now() - data.createdAt;
+        if(age >= 50000) return;
+
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "comment-actions";
+        const timerSpan = document.createElement("span");
+        timerSpan.className = "timer-text";
+        timerSpan.id = "timer_" + docId;
+        actionsDiv.appendChild(timerSpan);
+        bodyDiv.appendChild(actionsDiv);
+        wrapperDiv.dataset.createdAt = data.createdAt;
+      }
+
+      messageDiv.appendChild(bodyDiv);
+      wrapperDiv.appendChild(messageDiv);
+      messagesContainer.appendChild(wrapperDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      messageElements[docId] = { element: wrapperDiv, data: data };
+    } else if(change.type==="removed"){
+      if(messageElements[docId]){
+        messageElements[docId].element.remove();
+        delete messageElements[docId];
+      }
+    }
+  });
 });
 
-loadInitialMessages();
+if(!isAdmin){
+  setInterval(()=>{
+    const now = Date.now();
+    for(const docId in messageElements){
+      const item = messageElements[docId];
+      const timeLeft = 1100000 - (now - item.data.createdAt);
+      if(timeLeft <= 0){
+        item.element.remove();
+        delete messageElements[docId];
+      }else{
+        const timerSpan = document.getElementById("timer_" + docId);
+        if(timerSpan){
+          timerSpan.textContent = " خلال: " + Math.ceil(timeLeft/1000) + " ث";
+        }
+      }
+    }
+  }, 1000);
+}
 </script>
 </body>
 </html>
