@@ -172,7 +172,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, startBefore, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, startAfter, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -411,8 +411,6 @@ window.sendMessage = async function(content, type="text"){
       isImage: (type==="image"),
       createdAt: Date.now()
     });
-    const messagesContainer = document.getElementById("messages");
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }catch(error){
     alert("فشل الإرسال: تأكد من تفعيل قواعد القراءة والكتابة في فايربيس.");
   }
@@ -566,7 +564,6 @@ function renderMessage(docId, data, prepend = false) {
   wrapperDiv.appendChild(messageDiv);
 
   if (prepend) {
-    // إدراج الرسالة القديمة تحت زر التحميل مباشرة
     messagesContainer.insertBefore(wrapperDiv, loadMoreContainer.nextSibling);
   } else {
     messagesContainer.appendChild(wrapperDiv);
@@ -575,21 +572,28 @@ function renderMessage(docId, data, prepend = false) {
   messageElements[docId] = { element: wrapperDiv, data: data };
 }
 
-// تحميل أول 25 رسالة أيرة عند فتح الصفحة
+// تحميل أول 25 رسالة (من الأقدم للأحدث لعرضها أسفل الشات)
 async function loadInitialMessages() {
   const messagesContainer = document.getElementById("messages");
+  
+  // جلب آخر 25 رسالة تنازلياً
   const qInitial = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(25));
   const snapshot = await getDocs(qInitial);
 
   if (snapshot.empty) {
     hasMoreMessages = false;
+    listenForNewMessages();
     return;
   }
 
-  const docsArray = snapshot.docs.reverse(); // لترتيبها من الأقدم للأحدث داخل الـ 25 رسالة
-  oldestDoc = snapshot.docs[snapshot.docs.length - 1]; // أقدم رسالة تم جلبها لحفظ نقطة البداية للتحميل اللاحق
+  const docsArray = [];
+  snapshot.forEach(d => docsArray.push(d));
+  
+  // حفظ مرجع أقدم رسالة للتحميل اللاحق (آخر عنصر في الـ snapshot)
+  oldestDoc = snapshot.docs[snapshot.docs.length - 1];
 
-  docsArray.forEach(d => {
+  // عكس الترتيب لتظهر القديمة بالأعلى والحديثة بالأسفل
+  docsArray.reverse().forEach(d => {
     renderMessage(d.id, d.data(), false);
   });
 
@@ -599,14 +603,11 @@ async function loadInitialMessages() {
     document.getElementById("loadMoreContainer").style.display = "block";
   }
 
-  // الذهاب مباشرة لنهاية الشات عند الفتح بدون تحريك مزعج
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-  // تشغيل المراقبة للرسائل الجديدة فوراً
   listenForNewMessages();
 }
 
-// تحميل المزيد من الرسائل عند النقر على الزر أو عمل Scroll للأعلى
+// تحميل المزيد من الرسائل الأقدم عند السحب لأعلى
 window.loadMoreMessages = async function() {
   if (!oldestDoc || !hasMoreMessages) return;
 
@@ -616,7 +617,7 @@ window.loadMoreMessages = async function() {
   const qMore = query(
     collection(db, "messages"),
     orderBy("createdAt", "desc"),
-    startBefore(oldestDoc),
+    startAfter(oldestDoc),
     limit(25)
   );
 
@@ -627,11 +628,13 @@ window.loadMoreMessages = async function() {
     return;
   }
 
-  const docsArray = snapshot.docs.reverse();
+  const docsArray = [];
+  snapshot.forEach(d => docsArray.push(d));
+  
   oldestDoc = snapshot.docs[snapshot.docs.length - 1];
 
-  docsArray.forEach(d => {
-    renderMessage(d.id, d.data(), true); // وضعها في أعلى القائمة
+  docsArray.reverse().forEach(d => {
+    renderMessage(d.id, d.data(), true);
   });
 
   if (snapshot.docs.length < 25) {
@@ -639,11 +642,10 @@ window.loadMoreMessages = async function() {
     document.getElementById("loadMoreContainer").style.display = "none";
   }
 
-  // الحفاظ على موضع الـ Scroll بدقة حتى لا يهتز الشات
   messagesContainer.scrollTop = messagesContainer.scrollHeight - previousHeight;
 };
 
-// الاستماع للرسائل الجديدة اللحظية
+// الاستماع للرسائل الجديدة فوراً
 function listenForNewMessages() {
   const qLive = query(collection(db, "messages"), orderBy("createdAt", "asc"));
   onSnapshot(qLive, (snapshot) => {
@@ -670,7 +672,7 @@ function listenForNewMessages() {
   });
 }
 
-// رصد حركة الـ Scroll للأعلى ليتم تحميل الرسائل السابقة تلقائياً إذا وصل المستخدم لبداية الصفحة
+// رصد الوصول لنهاية الأعلى لتحميل المزيد
 document.getElementById("messages").addEventListener("scroll", function() {
   if (this.scrollTop === 0 && hasMoreMessages) {
     loadMoreMessages();
