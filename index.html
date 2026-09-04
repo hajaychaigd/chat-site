@@ -201,16 +201,14 @@ const bellBtn = document.getElementById("bellBtn");
 const menuBtn = document.getElementById("menuBtn");
 const dropdownMenu = document.getElementById("dropdownMenu");
 
+// إزالة التحقق المخزن مسبقاً لكي تظهر نافذة كلمة السر مع كل تحديث (ريفريش)
 if(!isAdmin) {
-  if(localStorage.getItem("visitor_authenticated") !== "true") {
-    document.getElementById("passwordScreen").style.display = "flex";
-  }
+  document.getElementById("passwordScreen").style.display = "flex";
 }
 
 window.verifyVisitorPassword = function() {
   const pass = document.getElementById("visitorPassInput").value.trim();
   if(pass === "2026") {
-    localStorage.setItem("visitor_authenticated", "true");
     document.getElementById("passwordScreen").style.display = "none";
   } else {
     alert("كلمة السر غير صحيحة!");
@@ -275,7 +273,7 @@ function stopTimer() {
 }
 
 peer.on('call', (call) => {
-  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") return;
+  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
   currentCall = call;
   document.getElementById("callScreen").style.display = "flex";
   document.getElementById("callStatusText").textContent = "يتصل بك الطرف الآخر الآن... 📞";
@@ -306,8 +304,7 @@ onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
 });
 
 window.triggerCall = async function(){
-  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") {
-    document.getElementById("passwordScreen").style.display = "flex";
+  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") {
     return;
   }
   try {
@@ -426,8 +423,7 @@ if(isAdmin){
 }
 
 window.sendMessage = async function(content, type="text"){
-  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") {
-    document.getElementById("passwordScreen").style.display = "flex";
+  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") {
     return;
   }
   const input = document.getElementById("messageInput");
@@ -453,8 +449,7 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
 });
 
 window.handleImageUpload = function(event) {
-  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") {
-    document.getElementById("passwordScreen").style.display = "flex";
+  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") {
     return;
   }
   const file = event.target.files[0];
@@ -499,8 +494,7 @@ window.handleImageUpload = function(event) {
 let mediaRecorder;
 let audioChunks = [];
 window.toggleRecord = async function(){
-  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") {
-    document.getElementById("passwordScreen").style.display = "flex";
+  if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") {
     return;
   }
   const micBtn = document.getElementById("micBtn");
