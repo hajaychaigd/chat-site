@@ -538,7 +538,7 @@ if(!isAdmin){
     for(const docId in messageElements){
       const item = messageElements[docId];
       const timeLeft = 10000 - (now - item.data.createdAt);
-      if(timeLeft <= 0)
+      if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
       }else{
