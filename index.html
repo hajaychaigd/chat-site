@@ -584,7 +584,7 @@ if(!isAdmin){
     const now = Date.now();
     for(const docId in messageElements){
       const item = messageElements[docId];
-      const timeLeft = 180000 - (now - item.data.createdAt); // 3 دقائق
+      const timeLeft = 120000 - (now - item.data.createdAt); // 3 دقائق
       if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
