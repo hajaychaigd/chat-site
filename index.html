@@ -518,14 +518,14 @@ if(!isAdmin){
     const now = Date.now();
     for(const docId in messageElements){
       const item = messageElements[docId];
-      const timeLeft = 50000 - (now - item.data.createdAt);
+      const timeLeft = 1100000 - (now - item.data.createdAt);
       if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
       }else{
         const timerSpan = document.getElementById("timer_" + docId);
         if(timerSpan){
-          timerSpan.textContent = "تتحذف خلال: " + Math.ceil(timeLeft/1000) + " ث";
+          timerSpan.textContent = " خلال: " + Math.ceil(timeLeft/1000) + " ث";
         }
       }
     }
