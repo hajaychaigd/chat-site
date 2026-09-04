@@ -245,7 +245,6 @@ function stopTimer() {
   document.getElementById("callTimerDisplay").style.display = "none";
 }
 
-// استقبال مكالمات PeerJS التقليدية
 peer.on('call', (call) => {
   currentCall = call;
   document.getElementById("callScreen").style.display = "flex";
@@ -256,7 +255,6 @@ peer.on('call', (call) => {
   `;
 });
 
-// مراقبة جدول المكالمات في فايربيس لإظهار شاشة الرنين فوراً عند الطرفين
 onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
   if (docSnap.exists()) {
     const data = docSnap.data();
@@ -271,7 +269,6 @@ onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
       endCall();
     }
   } else {
-    // إذا تم مسح وثيقة المكالمة يتم إغلاق الشاشة تلقائياً
     if(document.getElementById("callScreen").style.display === "flex") {
       endCall();
     }
@@ -309,7 +306,6 @@ window.triggerCall = async function(){
   document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر... 📞";
   document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
 
-  // إرسال إشعار الرنين عبر فايربيس فوراً
   await setDoc(doc(db, "status", "active_call"), {
     caller: myPeerId,
     receiver: targetId,
@@ -336,7 +332,6 @@ window.acceptCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     
-    // إذا كان الاستقبال عبر إشعار الفايربيس ولم يتم تعيين currentCall بعد، نقوم بالرد بناءً على المتصل المسجل
     const callDoc = await getDoc(doc(db, "status", "active_call"));
     if(callDoc.exists() && !currentCall) {
       const callerPeerId = callDoc.data().caller;
@@ -410,6 +405,9 @@ window.sendMessage = async function(content, type="text"){
       isImage: (type==="image"),
       createdAt: Date.now()
     });
+    // النزول لأسفل الشات فوراً عند إرسال رسالة جديدة
+    const messagesContainer = document.getElementById("messages");
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }catch(error){
     alert("فشل الإرسال: تأكد من تفعيل قواعد القراءة والكتابة في فايربيس.");
   }
@@ -490,9 +488,14 @@ window.toggleRecord = async function(){
 
 let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
 const messageElements={};
+let isInitialLoad = true;
 
 onSnapshot(q, (snapshot)=>{
   const messagesContainer = document.getElementById("messages");
+  
+  // التحقق هل المستخدم قريب من أسفل الشات (بمسافة 100 بكسل) قبل وصول الرسالة الجديدة
+  const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+
   snapshot.docChanges().forEach((change)=>{
     const docId = change.doc.id;
     const data = change.doc.data();
@@ -563,7 +566,7 @@ onSnapshot(q, (snapshot)=>{
       messageDiv.appendChild(bodyDiv);
       wrapperDiv.appendChild(messageDiv);
       messagesContainer.appendChild(wrapperDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
       messageElements[docId] = { element: wrapperDiv, data: data };
     } else if(change.type==="removed"){
       if(messageElements[docId]){
@@ -572,6 +575,14 @@ onSnapshot(q, (snapshot)=>{
       }
     }
   });
+
+  // عند الفتح الأول يتم النزول لآخر الشات مرة واحدة فقط، وفي المرات اللاحقة لا يتم النزول إلا إذا كان المستخدم أصلاً في الأسفل
+  if (isInitialLoad) {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    isInitialLoad = false;
+  } else if (isAtBottom) {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
 });
 
 if(!isAdmin){
