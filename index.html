@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الردود</title>
+<title>الردود - اتصال مباشر</title>
+<!-- مكتبة PeerJS للاتصال الصوتي المباشر عبر الإنترنت -->
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
 *{ box-sizing:border-box; margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
 :root{ --primary:#5878a4; --primary-dark:#456487; --green:#6f9b7c; --red:#d47777; --bg:#eef2f6; --surface:#ffffff; --text:#263342; --muted:#8a96a3; --border:#e7ecf1; }
@@ -100,13 +102,16 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 <div id="callScreen">
   <div class="block-card">
     <div class="block-icon" style="background:#eef2f6;">📞</div>
-    <div class="block-title">مكالمة مباشرة</div>
+    <div class="block-title">مكالمة صوتية مباشرة</div>
     <div class="block-text" id="callStatusText">جاري الاتصال...</div>
     <div class="call-actions" id="callActionsContainer">
       <button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>
     </div>
   </div>
 </div>
+
+<!-- عنصر خفي لتشغيل صوت المكالمة -->
+<audio id="remoteAudio" autoplay></audio>
 
 <div class="app">
   <!-- HEADER -->
@@ -120,7 +125,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
       <span id="statusDot" class="status-dot"></span>
     </div>
     <div class="header-actions">
-      <button id="callBtn" class="call-btn" title="اتصال مباشر" onclick="startCall()">📞</button>
+      <button id="callBtn" class="call-btn" title="اتصال صوتي" onclick="triggerCall()">📞</button>
       <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
       <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">0</span></div>
       <button id="menuBtn" class="menu-btn">⋮</button>
@@ -202,6 +207,85 @@ if(!myId){
   localStorage.setItem("chat_user_id", myId);
 }
 
+// معرف فريد للطرف الآخر في الاتصال (المدير له معرف ثابت، الزائر معرفه متغير)
+const targetPeerId = isAdmin ? localStorage.getItem("active_visitor_peer") : "admin_main_peer_id";
+
+// إعداد خدمة الاتصال المباشر (PeerJS)
+const myPeerId = isAdmin ? "admin_main_peer_id" : "visitor_" + myId;
+const peer = new Peer(myPeerId);
+
+let localStream = null;
+let currentCall = null;
+
+peer.on('call', (call) => {
+  currentCall = call;
+  document.getElementById("callScreen").style.display = "flex";
+  document.getElementById("callStatusText").textContent = "يتصل بك الطرف الآخر الآن... 📞";
+  document.getElementById("callActionsContainer").innerHTML = `
+    <button class="answer-call-btn" onclick="acceptCall()">رد 🟢</button>
+    <button class="end-call-btn" onclick="endCall()">رفض 🔴</button>
+  `;
+});
+
+window.triggerCall = async function(){
+  if(!isAdmin) {
+    // إذا كان زائراً، نحدث معرفه عند المدير عبر فايربيس
+    await setDoc(doc(db, "status", "active_visitor"), { peerId: myPeerId }, { merge: true });
+  }
+  
+  document.getElementById("callScreen").style.display = "flex";
+  document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر... 📞";
+  document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
+
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    
+    // تحديد من نتصل به
+    let callTarget = targetPeerId;
+    if(isAdmin) {
+      const visDoc = await getDoc(doc(db, "status", "active_visitor"));
+      if(visDoc.exists()) callTarget = visDoc.data().peerId;
+    }
+
+    const call = peer.call(callTarget, localStream);
+    currentCall = call;
+    
+    call.on('stream', (remoteStream) => {
+      document.getElementById("remoteAudio").srcObject = remoteStream;
+      document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
+    });
+
+    call.on('close', () => { endCall(); });
+  } catch(err) {
+    alert("تعذر الوصول للميكروفون أو بدء المكالمة.");
+    endCall();
+  }
+};
+
+window.acceptCall = async function(){
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    currentCall.answer(localStream);
+    currentCall.on('stream', (remoteStream) => {
+      document.getElementById("remoteAudio").srcObject = remoteStream;
+      document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
+      document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
+    });
+  } catch(err) {
+    alert("تعذر تشغيل الميكروفون.");
+    endCall();
+  }
+};
+
+window.endCall = function(){
+  document.getElementById("callScreen").style.display = "none";
+  if(currentCall) { currentCall.close(); currentCall = null; }
+  if(localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+    localStream = null;
+  }
+};
+
 bellBtn.addEventListener("click", async function(){
   if(isAdmin) return;
   const bellStatusRef = doc(db,"status","bell_alert");
@@ -242,10 +326,10 @@ if(isAdmin){
         document.getElementById("blockScreen").style.display="flex";
         return;
       }
-      await setDoc(activeVisitorDocRef, { active:true, userId:myId, loginTime:loginTimeStr, logoutTime:"", lastSeen:Date.now() });
+      await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, loginTime:loginTimeStr, logoutTime:"", lastSeen:Date.now() });
       setInterval(async()=>{
         try{
-          await setDoc(activeVisitorDocRef, { active:true, userId:myId, loginTime:loginTimeStr, lastSeen:Date.now() }, {merge:true});
+          await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, loginTime:loginTimeStr, lastSeen:Date.now() }, {merge:true});
         }catch(e){}
       },3000);
     }catch(e){}
@@ -301,54 +385,6 @@ window.toggleRecord = async function(){
     micBtn.classList.remove("recording");
   }
 };
-
-/* ================= CALL SYSTEM ================= */
-const callSignalRef = doc(db, "status", "call_signal");
-
-window.startCall = async function(){
-  document.getElementById("callScreen").style.display = "flex";
-  document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر... 📞";
-  document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
-  try {
-    await setDoc(callSignalRef, { active: true, caller: myId, timestamp: Date.now() });
-  } catch(e){}
-};
-
-window.answerCall = async function(){
-  document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
-  document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
-  try {
-    await setDoc(callSignalRef, { active: true, caller: "connected", timestamp: Date.now() }, { merge: true });
-  } catch(e){}
-};
-
-window.endCall = async function(){
-  document.getElementById("callScreen").style.display = "none";
-  try {
-    await setDoc(callSignalRef, { active: false, caller: "", timestamp: Date.now() });
-  } catch(e){}
-};
-
-onSnapshot(callSignalRef, (docSnap) => {
-  if(!docSnap.exists()) return;
-  const data = docSnap.data();
-  if(data.active){
-    if(data.caller !== myId && data.caller !== "connected"){
-      document.getElementById("callScreen").style.display = "flex";
-      document.getElementById("callStatusText").textContent = "يتصل بك الطرف الآخر الآن... 📞";
-      document.getElementById("callActionsContainer").innerHTML = `
-        <button class="answer-call-btn" onclick="answerCall()">رد 🟢</button>
-        <button class="end-call-btn" onclick="endCall()">رفض 🔴</button>
-      `;
-    } else if(data.caller === "connected") {
-      document.getElementById("callScreen").style.display = "flex";
-      document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
-      document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
-    }
-  } else {
-    document.getElementById("callScreen").style.display = "none";
-  }
-});
 
 let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
 const messageElements={};
