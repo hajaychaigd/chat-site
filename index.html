@@ -81,7 +81,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 .send-btn{ background:var(--primary); color:white; box-shadow:0 5px 14px rgba(88,120,164,.22); }
 .send-btn:hover{ background:var(--primary-dark); }
 
-#blockScreen, #callScreen{ position:fixed; inset:0; background:rgba(247,249,251,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
+#blockScreen, #callScreen, #passwordScreen{ position:fixed; inset:0; background:rgba(247,249,251,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
 .block-card{ max-width:380px; width:100%; background:white; border:1px solid var(--border); border-radius:25px; padding:30px 24px; box-shadow:0 15px 45px rgba(30,50,70,.10); }
 .block-icon{ width:65px; height:65px; border-radius:20px; background:#fff1f1; display:flex; justify-content:center; align-items:center; font-size:28px; margin:0 auto 18px; }
 .block-title{ font-size:18px; font-weight:700; margin-bottom:10px; }
@@ -90,9 +90,21 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 .answer-call-btn{ background:var(--green); color:white; border:none; padding:10px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:14px; }
 .end-call-btn{ background:var(--red); color:white; border:none; padding:10px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:14px; }
 #callTimerDisplay { font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 10px; display: none; }
+.pass-input { width: 100%; height: 45px; border: 1px solid #dfe5ea; border-radius: 12px; outline: none; padding: 0 15px; font-size: 14px; margin-bottom: 15px; text-align: center; }
+.pass-btn { background: var(--primary); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; }
 </style>
 </head>
 <body>
+
+<div id="passwordScreen">
+  <div class="block-card">
+    <div class="block-icon" style="background:#eef2f6;">🔐</div>
+    <div class="block-title">يرجى إدخال كلمة السر</div>
+    <div class="block-text">هذا الشات يتطلب كلمة سر للمتابعة والإرسال.</div>
+    <input type="password" id="visitorPassInput" class="pass-input" placeholder="أدخل كلمة السر هنا..." />
+    <button class="pass-btn" onclick="verifyVisitorPassword()">دخول</button>
+  </div>
+</div>
 
 <div id="blockScreen">
   <div class="block-card">
@@ -189,6 +201,22 @@ const bellBtn = document.getElementById("bellBtn");
 const menuBtn = document.getElementById("menuBtn");
 const dropdownMenu = document.getElementById("dropdownMenu");
 
+if(!isAdmin) {
+  if(localStorage.getItem("visitor_authenticated") !== "true") {
+    document.getElementById("passwordScreen").style.display = "flex";
+  }
+}
+
+window.verifyVisitorPassword = function() {
+  const pass = document.getElementById("visitorPassInput").value.trim();
+  if(pass === "2026") {
+    localStorage.setItem("visitor_authenticated", "true");
+    document.getElementById("passwordScreen").style.display = "none";
+  } else {
+    alert("كلمة السر غير صحيحة!");
+  }
+};
+
 if(isAdmin){
   document.getElementById("usersCounter").style.display="flex";
   menuBtn.style.display="block";
@@ -247,6 +275,7 @@ function stopTimer() {
 }
 
 peer.on('call', (call) => {
+  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") return;
   currentCall = call;
   document.getElementById("callScreen").style.display = "flex";
   document.getElementById("callStatusText").textContent = "يتصل بك الطرف الآخر الآن... 📞";
@@ -277,6 +306,10 @@ onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
 });
 
 window.triggerCall = async function(){
+  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") {
+    document.getElementById("passwordScreen").style.display = "flex";
+    return;
+  }
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   } catch(err) {
@@ -393,6 +426,10 @@ if(isAdmin){
 }
 
 window.sendMessage = async function(content, type="text"){
+  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") {
+    document.getElementById("passwordScreen").style.display = "flex";
+    return;
+  }
   const input = document.getElementById("messageInput");
   const text = (type==="text") ? input.value.trim() : content;
   if(!text) return;
@@ -416,6 +453,10 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
 });
 
 window.handleImageUpload = function(event) {
+  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") {
+    document.getElementById("passwordScreen").style.display = "flex";
+    return;
+  }
   const file = event.target.files[0];
   if(!file) return;
 
@@ -458,6 +499,10 @@ window.handleImageUpload = function(event) {
 let mediaRecorder;
 let audioChunks = [];
 window.toggleRecord = async function(){
+  if(!isAdmin && localStorage.getItem("visitor_authenticated") !== "true") {
+    document.getElementById("passwordScreen").style.display = "flex";
+    return;
+  }
   const micBtn = document.getElementById("micBtn");
   if(!mediaRecorder || mediaRecorder.state === "inactive"){
     try {
@@ -520,7 +565,6 @@ onSnapshot(q, (snapshot)=>{
       userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
       headerInfo.appendChild(userSpan);
 
-      // إضافة وقت إرسال الرسالة
       const timeSpan = document.createElement("span");
       timeSpan.className = "msg-time";
       const messageDate = new Date(data.createdAt);
@@ -553,7 +597,7 @@ onSnapshot(q, (snapshot)=>{
 
       if(!isAdmin){
         const age = Date.now() - data.createdAt;
-        if(age >= 180000) return; // 3 دقائق = 180000 مللي ثانية
+        if(age >= 180000) return;
 
         const actionsDiv = document.createElement("div");
         actionsDiv.className = "comment-actions";
@@ -584,7 +628,7 @@ if(!isAdmin){
     const now = Date.now();
     for(const docId in messageElements){
       const item = messageElements[docId];
-      const timeLeft = 120000 - (now - item.data.createdAt); // 3 دقائق
+      const timeLeft = 120000 - (now - item.data.createdAt);
       if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
