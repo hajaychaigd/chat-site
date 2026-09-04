@@ -38,7 +38,6 @@ body{ display:flex; justify-content:center; }
 .ticker-group{ display:inline-flex; align-items:center; gap:35px; padding-right:35px; flex-shrink:0; }
 @keyframes ticker{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
-/* ================= MESSAGES (WhatsApp Layout Fixed) ================= */
 .messages{ flex:1; overflow-y:auto; padding:20px 15px 16px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; background: radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%), #f7f9fb; }
 .messages::-webkit-scrollbar{ width:4px; }
 .messages::-webkit-scrollbar-thumb{ background:#d8e0e7; border-radius:10px; }
@@ -60,20 +59,24 @@ body{ display:flex; justify-content:center; }
 
 .message-text{ font-size:14px; line-height:1.5; color:#303b47; word-break:break-word; }
 
-/* ضبط مشغل الصوت (الريكورد) ليأخذ مساحة مناسبة ومنسقة */
 .message-body-audio { width: 220px; max-width: 100%; display: flex; flex-direction: column; gap: 5px; }
 .message-body-audio audio { width: 100%; height: 36px; border-radius: 8px; outline: none; }
+
+.message-body-image { max-width: 220px; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; gap: 4px; }
+.message-body-image img { width: 100%; height: auto; border-radius: 10px; display: block; object-fit: cover; }
 
 .comment-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:2px; }
 .timer-text{ color:#b66c6c; background:#fff3f3; border:1px solid #f6e0e0; padding:1px 5px; border-radius:5px; font-size:8px; font-weight:700; }
 
-.input-area{ flex-shrink:0; display:flex; align-items:center; gap:9px; padding:10px 13px; background:rgba(255,255,255,.97); border-top:1px solid var(--border); box-shadow:0 -5px 20px rgba(30,50,70,.035); }
+.input-area{ flex-shrink:0; display:flex; align-items:center; gap:7px; padding:10px 13px; background:rgba(255,255,255,.97); border-top:1px solid var(--border); box-shadow:0 -5px 20px rgba(30,50,70,.035); }
 input{ flex:1; min-width:0; height:45px; border:1px solid #dfe5ea; border-radius:15px; outline:none; padding:0 16px; font-size:13px; background:#f8fafb; color:#303b47; transition:.2s; }
 input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(88,120,164,.07); }
-.icon-btn{ width:45px; height:45px; min-width:45px; border:0; border-radius:15px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:.2s; }
+.icon-btn{ width:41px; height:41px; min-width:41px; border:0; border-radius:13px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:.2s; }
 .mic-btn{ background:#f2f5f8; color:#647180; }
 .mic-btn.recording{ background:var(--red); color:white; animation:pulse 1s infinite; }
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.image-btn{ background:#f2f5f8; color:#647180; font-size:18px; }
+.image-btn:hover{ background:#e6ecf2; }
 .send-btn{ background:var(--primary); color:white; box-shadow:0 5px 14px rgba(88,120,164,.22); }
 .send-btn:hover{ background:var(--primary-dark); }
 
@@ -151,6 +154,8 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 
   <div class="input-area">
     <input type="text" id="messageInput" placeholder="اكتب رسالتك أو سجل ريكورد..." autocomplete="off">
+    <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+    <button class="icon-btn image-btn" title="إرسال صورة" onclick="document.getElementById('imageInput').click()">🖼️</button>
     <button id="micBtn" class="icon-btn mic-btn" title="تسجيل صوتي" onclick="toggleRecord()">🎤</button>
     <button class="icon-btn send-btn" onclick="sendMessage()" title="إرسال">
       <svg height="18" viewBox="0 0 24 24" width="18" fill="#ffffff"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -329,25 +334,37 @@ if(isAdmin){
   registerVisitor();
 }
 
-window.sendMessage = async function(customText, isAudio=false){
+window.sendMessage = async function(content, type="text"){
   const input = document.getElementById("messageInput");
-  const text = customText || input.value.trim();
+  const text = (type==="text") ? input.value.trim() : content;
   if(!text) return;
-  if(!customText) input.value="";
+  if(type==="text") input.value="";
   try{
     await addDoc(collection(db,"messages"), {
       text: text,
       senderId: myId,
       isAdminMessage: isAdmin,
-      isAudio: isAudio,
+      isAudio: (type==="audio"),
+      isImage: (type==="image"),
       createdAt: Date.now()
     });
   }catch(error){}
 };
 
 document.getElementById("messageInput").addEventListener("keypress", function(event){
-  if(event.key==="Enter") sendMessage();
+  if(event.key==="Enter") window.sendMessage(null, "text");
 });
+
+window.handleImageUpload = function(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onloadend = function() {
+    window.sendMessage(reader.result, "image");
+    event.target.value = "";
+  };
+};
 
 let mediaRecorder;
 let audioChunks = [];
@@ -364,7 +381,7 @@ window.toggleRecord = async function(){
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = function() {
-          window.sendMessage(reader.result, true);
+          window.sendMessage(reader.result, "audio");
         };
       };
       mediaRecorder.start();
@@ -422,6 +439,13 @@ onSnapshot(q, (snapshot)=>{
         audioEl.src = data.text;
         audioWrapper.appendChild(audioEl);
         bodyDiv.appendChild(audioWrapper);
+      } else if(data.isImage){
+        const imgWrapper = document.createElement("div");
+        imgWrapper.className = "message-body-image";
+        const imgEl = document.createElement("img");
+        imgEl.src = data.text;
+        imgWrapper.appendChild(imgEl);
+        bodyDiv.appendChild(imgWrapper);
       } else {
         const textSpan = document.createElement("span");
         textSpan.className = "message-text";
