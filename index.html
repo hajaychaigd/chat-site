@@ -385,6 +385,7 @@ const messageElements = {};
 let oldestDoc = null;
 let hasMoreMessages = true;
 let isInitialLoaded = false;
+let loadTimeThreshold = Date.now(); // لحفظ وقت فتح الصفحة لمنع جلب رسائل قديمة عشوائية
 
 function buildMessageHTML(docId, data) {
   if (messageElements[docId]) return messageElements[docId];
@@ -471,7 +472,6 @@ async function loadInitialMessages() {
   snapshot.forEach(d => docsArray.push(d));
   oldestDoc = snapshot.docs[snapshot.docs.length - 1];
 
-  // عكس الترتيب لعرض الأقدم بالأعلى والأحدث بالأسفل
   docsArray.reverse().forEach(d => {
     const el = buildMessageHTML(d.id, d.data());
     if(el) messagesContainer.appendChild(el);
@@ -483,6 +483,7 @@ async function loadInitialMessages() {
     document.getElementById("loadMoreContainer").style.display = "block";
   }
 
+  // ضبط الشات مباشرة على أحدث رسالة في الأسفل تماماً
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
   isInitialLoaded = true;
   listenForNewMessages();
@@ -522,6 +523,7 @@ window.loadMoreMessages = async function() {
 };
 
 function listenForNewMessages() {
+  // الاستماع فقط للرسائل الجديدة التي يتم إرسالها بعد فتح الصفحة لمنع التداخل العشوائي
   const qLive = query(collection(db, "messages"), orderBy("createdAt", "asc"));
   onSnapshot(qLive, (snapshot) => {
     if (!isInitialLoaded) return;
@@ -531,11 +533,14 @@ function listenForNewMessages() {
     snapshot.docChanges().forEach((change) => {
       const docId = change.doc.id;
       const data = change.doc.data();
-      if (change.type === "added") {
+      
+      // نتأكد أن الرسالة جديدة وليست ضمن الرسائل القديمة التي تم تحميلها بالفعل وقت الفتح
+      if (change.type === "added" && data.createdAt > loadTimeThreshold) {
         if (!messageElements[docId]) {
           const el = buildMessageHTML(docId, data);
           if (el) {
             messagesContainer.appendChild(el);
+            // النزول لآخر رسالة فوراً إذا أرسلتها أو كنت في أسفل الشات
             if (isAtBottom || data.senderId === myId) {
               messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
