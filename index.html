@@ -38,9 +38,12 @@ body{ display:flex; justify-content:center; }
 .ticker-group{ display:inline-flex; align-items:center; gap:35px; padding-right:35px; flex-shrink:0; }
 @keyframes ticker{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
-.messages{ flex:1; overflow-y:auto; padding:20px 15px 16px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; background: radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%), #f7f9fb; }
+.messages{ flex:1; overflow-y:auto; padding:20px 15px 16px; display:flex; flex-direction:column; gap:12px; background: radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%), #f7f9fb; }
 .messages::-webkit-scrollbar{ width:4px; }
 .messages::-webkit-scrollbar-thumb{ background:#d8e0e7; border-radius:10px; }
+
+.load-more-container { text-align: center; padding: 5px; display: none; }
+.load-more-btn { background: #e2e8f0; border: none; padding: 6px 14px; border-radius: 10px; font-size: 11px; color: #55606d; cursor: pointer; }
 
 .message-wrapper{ position:relative; width:100%; display:flex; margin-bottom:4px; animation:messageIn .25s ease; }
 @keyframes messageIn{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:translateY(0); } }
@@ -150,7 +153,11 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     </div>
   </div>
 
-  <div class="messages" id="messages"></div>
+  <div class="messages" id="messages">
+    <div id="loadMoreContainer" class="load-more-container">
+      <button id="loadMoreBtn" class="load-more-btn" onclick="loadMoreMessages()">تحميل الرسائل السابقة</button>
+    </div>
+  </div>
 
   <div class="input-area">
     <input type="text" id="messageInput" placeholder="اكتب رسالتك أو سجل ريكورد..." autocomplete="off">
@@ -165,7 +172,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, startBefore, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -184,7 +191,6 @@ const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search);
 if(urlParams.get("admin")==="mysecret123"){ localStorage.setItem("is_admin","true"); }
 const isAdmin = localStorage.getItem("is_admin")==="true";
-const bellBtn = document.getElementById("bellBtn");
 const menuBtn = document.getElementById("menuBtn");
 const dropdownMenu = document.getElementById("dropdownMenu");
 
@@ -405,7 +411,6 @@ window.sendMessage = async function(content, type="text"){
       isImage: (type==="image"),
       createdAt: Date.now()
     });
-    // النزول لأسفل الشات فوراً عند إرسال رسالة جديدة
     const messagesContainer = document.getElementById("messages");
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }catch(error){
@@ -486,104 +491,194 @@ window.toggleRecord = async function(){
   }
 };
 
-let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
-const messageElements={};
-let isInitialLoad = true;
+const messageElements = {};
+let oldestDoc = null;
+let hasMoreMessages = true;
 
-onSnapshot(q, (snapshot)=>{
+function renderMessage(docId, data, prepend = false) {
+  if (messageElements[docId]) return;
+
   const messagesContainer = document.getElementById("messages");
+  const loadMoreContainer = document.getElementById("loadMoreContainer");
+
+  const wrapperDiv = document.createElement("div");
+  const isMyMessage = (data.senderId === myId);
+  wrapperDiv.className = "message-wrapper " + (isMyMessage ? "my-message" : "other-message");
+  wrapperDiv.id = "wrap_" + docId;
   
-  // التحقق هل المستخدم قريب من أسفل الشات (بمسافة 100 بكسل) قبل وصول الرسالة الجديدة
-  const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+  const messageDiv = document.createElement("div");
+  messageDiv.className = "message";
+  
+  const avatarDiv = document.createElement("div");
+  avatarDiv.className = "comment-avatar";
+  avatarDiv.textContent = data.isAdminMessage ? "ل" : "ش";
+  avatarDiv.style.background = data.isAdminMessage ? "#5878a4" : "#6f9b7c";
+  messageDiv.appendChild(avatarDiv);
 
-  snapshot.docChanges().forEach((change)=>{
-    const docId = change.doc.id;
-    const data = change.doc.data();
-    if(change.type==="added"){
-      if(messageElements[docId]) return;
+  const bodyDiv = document.createElement("div");
+  bodyDiv.className = "comment-body";
+  
+  const headerInfo = document.createElement("div");
+  headerInfo.className = "comment-header-info";
+  const userSpan = document.createElement("span");
+  userSpan.className = "comment-username" + (data.isAdminMessage ? " admin-name" : "");
+  userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
+  headerInfo.appendChild(userSpan);
+  bodyDiv.appendChild(headerInfo);
 
-      const wrapperDiv = document.createElement("div");
-      const isMyMessage = (data.senderId === myId);
-      wrapperDiv.className = "message-wrapper " + (isMyMessage ? "my-message" : "other-message");
-      wrapperDiv.id = "wrap_" + docId;
-      
-      const messageDiv = document.createElement("div");
-      messageDiv.className= "message";
-      
-      const avatarDiv = document.createElement("div");
-      avatarDiv.className= "comment-avatar";
-      avatarDiv.textContent = data.isAdminMessage ? "ل" : "ش";
-      avatarDiv.style.background = data.isAdminMessage ? "#5878a4" : "#6f9b7c";
-      messageDiv.appendChild(avatarDiv);
+  if(data.isAudio){
+    const audioWrapper = document.createElement("div");
+    audioWrapper.className = "message-body-audio";
+    const audioEl = document.createElement("audio");
+    audioEl.controls = true;
+    audioEl.src = data.text;
+    audioWrapper.appendChild(audioEl);
+    bodyDiv.appendChild(audioWrapper);
+  } else if(data.isImage){
+    const imgWrapper = document.createElement("div");
+    imgWrapper.className = "message-body-image";
+    const imgEl = document.createElement("img");
+    imgEl.src = data.text;
+    imgWrapper.appendChild(imgEl);
+    bodyDiv.appendChild(imgWrapper);
+  } else {
+    const textSpan = document.createElement("span");
+    textSpan.className = "message-text";
+    textSpan.textContent = data.text;
+    bodyDiv.appendChild(textSpan);
+  }
 
-      const bodyDiv = document.createElement("div");
-      bodyDiv.className= "comment-body";
-      
-      const headerInfo = document.createElement("div");
-      headerInfo.className= "comment-header-info";
-      const userSpan = document.createElement("span");
-      userSpan.className= "comment-username" + (data.isAdminMessage ? " admin-name" : "");
-      userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
-      headerInfo.appendChild(userSpan);
-      bodyDiv.appendChild(headerInfo);
+  if(!isAdmin){
+    const age = Date.now() - data.createdAt;
+    if(age >= 50000) return;
 
-      if(data.isAudio){
-        const audioWrapper = document.createElement("div");
-        audioWrapper.className = "message-body-audio";
-        const audioEl = document.createElement("audio");
-        audioEl.controls = true;
-        audioEl.src = data.text;
-        audioWrapper.appendChild(audioEl);
-        bodyDiv.appendChild(audioWrapper);
-      } else if(data.isImage){
-        const imgWrapper = document.createElement("div");
-        imgWrapper.className = "message-body-image";
-        const imgEl = document.createElement("img");
-        imgEl.src = data.text;
-        imgWrapper.appendChild(imgEl);
-        bodyDiv.appendChild(imgWrapper);
-      } else {
-        const textSpan = document.createElement("span");
-        textSpan.className = "message-text";
-        textSpan.textContent = data.text;
-        bodyDiv.appendChild(textSpan);
-      }
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "comment-actions";
+    const timerSpan = document.createElement("span");
+    timerSpan.className = "timer-text";
+    timerSpan.id = "timer_" + docId;
+    actionsDiv.appendChild(timerSpan);
+    bodyDiv.appendChild(actionsDiv);
+    wrapperDiv.dataset.createdAt = data.createdAt;
+  }
 
-      if(!isAdmin){
-        const age = Date.now() - data.createdAt;
-        if(age >= 50000) return;
+  messageDiv.appendChild(bodyDiv);
+  wrapperDiv.appendChild(messageDiv);
 
-        const actionsDiv = document.createElement("div");
-        actionsDiv.className = "comment-actions";
-        const timerSpan = document.createElement("span");
-        timerSpan.className = "timer-text";
-        timerSpan.id = "timer_" + docId;
-        actionsDiv.appendChild(timerSpan);
-        bodyDiv.appendChild(actionsDiv);
-        wrapperDiv.dataset.createdAt = data.createdAt;
-      }
+  if (prepend) {
+    // إدراج الرسالة القديمة تحت زر التحميل مباشرة
+    messagesContainer.insertBefore(wrapperDiv, loadMoreContainer.nextSibling);
+  } else {
+    messagesContainer.appendChild(wrapperDiv);
+  }
 
-      messageDiv.appendChild(bodyDiv);
-      wrapperDiv.appendChild(messageDiv);
-      messagesContainer.appendChild(wrapperDiv);
-      
-      messageElements[docId] = { element: wrapperDiv, data: data };
-    } else if(change.type==="removed"){
-      if(messageElements[docId]){
-        messageElements[docId].element.remove();
-        delete messageElements[docId];
-      }
-    }
+  messageElements[docId] = { element: wrapperDiv, data: data };
+}
+
+// تحميل أول 25 رسالة أيرة عند فتح الصفحة
+async function loadInitialMessages() {
+  const messagesContainer = document.getElementById("messages");
+  const qInitial = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(25));
+  const snapshot = await getDocs(qInitial);
+
+  if (snapshot.empty) {
+    hasMoreMessages = false;
+    return;
+  }
+
+  const docsArray = snapshot.docs.reverse(); // لترتيبها من الأقدم للأحدث داخل الـ 25 رسالة
+  oldestDoc = snapshot.docs[snapshot.docs.length - 1]; // أقدم رسالة تم جلبها لحفظ نقطة البداية للتحميل اللاحق
+
+  docsArray.forEach(d => {
+    renderMessage(d.id, d.data(), false);
   });
 
-  // عند الفتح الأول يتم النزول لآخر الشات مرة واحدة فقط، وفي المرات اللاحقة لا يتم النزول إلا إذا كان المستخدم أصلاً في الأسفل
-  if (isInitialLoad) {
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    isInitialLoad = false;
-  } else if (isAtBottom) {
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  if (snapshot.docs.length < 25) {
+    hasMoreMessages = false;
+  } else {
+    document.getElementById("loadMoreContainer").style.display = "block";
+  }
+
+  // الذهاب مباشرة لنهاية الشات عند الفتح بدون تحريك مزعج
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  // تشغيل المراقبة للرسائل الجديدة فوراً
+  listenForNewMessages();
+}
+
+// تحميل المزيد من الرسائل عند النقر على الزر أو عمل Scroll للأعلى
+window.loadMoreMessages = async function() {
+  if (!oldestDoc || !hasMoreMessages) return;
+
+  const messagesContainer = document.getElementById("messages");
+  const previousHeight = messagesContainer.scrollHeight;
+
+  const qMore = query(
+    collection(db, "messages"),
+    orderBy("createdAt", "desc"),
+    startBefore(oldestDoc),
+    limit(25)
+  );
+
+  const snapshot = await getDocs(qMore);
+  if (snapshot.empty) {
+    hasMoreMessages = false;
+    document.getElementById("loadMoreContainer").style.display = "none";
+    return;
+  }
+
+  const docsArray = snapshot.docs.reverse();
+  oldestDoc = snapshot.docs[snapshot.docs.length - 1];
+
+  docsArray.forEach(d => {
+    renderMessage(d.id, d.data(), true); // وضعها في أعلى القائمة
+  });
+
+  if (snapshot.docs.length < 25) {
+    hasMoreMessages = false;
+    document.getElementById("loadMoreContainer").style.display = "none";
+  }
+
+  // الحفاظ على موضع الـ Scroll بدقة حتى لا يهتز الشات
+  messagesContainer.scrollTop = messagesContainer.scrollHeight - previousHeight;
+};
+
+// الاستماع للرسائل الجديدة اللحظية
+function listenForNewMessages() {
+  const qLive = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+  onSnapshot(qLive, (snapshot) => {
+    const messagesContainer = document.getElementById("messages");
+    const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+
+    snapshot.docChanges().forEach((change) => {
+      const docId = change.doc.id;
+      const data = change.doc.data();
+      if (change.type === "added") {
+        if (!messageElements[docId]) {
+          renderMessage(docId, data, false);
+          if (isAtBottom) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          }
+        }
+      } else if (change.type === "removed") {
+        if (messageElements[docId]) {
+          messageElements[docId].element.remove();
+          delete messageElements[docId];
+        }
+      }
+    });
+  });
+}
+
+// رصد حركة الـ Scroll للأعلى ليتم تحميل الرسائل السابقة تلقائياً إذا وصل المستخدم لبداية الصفحة
+document.getElementById("messages").addEventListener("scroll", function() {
+  if (this.scrollTop === 0 && hasMoreMessages) {
+    loadMoreMessages();
   }
 });
+
+// بدء التشغيل
+loadInitialMessages();
 
 if(!isAdmin){
   setInterval(()=>{
