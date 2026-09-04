@@ -349,7 +349,7 @@ window.sendMessage = async function(content, type="text"){
       createdAt: Date.now()
     });
   }catch(error){
-    alert("حدث خطأ أثناء إرسال الرسالة، ربما حجم الصورة كبير جداً.");
+    alert("فشل الإرسال: تأكد من تفعيل قواعد القراءة والكتابة المفتوحة في فايربيس.");
   }
 };
 
@@ -367,8 +367,8 @@ window.handleImageUpload = function(event) {
     img.src = e.target.result;
     img.onload = function() {
       const canvas = document.createElement('canvas');
-      const MAX_WIDTH = 600;
-      const MAX_HEIGHT = 600;
+      const MAX_WIDTH = 500;
+      const MAX_HEIGHT = 500;
       let width = img.width;
       let height = img.height;
 
@@ -389,8 +389,8 @@ window.handleImageUpload = function(event) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
 
-      // ضغط الصورة بصيغة JPEG بجودة مناسبة لتقليل الحجم بشكل كبير
-      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      // ضغط قوي لضمان عدم تجاوز الحد الأقصى لوثيقة الفايربيس (أقل من 1 ميجابايت)
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
       window.sendMessage(compressedDataUrl, "image");
       event.target.value = "";
     };
