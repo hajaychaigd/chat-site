@@ -165,7 +165,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc, limit, startAfter, getDocs } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -271,7 +271,6 @@ onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
       endCall();
     }
   } else {
-    // إذا تم مسح وثيقة المكالمة يتم إغلاق الشاشة تلقائياً
     if(document.getElementById("callScreen").style.display === "flex") {
       endCall();
     }
@@ -309,7 +308,6 @@ window.triggerCall = async function(){
   document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر... 📞";
   document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
 
-  // إرسال إشعار الرنين عبر فايربيس فوراً
   await setDoc(doc(db, "status", "active_call"), {
     caller: myPeerId,
     receiver: targetId,
@@ -336,7 +334,6 @@ window.acceptCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     
-    // إذا كان الاستقبال عبر إشعار الفايربيس ولم يتم تعيين currentCall بعد، نقوم بالرد بناءً على المتصل المسجل
     const callDoc = await getDoc(doc(db, "status", "active_call"));
     if(callDoc.exists() && !currentCall) {
       const callerPeerId = callDoc.data().caller;
@@ -488,16 +485,137 @@ window.toggleRecord = async function(){
   }
 };
 
-let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
+let lastVisibleDoc = null;
+let isLoadingMore = false;
+let hasMoreMessages = true;
 const messageElements={};
 
-onSnapshot(q, (snapshot)=>{
+async function loadMessages(isInitial = false) {
+  if (isLoadingMore || (!hasMoreMessages && !isInitial)) return;
+  isLoadingMore = true;
+
+  let q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(20));
+
+  if (!isInitial && lastVisibleDoc) {
+    q = query(collection(db, "messages"), orderBy("createdAt", "desc"), startAfter(lastVisibleDoc), limit(20));
+  }
+
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) {
+    hasMoreMessages = false;
+    isLoadingMore = false;
+    return;
+  }
+
+  lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
   const messagesContainer = document.getElementById("messages");
-  snapshot.docChanges().forEach((change)=>{
-    const docId = change.doc.id;
-    const data = change.doc.data();
-    if(change.type==="added"){
-      if(messageElements[docId]) return;
+  const previousScrollHeight = messagesContainer.scrollHeight;
+
+  const docs = snapshot.docs.reverse();
+
+  docs.forEach((docSnap) => {
+    const docId = docSnap.id;
+    const data = docSnap.data();
+    if (messageElements[docId]) return;
+
+    const wrapperDiv = document.createElement("div");
+    const isMyMessage = (data.senderId === myId);
+    wrapperDiv.className = "message-wrapper " + (isMyMessage ? "my-message" : "other-message");
+    wrapperDiv.id = "wrap_" + docId;
+    
+    const messageDiv = document.createElement("div");
+    messageDiv.className= "message";
+    
+    const avatarDiv = document.createElement("div");
+    avatarDiv.className= "comment-avatar";
+    avatarDiv.textContent = data.isAdminMessage ? "ل" : "ش";
+    avatarDiv.style.background = data.isAdminMessage ? "#5878a4" : "#6f9b7c";
+    messageDiv.appendChild(avatarDiv);
+
+    const bodyDiv = document.createElement("div");
+    bodyDiv.className= "comment-body";
+    
+    const headerInfo = document.createElement("div");
+    headerInfo.className= "comment-header-info";
+    const userSpan = document.createElement("span");
+    userSpan.className= "comment-username" + (data.isAdminMessage ? " admin-name" : "");
+    userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
+    headerInfo.appendChild(userSpan);
+    bodyDiv.appendChild(headerInfo);
+
+    if(data.isAudio){
+      const audioWrapper = document.createElement("div");
+      audioWrapper.className = "message-body-audio";
+      const audioEl = document.createElement("audio");
+      audioEl.controls = true;
+      audioEl.src = data.text;
+      audioWrapper.appendChild(audioEl);
+      bodyDiv.appendChild(audioWrapper);
+    } else if(data.isImage){
+      const imgWrapper = document.createElement("div");
+      imgWrapper.className = "message-body-image";
+      const imgEl = document.createElement("img");
+      imgEl.src = data.text;
+      imgWrapper.appendChild(imgEl);
+      bodyDiv.appendChild(imgWrapper);
+    } else {
+      const textSpan = document.createElement("span");
+      textSpan.className = "message-text";
+      textSpan.textContent = data.text;
+      bodyDiv.appendChild(textSpan);
+    }
+
+    if(!isAdmin){
+      const age = Date.now() - data.createdAt;
+      if(age < 50000) {
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "comment-actions";
+        const timerSpan = document.createElement("span");
+        timerSpan.className = "timer-text";
+        timerSpan.id = "timer_" + docId;
+        actionsDiv.appendChild(timerSpan);
+        bodyDiv.appendChild(actionsDiv);
+        wrapperDiv.dataset.createdAt = data.createdAt;
+      }
+    }
+
+    messageDiv.appendChild(bodyDiv);
+    wrapperDiv.appendChild(messageDiv);
+
+    if(isInitial) {
+      messagesContainer.appendChild(wrapperDiv);
+    } else {
+      messagesContainer.insertBefore(wrapperDiv, messagesContainer.firstChild);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight - previousScrollHeight;
+    }
+
+    messageElements[docId] = { element: wrapperDiv, data: data };
+  });
+
+  if (isInitial) {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+  
+  isLoadingMore = false;
+}
+
+const messagesContainer = document.getElementById("messages");
+messagesContainer.addEventListener("scroll", () => {
+  if (messagesContainer.scrollTop === 0) {
+    loadMessages(false);
+  }
+});
+
+loadMessages(true);
+
+// الاستماع للرسائل الجديدة فوراً في الوقت الفعلي
+const liveQuery = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+onSnapshot(liveQuery, (snapshot) => {
+  snapshot.docChanges().forEach((change) => {
+    if (change.type === "added") {
+      const docId = change.doc.id;
+      const data = change.doc.data();
+      if (messageElements[docId]) return;
 
       const wrapperDiv = document.createElement("div");
       const isMyMessage = (data.senderId === myId);
@@ -548,16 +666,16 @@ onSnapshot(q, (snapshot)=>{
 
       if(!isAdmin){
         const age = Date.now() - data.createdAt;
-        if(age >= 50000) return;
-
-        const actionsDiv = document.createElement("div");
-        actionsDiv.className = "comment-actions";
-        const timerSpan = document.createElement("span");
-        timerSpan.className = "timer-text";
-        timerSpan.id = "timer_" + docId;
-        actionsDiv.appendChild(timerSpan);
-        bodyDiv.appendChild(actionsDiv);
-        wrapperDiv.dataset.createdAt = data.createdAt;
+        if(age < 50000) {
+          const actionsDiv = document.createElement("div");
+          actionsDiv.className = "comment-actions";
+          const timerSpan = document.createElement("span");
+          timerSpan.className = "timer-text";
+          timerSpan.id = "timer_" + docId;
+          actionsDiv.appendChild(timerSpan);
+          bodyDiv.appendChild(actionsDiv);
+          wrapperDiv.dataset.createdAt = data.createdAt;
+        }
       }
 
       messageDiv.appendChild(bodyDiv);
@@ -566,6 +684,7 @@ onSnapshot(q, (snapshot)=>{
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
       messageElements[docId] = { element: wrapperDiv, data: data };
     } else if(change.type==="removed"){
+      const docId = change.doc.id;
       if(messageElements[docId]){
         messageElements[docId].element.remove();
         delete messageElements[docId];
