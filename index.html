@@ -1,755 +1,1698 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الردود</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+<title>الردود</title>
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #f4f6f8;
-      color: #333333;
-      overflow: hidden;
-    }
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+}
 
-    .app {
-      max-width: 480px;
-      height: 100%;
-      margin: auto;
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-      position: relative;
-    }
+:root{
+  --primary:#5878a4;
+  --primary-dark:#456487;
+  --green:#6f9b7c;
+  --red:#d47777;
+  --bg:#eef2f6;
+  --surface:#ffffff;
+  --text:#263342;
+  --muted:#8a96a3;
+  --border:#e7ecf1;
+}
 
-    /* شريط العلوي */
-    .header {
-      background: #fafbfc;
-      color: #333333;
-      padding: 12px 16px;
-      font-size: 18px;
-      font-weight: 600;
-      flex-shrink: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #eef2f5;
-    }
+html,body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--text);
+}
 
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+body{
+  display:flex;
+  justify-content:center;
+}
 
-    .back-arrow {
-      font-size: 20px;
-      cursor: pointer;
-      color: #777777;
-    }
+.app{
+  width:100%;
+  max-width:520px;
+  height:100dvh;
+  background:#f7f9fb;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 0 35px rgba(30,50,70,.08);
+}
 
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      position: relative;
-    }
+/* ================= HEADER ================= */
 
-    .users-counter {
-      background: #f0f4f8;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 13px;
-      display: none;
-      align-items: center;
-      gap: 5px;
-      color: #555555;
-    }
+.header{
+  height:66px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 15px;
+  background:rgba(255,255,255,.96);
+  border-bottom:1px solid var(--border);
+  z-index:20;
+}
 
-    .mute-btn {
-      background: #6c9a78;
-      border: none;
-      color: #ffffff;
-      padding: 0;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 6px rgba(108, 154, 120, 0.2);
-      transition: background 0.2s;
-    }
+.header-title{
+  display:flex;
+  align-items:center;
+  gap:11px;
+}
 
-    /* القائمة المنسدلة (تظهر للمدير فقط) */
-    .menu-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #555555;
-      padding: 4px 8px;
-      border-radius: 50%;
-      display: none; 
-    }
+.back-arrow{
+  width:36px;
+  height:36px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  border-radius:12px;
+  background:#f2f5f8;
+  color:#647180;
+  font-size:21px;
+}
 
-    .menu-btn:hover {
-      background: #edf2f7;
-    }
+.title-area{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
 
-    .dropdown-menu {
-      position: absolute;
-      top: 45px;
-      left: 10px;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-      width: 250px;
-      display: none;
-      flex-direction: column;
-      z-index: 1000;
-      overflow: hidden;
-      border: 1px solid #eef2f5;
-      padding: 10px;
-    }
+.title{
+  font-size:17px;
+  font-weight:700;
+  color:#263342;
+}
 
-    .dropdown-title {
-      font-size: 13px;
-      font-weight: bold;
-      color: #4a7bb0;
-      margin-bottom: 8px;
-      padding-bottom: 5px;
-      border-bottom: 1px solid #f0f4f8;
-      text-align: center;
-    }
+.subtitle{
+  font-size:10px;
+  color:#93a0ad;
+}
 
-    .log-item {
-      font-size: 12px;
-      color: #555555;
-      padding: 8px 6px;
-      border-bottom: 1px dashed #f0f4f8;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+.status-dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--red);
+  box-shadow:0 0 0 4px rgba(212,119,119,.10);
+}
 
-    .log-row {
-      display: flex;
-      justify-content: space-between;
-    }
+/* Header actions */
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: #d97777;
-      display: inline-block;
-    }
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  position:relative;
+}
 
-    /* شريط التسبيحات المتحرك */
-    .ticker-container {
-      background: #fcfcfc;
-      color: #4a7bb0;
-      padding: 6px 0;
-      overflow: hidden;
-      white-space: nowrap;
-      position: relative;
-      font-size: 12px;
-      font-weight: bold;
-      border-bottom: 1px solid #eef2f5;
-      display: none;
-    }
+.mute-btn{
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:13px;
+  background:var(--green);
+  color:white;
+  cursor:pointer;
+  font-size:16px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 5px 13px rgba(111,155,124,.20);
+  transition:.2s;
+}
 
-    .ticker-track {
-      display: inline-flex;
-      white-space: nowrap;
-      animation: tickerAnimation 25s linear infinite;
-    }
+.mute-btn:active{
+  transform:scale(.92);
+}
 
-    .ticker-group {
-      display: inline-flex;
-      gap: 35px;
-      padding-right: 35px;
-      flex-shrink: 0;
-    }
+.users-counter{
+  display:none;
+  align-items:center;
+  gap:5px;
+  background:#f1f4f7;
+  border:1px solid #e7ecf1;
+  border-radius:12px;
+  padding:7px 10px;
+  font-size:12px;
+  color:#667382;
+}
 
-    @keyframes tickerAnimation {
-      0% { transform: translateX(0%); }
-      100% { transform: translateX(-50%); }
-    }
+.menu-btn{
+  display:none;
+  width:37px;
+  height:37px;
+  border:0;
+  border-radius:12px;
+  background:#f2f5f8;
+  color:#5f6b77;
+  font-size:22px;
+  cursor:pointer;
+}
 
-    /* منطقة التعليقات المنسقة */
-    .messages {
-      flex: 1;
-      padding: 16px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      background: #fafbfc;
-    }
+/* ================= DROPDOWN ================= */
 
-    .message-wrapper {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
+.dropdown-menu{
+  position:absolute;
+  top:48px;
+  left:0;
+  width:275px;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:17px;
+  box-shadow:0 15px 40px rgba(30,45,65,.15);
+  display:none;
+  flex-direction:column;
+  z-index:1000;
+  overflow:hidden;
+  padding:12px;
+}
 
-    .message {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      position: relative;
-      width: 100%;
-      background: #ffffff;
-      padding: 10px;
-      border-radius: 12px;
-      border: 1px solid #eef2f5;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.01);
-    }
+.dropdown-title{
+  font-size:12px;
+  font-weight:700;
+  color:var(--primary);
+  text-align:center;
+  padding:5px 0 11px;
+  border-bottom:1px solid #edf1f4;
+}
 
-    .comment-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: bold;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
+.log-item{
+  font-size:12px;
+  color:#66717d;
+  padding:10px 4px;
+  border-bottom:1px dashed #edf1f4;
+}
 
-    .comment-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+.log-row{
+  display:flex;
+  justify-content:space-between;
+  margin:4px 0;
+}
 
-    .comment-header-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #777777;
-    }
+.status-dot{
+  flex-shrink:0;
+}
 
-    .comment-username {
-      background-color: #444444 !important;
-      color: #ffffff !important;
-      padding: 2px 10px;
-      border-radius: 10px;
-      font-weight: 500;
-      font-size: 11px;
-    }
+/* ================= TICKER ================= */
 
-    .comment-username.admin-name {
-      background-color: #4a7bb0 !important;
-      color: #ffffff !important;
-    }
+.ticker-container{
+  display:none;
+  height:34px;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+  white-space:nowrap;
+  color:var(--primary);
+  font-size:11px;
+  font-weight:600;
+  position:relative;
+}
 
-    .comment-time {
-      font-size: 11px;
-      color: #999999;
-    }
+.ticker-track{
+  height:100%;
+  display:inline-flex;
+  align-items:center;
+  animation:ticker 24s linear infinite;
+}
 
-    .message-text {
-      color: #333333;
-      line-height: 1.5;
-      word-break: break-word;
-      font-size: 14px;
-    }
+.ticker-group{
+  display:inline-flex;
+  align-items:center;
+  gap:35px;
+  padding-right:35px;
+  flex-shrink:0;
+}
 
-    .comment-actions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 4px;
-      font-size: 12px;
-      color: #777777;
-    }
+@keyframes ticker{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
 
-    .action-buttons-group {
-      display: flex;
-      gap: 16px;
-    }
+/* ================= MESSAGES ================= */
 
-    .action-btn {
-      background: none;
-      border: none;
-      color: #777777;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-    }
+.messages{
+  flex:1;
+  overflow-y:auto;
+  padding:20px 15px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  scroll-behavior:smooth;
+  background:
+    radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%),
+    #f7f9fb;
+}
 
-    .timer-text {
-      color: #b86b6b;
-      font-weight: bold;
-      background: rgba(184, 107, 107, 0.08);
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-size: 11px;
-    }
+.messages::-webkit-scrollbar{
+  width:4px;
+}
 
-    /* منطقة الكتابة السفلى */
-    .input-area {
-      display: flex;
-      padding: 12px 16px;
-      background: #fafbfc;
-      border-top: 1px solid #eef2f5;
-      gap: 10px;
-      align-items: center;
-      flex-shrink: 0;
-    }
+.messages::-webkit-scrollbar-thumb{
+  background:#d8e0e7;
+  border-radius:10px;
+}
 
-    input {
-      flex: 1;
-      padding: 12px 18px;
-      border: 1px solid #dcdfe4;
-      border-radius: 24px;
-      outline: none;
-      font-size: 14px;
-      background: #ffffff;
-      color: #333333;
-      transition: border 0.2s;
-    }
+.message-wrapper{
+  position:relative;
+  width:100%;
+  animation:messageIn .25s ease;
+}
 
-    input:focus {
-      border-color: #4a7bb0;
-      background: #ffffff;
-    }
+@keyframes messageIn{
+  from{
+    opacity:0;
+    transform:translateY(7px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
 
-    button.send-btn {
-      border: none;
-      background: #4a7bb0;
-      color: #ffffff;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(74, 123, 176, 0.2);
-      transition: background 0.2s;
-    }
+.message{
+  width:100%;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  background:rgba(255,255,255,.95);
+  border:1px solid #e9edf1;
+  border-radius:18px;
+  padding:11px;
+  box-shadow:0 3px 12px rgba(30,50,70,.035);
+  transition:.2s;
+}
 
-    button.send-btn:hover {
-      background: #3b6594;
-    }
+.message:hover{
+  box-shadow:0 5px 18px rgba(30,50,70,.07);
+}
 
-    #blockScreen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #ffffff;
-      color: #333333;
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-      z-index: 9999;
-      font-size: 16px;
-      font-weight: bold;
-      line-height: 1.6;
-    }
-  </style>
+.comment-avatar{
+  width:38px;
+  height:38px;
+  min-width:38px;
+  border-radius:13px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  font-weight:700;
+  font-size:14px;
+  box-shadow:0 4px 10px rgba(30,50,70,.10);
+}
+
+.comment-body{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.comment-header-info{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.comment-username{
+  background:#3f4a56 !important;
+  color:white !important;
+  padding:4px 9px;
+  border-radius:8px;
+  font-size:10px;
+  font-weight:600;
+}
+
+.comment-username.admin-name{
+  background:var(--primary) !important;
+}
+
+.comment-time{
+  font-size:10px;
+  color:#a0aab4;
+}
+
+.message-text{
+  font-size:14px;
+  line-height:1.65;
+  color:#303b47;
+  word-break:break-word;
+}
+
+.comment-actions{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:3px;
+}
+
+.action-buttons-group{
+  display:flex;
+  gap:13px;
+}
+
+.action-btn{
+  background:none;
+  border:0;
+  color:#8b96a1;
+  cursor:pointer;
+  font-size:11px;
+  padding:3px;
+  transition:.2s;
+}
+
+.action-btn:hover{
+  color:var(--primary);
+}
+
+.timer-text{
+  color:#b66c6c;
+  background:#fff3f3;
+  border:1px solid #f6e0e0;
+  padding:3px 7px;
+  border-radius:7px;
+  font-size:10px;
+  font-weight:700;
+}
+
+/* ================= INPUT ================= */
+
+.input-area{
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:10px 13px;
+  background:rgba(255,255,255,.97);
+  border-top:1px solid var(--border);
+  box-shadow:0 -5px 20px rgba(30,50,70,.035);
+}
+
+input{
+  flex:1;
+  min-width:0;
+  height:45px;
+  border:1px solid #dfe5ea;
+  border-radius:15px;
+  outline:none;
+  padding:0 16px;
+  font-size:13px;
+  background:#f8fafb;
+  color:#303b47;
+  transition:.2s;
+}
+
+input::placeholder{
+  color:#a0aab4;
+}
+
+input:focus{
+  border-color:#9db0c5;
+  background:white;
+  box-shadow:0 0 0 3px rgba(88,120,164,.07);
+}
+
+button.send-btn{
+  width:45px;
+  height:45px;
+  min-width:45px;
+  border:0;
+  border-radius:15px;
+  background:var(--primary);
+  color:white;
+  cursor:pointer;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 5px 14px rgba(88,120,164,.22);
+  transition:.2s;
+}
+
+button.send-btn:hover{
+  background:var(--primary-dark);
+}
+
+button.send-btn:active{
+  transform:scale(.92);
+}
+
+/* ================= BLOCK SCREEN ================= */
+
+#blockScreen{
+  position:fixed;
+  inset:0;
+  background:#f7f9fb;
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  padding:30px;
+  z-index:9999;
+  color:#384553;
+}
+
+.block-card{
+  max-width:380px;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:25px;
+  padding:30px 24px;
+  box-shadow:0 15px 45px rgba(30,50,70,.10);
+}
+
+.block-icon{
+  width:65px;
+  height:65px;
+  border-radius:20px;
+  background:#fff1f1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:28px;
+  margin:0 auto 18px;
+}
+
+.block-title{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.block-text{
+  font-size:13px;
+  line-height:1.8;
+  color:#8995a0;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:520px){
+
+  .app{
+    max-width:none;
+    box-shadow:none;
+  }
+
+  .header{
+    height:62px;
+    padding:9px 12px;
+  }
+
+  .messages{
+    padding:15px 11px;
+  }
+
+  .message{
+    border-radius:16px;
+    padding:10px;
+  }
+
+  .message-text{
+    font-size:13.5px;
+  }
+
+  .input-area{
+    padding:9px 10px;
+  }
+
+  input{
+    height:44px;
+  }
+
+  button.send-btn{
+    width:44px;
+    min-width:44px;
+    height:44px;
+  }
+}
+</style>
 </head>
 
 <body>
 
-  <div id="blockScreen">
-    ❌ عذراً، الشات مشغول حالياً مع مستخدم آخر.<br>يُجوز لمستخدم واحد فقط التحدث مع المدير في نفس الوقت.<br>الرجاء المحاولة لاحقاً.
+<div id="blockScreen">
+  <div class="block-card">
+    <div class="block-icon">🔒</div>
+    <div class="block-title">الشات مشغول حالياً</div>
+    <div class="block-text">
+      يوجد مستخدم آخر يتحدث مع المدير في الوقت الحالي.<br>
+      يُسمح لمستخدم واحد فقط بالتحدث مع المدير في نفس الوقت.<br>
+      <br>
+      الرجاء المحاولة لاحقاً.
+    </div>
   </div>
+</div>
 
-  <div class="app">
+<div class="app">
 
-    <div class="header">
-      <div class="header-title">
-        <span class="back-arrow">←</span>
-        <span>الردود</span>
-        <span id="statusDot" class="status-dot"></span>
+  <!-- HEADER -->
+  <div class="header">
+
+    <div class="header-title">
+
+      <span class="back-arrow">←</span>
+
+      <div class="title-area">
+        <div class="title">الردود</div>
+        <div class="subtitle">المحادثة المباشرة</div>
       </div>
-      <div class="header-actions">
-        <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
-        <div id="usersCounter" class="users-counter">
-          <span>👤</span> <span id="onlineCount">0</span>
+
+      <span id="statusDot" class="status-dot"></span>
+
+    </div>
+
+    <div class="header-actions">
+
+      <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">
+        🔔
+      </button>
+
+      <div id="usersCounter" class="users-counter">
+        👤 <span id="onlineCount">0</span>
+      </div>
+
+      <button id="menuBtn" class="menu-btn">
+        ⋮
+      </button>
+
+      <div id="dropdownMenu" class="dropdown-menu">
+
+        <div class="dropdown-title">
+          سجل دخول وخروج الزائر
         </div>
-        <button id="menuBtn" class="menu-btn">⋮</button>
-        <div id="dropdownMenu" class="dropdown-menu">
-          <div class="dropdown-title">سجل دخول وخروج الزائر</div>
-          <div id="visitorLogContainer">
-            <div class="log-item">جاري التحميل...</div>
+
+        <div id="visitorLogContainer">
+          <div class="log-item">
+            جاري التحميل...
           </div>
         </div>
+
       </div>
-    </div>
 
-    <div id="tickerContainer" class="ticker-container">
-      <div class="ticker-track">
-        <div class="ticker-group">
-          <span class="ticker-item">سبحان الله 📿</span>
-          <span class="ticker-item">الحمد لله 📿</span>
-          <span class="ticker-item">الله أكبر 📿</span>
-          <span class="ticker-item">استغفر الله 📿</span>
-        </div>
-        <div class="ticker-group">
-          <span class="ticker-item">سبحان الله 📿</span>
-          <span class="ticker-item">الحمد لله 📿</span>
-          <span class="ticker-item">الله أكبر 📿</span>
-          <span class="ticker-item">استغفر الله 📿</span>
-        </div>
+    </div>
+  </div>
+
+
+  <!-- TICKER -->
+  <div id="tickerContainer" class="ticker-container">
+
+    <div class="ticker-track">
+
+      <div class="ticker-group">
+        <span>سبحان الله 📿</span>
+        <span>الحمد لله 📿</span>
+        <span>الله أكبر 📿</span>
+        <span>استغفر الله 📿</span>
       </div>
-    </div>
 
-    <div class="messages" id="messages"></div>
+      <div class="ticker-group">
+        <span>سبحان الله 📿</span>
+        <span>الحمد لله 📿</span>
+        <span>الله أكبر 📿</span>
+        <span>استغفر الله 📿</span>
+      </div>
 
-    <div class="input-area">
-      <input type="text" id="messageInput" placeholder="اكتب ردك هنا...">
-      <button class="send-btn" onclick="sendMessage()" title="إرسال">
-        <svg height="18" viewBox="0 0 24 24" width="18" fill="#ffffff"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-      </button>
     </div>
+  </div>
+
+
+  <!-- MESSAGES -->
+  <div class="messages" id="messages"></div>
+
+
+  <!-- INPUT -->
+  <div class="input-area">
+
+    <input
+      type="text"
+      id="messageInput"
+      placeholder="اكتب رسالتك هنا..."
+      autocomplete="off"
+    >
+
+    <button
+      class="send-btn"
+      onclick="sendMessage()"
+      title="إرسال"
+    >
+
+      <svg
+        height="18"
+        viewBox="0 0 24 24"
+        width="18"
+        fill="#ffffff"
+      >
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+      </svg>
+
+    </button>
 
   </div>
 
-  <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
-      authDomain: "chat-site-2911b.firebaseapp.com",
-      databaseURL: "https://chat-site-2911b-default-rtdb.firebaseio.com",
-      projectId: "chat-site-2911b",
-      storageBucket: "chat-site-2911b.firebasestorage.app",
-      messagingSenderId: "7306613696",
-      appId: "1:7306613696:web:5479f7634c7e903bbdae25",
-      measurementId: "G-KZ4L2JHQN4"
-    };
+<audio
+  id="notificationSound"
+  src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+  preload="auto">
+</audio>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
 
-    let blockIncomingFromAdmin = false;
+<script type="module">
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === 'mysecret123') {
-      localStorage.setItem("is_admin", "true");
-    }
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
-    const isAdmin = localStorage.getItem("is_admin") === "true";
-    const bellBtn = document.getElementById("bellBtn");
-    const menuBtn = document.getElementById("menuBtn");
-    const dropdownMenu = document.getElementById("dropdownMenu");
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  where,
+  onSnapshot,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-    if (isAdmin) {
-      document.getElementById("usersCounter").style.display = "flex";
-      menuBtn.style.display = "block";
-    } else {
-      document.getElementById("tickerContainer").style.display = "block";
-    }
 
-    menuBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      dropdownMenu.style.display = dropdownMenu.style.display === "flex" ? "none" : "flex";
-    });
+/* ================= FIREBASE ================= */
 
-    window.addEventListener("click", () => {
-      dropdownMenu.style.display = "none";
-    });
+const firebaseConfig = {
 
-    let myId = localStorage.getItem("chat_user_id");
-    if (!myId) {
-      myId = 'user_' + Math.random().toString(36).substring(2);
-      localStorage.setItem("chat_user_id", myId);
-    }
+  apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
 
-    bellBtn.addEventListener("click", async function() {
-      if (isAdmin) return;
-      const bellStatusRef = doc(db, "status", "bell_alert");
-      try {
-        const docSnap = await getDoc(bellStatusRef);
-        let currentState = "green";
-        if (docSnap.exists()) currentState = docSnap.data().state || "green";
-        let newState = (currentState === "red") ? "green" : "red";
-        await setDoc(bellStatusRef, { state: newState, timestamp: Date.now() });
-      } catch (e) {}
-    });
+  authDomain:"chat-site-2911b.firebaseapp.com",
 
-    const bellStatusRef = doc(db, "status", "bell_alert");
-    onSnapshot(bellStatusRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const state = docSnap.data().state || "green";
-        if (state === "red") {
-          bellBtn.style.background = "#d97777";
-          bellBtn.style.boxShadow = "0 0 10px #d97777";
-          if (!isAdmin) {
-            blockIncomingFromAdmin = true;
-            for (const docId in messageElements) {
-              messageElements[docId].element.remove();
-              delete messageElements[docId];
-            }
-          }
-          if (isAdmin) {
-            const sound = document.getElementById("notificationSound");
-            if (sound) { sound.currentTime = 0; sound.play().catch(e => {}); }
-          }
-        } else {
-          bellBtn.style.background = "#6c9a78";
-          bellBtn.style.boxShadow = "0 0 8px rgba(108, 154, 120, 0.3)";
-          if (!isAdmin) blockIncomingFromAdmin = false;
-        }
+  databaseURL:
+  "https://chat-site-2911b-default-rtdb.firebaseio.com",
+
+  projectId:"chat-site-2911b",
+
+  storageBucket:
+  "chat-site-2911b.firebasestorage.app",
+
+  messagingSenderId:"7306613696",
+
+  appId:
+  "1:7306613696:web:5479f7634c7e903bbdae25",
+
+  measurementId:"G-KZ4L2JHQN4"
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+
+/* ================= VARIABLES ================= */
+
+let blockIncomingFromAdmin = false;
+
+const urlParams =
+new URLSearchParams(window.location.search);
+
+
+if(urlParams.get("admin")==="mysecret123"){
+
+  localStorage.setItem("is_admin","true");
+
+}
+
+
+const isAdmin =
+localStorage.getItem("is_admin")==="true";
+
+
+const bellBtn =
+document.getElementById("bellBtn");
+
+const menuBtn =
+document.getElementById("menuBtn");
+
+const dropdownMenu =
+document.getElementById("dropdownMenu");
+
+
+/* ================= ROLE ================= */
+
+if(isAdmin){
+
+  document.getElementById("usersCounter")
+  .style.display="flex";
+
+  menuBtn.style.display="block";
+
+}else{
+
+  document.getElementById("tickerContainer")
+  .style.display="block";
+
+}
+
+
+/* ================= MENU ================= */
+
+menuBtn.addEventListener("click",(e)=>{
+
+  e.stopPropagation();
+
+  dropdownMenu.style.display =
+  dropdownMenu.style.display==="flex"
+  ? "none"
+  : "flex";
+
+});
+
+
+window.addEventListener("click",()=>{
+
+  dropdownMenu.style.display="none";
+
+});
+
+
+/* ================= USER ID ================= */
+
+let myId =
+localStorage.getItem("chat_user_id");
+
+
+if(!myId){
+
+  myId =
+  "user_"+Math.random()
+  .toString(36)
+  .substring(2);
+
+  localStorage.setItem(
+    "chat_user_id",
+    myId
+  );
+
+}
+
+
+/* ================= BELL ================= */
+
+bellBtn.addEventListener(
+"click",
+async function(){
+
+  if(isAdmin) return;
+
+  const bellStatusRef =
+  doc(db,"status","bell_alert");
+
+  try{
+
+    const docSnap =
+    await getDoc(bellStatusRef);
+
+    let currentState="green";
+
+    if(docSnap.exists())
+      currentState =
+      docSnap.data().state || "green";
+
+    const newState =
+      currentState==="red"
+      ? "green"
+      : "red";
+
+    await setDoc(
+      bellStatusRef,
+      {
+        state:newState,
+        timestamp:Date.now()
       }
-    });
+    );
 
-    const activeVisitorDocRef = doc(db, "status", "active_visitor");
-    const logContainer = document.getElementById("visitorLogContainer");
-    const loginTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+  }catch(e){}
 
-    if (isAdmin) {
-      const adminStatusRef = doc(db, "status", "admin_status");
-      setDoc(adminStatusRef, { online: true, lastSeen: Date.now() });
-      setInterval(() => {
-        setDoc(adminStatusRef, { online: true, lastSeen: Date.now() }, { merge: true });
-      }, 4000);
+});
 
-      onSnapshot(activeVisitorDocRef, (docSnap) => {
-        const countSpan = document.getElementById("onlineCount");
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.active && (Date.now() - data.lastSeen < 6000)) {
-            countSpan.textContent = "1";
-            logContainer.innerHTML = `
-              <div class="log-item">
-                <div class="log-row" style="color: #6c9a78; font-weight: bold;"><span>🟢 متصل حالياً</span></div>
-                <div class="log-row"><span>دخل في:</span> <span>${data.loginTime || 'غير متوفر'}</span></div>
-              </div>
-            `;
-          } else {
-            countSpan.textContent = "0";
-            let logoutDisplay = data.logoutTime ? `<span>خرج في:</span> <span>${data.logoutTime}</span>` : `<span>لم يحدد وقت خروج</span>`;
-            let loginDisplay = data.loginTime ? `<span>دخل في:</span> <span>${data.loginTime}</span>` : ``;
-            logContainer.innerHTML = `
-              <div class="log-item">
-                <div class="log-row" style="color: #888; font-weight: bold;"><span>⚪ غادر الموقع</span></div>
-                <div class="log-row">${loginDisplay}</div>
-                <div class="log-row">${logoutDisplay}</div>
-              </div>
-            `;
-          }
-        } else {
-          countSpan.textContent = "0";
-          logContainer.innerHTML = `<div class="log-item" style="color:#888; text-align:center;">لا يوجد سجلات حتى الآن</div>`;
-        }
-      });
-    } else {
-      async function registerVisitor() {
-        try {
-          const docSnap = await getDoc(activeVisitorDocRef);
-          if (docSnap.exists() && docSnap.data().active && (Date.now() - docSnap.data().lastSeen < 6000) && docSnap.data().userId !== myId) {
-            document.getElementById("blockScreen").style.display = "flex";
-            return;
-          }
-          await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, logoutTime: "", lastSeen: Date.now() });
-          
-          setInterval(async () => {
-            try {
-              await setDoc(activeVisitorDocRef, { active: true, userId: myId, loginTime: loginTimeStr, lastSeen: Date.now() }, { merge: true });
-            } catch(e) {}
-          }, 3000);
 
-          window.addEventListener("beforeunload", () => {
-            const logoutTimeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            setDoc(activeVisitorDocRef, { active: false, userId: myId, loginTime: loginTimeStr, logoutTime: logoutTimeStr, lastSeen: 0 }, { merge: true });
-          });
-        } catch(e) {}
+/* ================= BELL LISTENER ================= */
+
+const bellStatusRef =
+doc(db,"status","bell_alert");
+
+
+onSnapshot(
+bellStatusRef,
+(docSnap)=>{
+
+  if(!docSnap.exists()) return;
+
+  const state =
+  docSnap.data().state || "green";
+
+
+  if(state==="red"){
+
+    bellBtn.style.background="#d47777";
+
+    bellBtn.style.boxShadow=
+    "0 0 16px rgba(212,119,119,.65)";
+
+
+    if(!isAdmin){
+
+      blockIncomingFromAdmin=true;
+
+      for(const docId in messageElements){
+
+        messageElements[docId]
+        .element.remove();
+
+        delete messageElements[docId];
+
       }
-      registerVisitor();
+
     }
 
-    const pageLoadTime = Date.now();
 
-    window.sendMessage = async function() {
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
-      if (text === "") return;
-      const currentTime = Date.now();
-      input.value = "";
-      try {
-        await addDoc(collection(db, "messages"), {
-          text: text,
-          senderId: myId,
-          isAdminMessage: isAdmin,
-          createdAt: currentTime,
-          read: isAdmin
-        });
-      } catch (error) {}
-    };
+    if(isAdmin){
 
-    document.getElementById("messageInput").addEventListener("keypress", function(event) {
-      if (event.key === "Enter") sendMessage();
-    });
+      const sound =
+      document.getElementById(
+        "notificationSound"
+      );
 
-    let q;
-    if (isAdmin) {
-      // تعديل الاستعلام للمدير لجلب الرسائل بمرونة وسرعة أعلى دون قيود ثقيلة
-      q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-    } else {
-      q = query(collection(db, "messages"), where("createdAt", ">=", Date.now() - 45000), orderBy("createdAt", "asc"));
+      if(sound){
+
+        sound.currentTime=0;
+
+        sound.play().catch(()=>{});
+
+      }
+
     }
 
-    const messageElements = {};
+  }else{
 
-    onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
-      const messagesContainer = document.getElementById("messages");
+    bellBtn.style.background="#6f9b7c";
 
-      snapshot.docChanges().forEach((change) => {
-        const docId = change.doc.id;
-        const data = change.doc.data();
+    bellBtn.style.boxShadow=
+    "0 0 12px rgba(111,155,124,.25)";
 
-        if (change.type === "added") {
-          if (messageElements[docId]) return;
-          if (!isAdmin && blockIncomingFromAdmin && data.isAdminMessage) return;
+    if(!isAdmin)
+      blockIncomingFromAdmin=false;
 
-          const wrapperDiv = document.createElement("div");
-          wrapperDiv.id = "wrap_" + docId;
-          wrapperDiv.className = "message-wrapper";
+  }
 
-          const messageDiv = document.createElement("div");
-          messageDiv.id = "msg_" + docId;
-          messageDiv.className = "message";
+});
 
-          const avatarDiv = document.createElement("div");
-          avatarDiv.className = "comment-avatar";
-          if (data.isAdminMessage) {
-            avatarDiv.textContent = "ل";
-            avatarDiv.style.background = "#4a7bb0";
-          } else {
-            avatarDiv.textContent = "ش";
-            avatarDiv.style.background = "#6c9a78";
-          }
-          messageDiv.appendChild(avatarDiv);
 
-          const bodyDiv = document.createElement("div");
-          bodyDiv.className = "comment-body";
+/* ================= VISITOR STATUS ================= */
 
-          const headerInfo = document.createElement("div");
-          headerInfo.className = "comment-header-info";
-          
-          const userSpan = document.createElement("span");
-          userSpan.className = "comment-username";
-          if (data.isAdminMessage) {
-            userSpan.classList.add("admin-name");
-            userSpan.textContent = "@المدير";
-          } else {
-            userSpan.textContent = "@زائر";
-          }
-          headerInfo.appendChild(userSpan);
+const activeVisitorDocRef =
+doc(db,"status","active_visitor");
 
-          const timeSpan = document.createElement("span");
-          timeSpan.className = "comment-time";
-          timeSpan.textContent = "• الآن";
-          headerInfo.appendChild(timeSpan);
 
-          bodyDiv.appendChild(headerInfo);
+const logContainer =
+document.getElementById(
+  "visitorLogContainer"
+);
 
-          const textSpan = document.createElement("span");
-          textSpan.className = "message-text";
-          textSpan.textContent = data.text;
-          bodyDiv.appendChild(textSpan);
 
-          const actionsDiv = document.createElement("div");
-          actionsDiv.className = "comment-actions";
-          
-          const actionButtonsGroup = document.createElement("div");
-          actionButtonsGroup.className = "action-buttons-group";
+const loginTimeStr =
+new Date().toLocaleTimeString(
+  "ar-EG",
+  {
+    hour:"2-digit",
+    minute:"2-digit"
+  }
+);
 
-          const likeBtn = document.createElement("button");
-          likeBtn.className = "action-btn";
-          likeBtn.innerHTML = "👍 <span>1</span>";
-          actionButtonsGroup.appendChild(likeBtn);
 
-          const dislikeBtn = document.createElement("button");
-          dislikeBtn.className = "action-btn";
-          dislikeBtn.innerHTML = "👎";
-          actionButtonsGroup.appendChild(dislikeBtn);
+/* ================= ADMIN STATUS ================= */
 
-          actionsDiv.appendChild(actionButtonsGroup);
+if(isAdmin){
 
-          if (!isAdmin) {
-            const timerSpan = document.createElement("span");
-            timerSpan.className = "timer-text";
-            actionsDiv.appendChild(timerSpan);
-            wrapperDiv.dataset.createdAt = data.createdAt;
-          }
+  const adminStatusRef =
+  doc(db,"status","admin_status");
 
-          bodyDiv.appendChild(actionsDiv);
-          messageDiv.appendChild(bodyDiv);
-          wrapperDiv.appendChild(messageDiv);
-          
-          messagesContainer.appendChild(wrapperDiv);
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-          messageElements[docId] = { element: wrapperDiv, data: data };
+  setDoc(
+    adminStatusRef,
+    {
+      online:true,
+      lastSeen:Date.now()
+    }
+  );
 
-          if (isAdmin && !data.isAdminMessage && !data.read) {
-            updateDoc(doc(db, "messages", docId), { read: true });
-          }
 
-          if (isAdmin && data.createdAt > pageLoadTime && data.senderId !== myId) {
-            const sound = document.getElementById("notificationSound");
-            if (sound) { sound.currentTime = 0; sound.play().catch(err => {}); }
-          }
-        } 
-        else if (change.type === "removed") {
-          if (messageElements[docId]) {
-            messageElements[docId].element.remove();
-            delete messageElements[docId];
-          }
+  setInterval(()=>{
+
+    setDoc(
+      adminStatusRef,
+      {
+        online:true,
+        lastSeen:Date.now()
+      },
+      {merge:true}
+    );
+
+  },4000);
+
+
+  onSnapshot(
+  activeVisitorDocRef,
+  (docSnap)=>{
+
+    const countSpan =
+    document.getElementById(
+      "onlineCount"
+    );
+
+
+    if(docSnap.exists()){
+
+      const data =
+      docSnap.data();
+
+
+      if(
+        data.active &&
+        Date.now()-data.lastSeen<6000
+      ){
+
+        countSpan.textContent="1";
+
+
+        logContainer.innerHTML=`
+
+          <div class="log-item">
+
+            <div
+              class="log-row"
+              style="
+              color:#6f9b7c;
+              font-weight:700;
+              "
+            >
+              <span>🟢 متصل حالياً</span>
+            </div>
+
+            <div class="log-row">
+
+              <span>دخل في:</span>
+
+              <span>
+                ${data.loginTime || "غير متوفر"}
+              </span>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }else{
+
+        countSpan.textContent="0";
+
+
+        let logoutDisplay =
+        data.logoutTime
+        ?
+        `<span>خرج في:</span>
+         <span>${data.logoutTime}</span>`
+        :
+        `<span>لم يحدد وقت خروج</span>`;
+
+
+        let loginDisplay =
+        data.loginTime
+        ?
+        `<span>دخل في:</span>
+         <span>${data.loginTime}</span>`
+        :
+        "";
+
+
+        logContainer.innerHTML=`
+
+          <div class="log-item">
+
+            <div
+              class="log-row"
+              style="
+              color:#8d969f;
+              font-weight:700;
+              "
+            >
+              <span>⚪ غادر الموقع</span>
+            </div>
+
+            <div class="log-row">
+              ${loginDisplay}
+            </div>
+
+            <div class="log-row">
+              ${logoutDisplay}
+            </div>
+
+          </div>
+
+        `;
+
+      }
+
+    }else{
+
+      countSpan.textContent="0";
+
+      logContainer.innerHTML=`
+        <div
+          class="log-item"
+          style="
+          color:#888;
+          text-align:center;
+          "
+        >
+          لا يوجد سجلات حتى الآن
+        </div>
+      `;
+
+    }
+
+  });
+
+}
+
+
+/* ================= VISITOR ================= */
+
+else{
+
+  async function registerVisitor(){
+
+    try{
+
+      const docSnap =
+      await getDoc(
+        activeVisitorDocRef
+      );
+
+
+      if(
+        docSnap.exists() &&
+        docSnap.data().active &&
+        Date.now()-docSnap.data().lastSeen<6000 &&
+        docSnap.data().userId!==myId
+      ){
+
+        document.getElementById(
+          "blockScreen"
+        ).style.display="flex";
+
+        return;
+
+      }
+
+
+      await setDoc(
+        activeVisitorDocRef,
+        {
+          active:true,
+          userId:myId,
+          loginTime:loginTimeStr,
+          logoutTime:"",
+          lastSeen:Date.now()
         }
+      );
+
+
+      setInterval(async()=>{
+
+        try{
+
+          await setDoc(
+            activeVisitorDocRef,
+            {
+              active:true,
+              userId:myId,
+              loginTime:loginTimeStr,
+              lastSeen:Date.now()
+            },
+            {merge:true}
+          );
+
+        }catch(e){}
+
+      },3000);
+
+
+      window.addEventListener(
+      "beforeunload",
+      ()=>{
+
+        const logoutTimeStr =
+        new Date().toLocaleTimeString(
+          "ar-EG",
+          {
+            hour:"2-digit",
+            minute:"2-digit"
+          }
+        );
+
+
+        setDoc(
+          activeVisitorDocRef,
+          {
+            active:false,
+            userId:myId,
+            loginTime:loginTimeStr,
+            logoutTime:logoutTimeStr,
+            lastSeen:0
+          },
+          {merge:true}
+        );
+
       });
-    });
 
-    if (!isAdmin) {
-      setInterval(() => {
-        const now = Date.now();
-        for (const docId in messageElements) {
-          const item = messageElements[docId];
-          const timeLeft = 35000 - (now - item.data.createdAt);
-          if (timeLeft <= 0) {
-            item.element.remove();
-            delete messageElements[docId];
-          } else {
-            const timerSpan = item.element.querySelector(".timer-text");
-            if (timerSpan) timerSpan.textContent = Math.ceil(timeLeft / 1000) + ' ث';
-          }
+    }catch(e){}
+
+  }
+
+
+  registerVisitor();
+
+}
+
+
+/* ================= SEND MESSAGE ================= */
+
+window.sendMessage =
+async function(){
+
+  const input =
+  document.getElementById(
+    "messageInput"
+  );
+
+
+  const text =
+  input.value.trim();
+
+
+  if(text==="") return;
+
+
+  const currentTime =
+  Date.now();
+
+
+  input.value="";
+
+
+  try{
+
+    await addDoc(
+      collection(db,"messages"),
+      {
+        text:text,
+        senderId:myId,
+        isAdminMessage:isAdmin,
+        createdAt:currentTime,
+        read:isAdmin
+      }
+    );
+
+  }catch(error){}
+
+};
+
+
+/* ================= ENTER ================= */
+
+document
+.getElementById("messageInput")
+.addEventListener(
+"keypress",
+function(event){
+
+  if(event.key==="Enter")
+    sendMessage();
+
+});
+
+
+/* ================= QUERY ================= */
+
+let q;
+
+
+if(isAdmin){
+
+  q=query(
+    collection(db,"messages"),
+    orderBy("createdAt","asc")
+  );
+
+}else{
+
+  q=query(
+    collection(db,"messages"),
+    where(
+      "createdAt",
+      ">=",
+      Date.now()-45000
+    ),
+    orderBy("createdAt","asc")
+  );
+
+}
+
+
+/* ================= MESSAGE ELEMENTS ================= */
+
+const messageElements={};
+
+const pageLoadTime=Date.now();
+
+
+/* ================= SNAPSHOT ================= */
+
+onSnapshot(
+q,
+{includeMetadataChanges:true},
+(snapshot)=>{
+
+  const messagesContainer =
+  document.getElementById(
+    "messages"
+  );
+
+
+  snapshot.docChanges()
+  .forEach((change)=>{
+
+    const docId =
+    change.doc.id;
+
+    const data =
+    change.doc.data();
+
+
+    /* ---------- ADD ---------- */
+
+    if(change.type==="added"){
+
+      if(messageElements[docId])
+        return;
+
+
+      if(
+        !isAdmin &&
+        blockIncomingFromAdmin &&
+        data.isAdminMessage
+      )
+        return;
+
+
+      /* Wrapper */
+
+      const wrapperDiv =
+      document.createElement("div");
+
+      wrapperDiv.id=
+      "wrap_"+docId;
+
+      wrapperDiv.className=
+      "message-wrapper";
+
+
+      /* Message */
+
+      const messageDiv =
+      document.createElement("div");
+
+      messageDiv.id=
+      "msg_"+docId;
+
+      messageDiv.className=
+      "message";
+
+
+      /* Avatar */
+
+      const avatarDiv =
+      document.createElement("div");
+
+      avatarDiv.className=
+      "comment-avatar";
+
+
+      if(data.isAdminMessage){
+
+        avatarDiv.textContent="ل";
+
+        avatarDiv.style.background=
+        "#5878a4";
+
+      }else{
+
+        avatarDiv.textContent="ش";
+
+        avatarDiv.style.background=
+        "#6f9b7c";
+
+      }
+
+
+      messageDiv.appendChild(
+        avatarDiv
+      );
+
+
+      /* Body */
+
+      const bodyDiv =
+      document.createElement("div");
+
+      bodyDiv.className=
+      "comment-body";
+
+
+      /* Header */
+
+      const headerInfo =
+      document.createElement("div");
+
+      headerInfo.className=
+      "comment-header-info";
+
+
+      const userSpan =
+      document.createElement("span");
+
+      userSpan.className=
+      "comment-username";
+
+
+      if(data.isAdminMessage){
+
+        userSpan.classList.add(
+          "admin-name"
+        );
+
+        userSpan.textContent=
+        "@المدير";
+
+      }else{
+
+        userSpan.textContent=
+        "@زائر";
+
+      }
+
+
+      headerInfo.appendChild(
+        userSpan
+      );
+
+
+      const timeSpan =
+      document.createElement("span");
+
+      timeSpan.className=
+      "comment-time";
+
+      timeSpan.textContent=
+      "• الآن";
+
+
+      headerInfo.appendChild(
+        timeSpan
+      );
+
+
+      bodyDiv.appendChild(
+        headerInfo
+      );
+
+
+      /* Text */
+
+      const textSpan =
+      document.createElement("span");
+
+      textSpan.className=
+      "message-text";
+
+      textSpan.textContent=
+      data.text;
+
+
+      bodyDiv.appendChild(
+        textSpan
+      );
+
+
+      /* Actions */
+
+      const actionsDiv =
+      document.createElement("div");
+
+      actionsDiv.className=
+      "comment-actions";
+
+
+      const actionButtonsGroup =
+      document.createElement("div");
+
+      actionButtonsGroup.className=
+      "action-buttons-group";
+
+
+      const likeBtn =
+      document.createElement("button");
+
+      likeBtn.className=
+      "action-btn";
+
+      likeBtn.innerHTML=
+      "👍 <span>1</span>";
+
+
+      actionButtonsGroup.appendChild(
+        likeBtn
+      );
+
+
+      const dislikeBtn =
+      document.createElement("button");
+
+      dislikeBtn.className=
+      "action-btn";
+
+      dislikeBtn.innerHTML=
+      "👎";
+
+
+      actionButtonsGroup.appendChild(
+        dislikeBtn
+      );
+
+
+      actionsDiv.appendChild(
+        actionButtonsGroup
+      );
+
+
+      /* Timer */
+
+      if(!isAdmin){
+
+        const timerSpan =
+        document.createElement("span");
+
+        timerSpan.className=
+        "timer-text";
+
+
+        actionsDiv.appendChild(
+          timerSpan
+        );
+
+
+        wrapperDiv.dataset.createdAt=
+        data.createdAt;
+
+      }
+
+
+      bodyDiv.appendChild(
+        actionsDiv
+      );
+
+
+      messageDiv.appendChild(
+        bodyDiv
+      );
+
+      wrapperDiv.appendChild(
+        messageDiv
+      );
+
+
+      messagesContainer.appendChild(
+        wrapperDiv
+      );
+
+
+      messagesContainer.scrollTop=
+      messagesContainer.scrollHeight;
+
+
+      messageElements[docId]={
+        element:wrapperDiv,
+        data:data
+      };
+
+
+      /* Mark read */
+
+      if(
+        isAdmin &&
+        !data.isAdminMessage &&
+        !data.read
+      ){
+
+        updateDoc(
+          doc(db,"messages",docId),
+          {read:true}
+        );
+
+      }
+
+
+      /* Sound */
+
+      if(
+        isAdmin &&
+        data.createdAt>pageLoadTime &&
+        data.senderId!==myId
+      ){
+
+        const sound =
+        document.getElementById(
+          "notificationSound"
+        );
+
+
+        if(sound){
+
+          sound.currentTime=0;
+
+          sound.play()
+          .catch(()=>{});
+
         }
-      }, 1000);
+
+      }
+
     }
-  </script>
+
+
+    /* ---------- REMOVE ---------- */
+
+    else if(
+      change.type==="removed"
+    ){
+
+      if(messageElements[docId]){
+
+        messageElements[docId]
+        .element.remove();
+
+        delete messageElements[docId];
+
+      }
+
+    }
+
+  });
+
+});
+
+
+/* ================= VISITOR TIMER ================= */
+
+if(!isAdmin){
+
+  setInterval(()=>{
+
+    const now=Date.now();
+
+
+    for(
+      const docId in messageElements
+    ){
+
+      const item=
+      messageElements[docId];
+
+
+      const timeLeft=
+      35000-
+      (now-item.data.createdAt);
+
+
+      if(timeLeft<=0){
+
+        item.element.remove();
+
+        delete messageElements[docId];
+
+      }else{
+
+        const timerSpan=
+        item.element.querySelector(
+          ".timer-text"
+        );
+
+
+        if(timerSpan){
+
+          timerSpan.textContent=
+          Math.ceil(
+            timeLeft/1000
+          )+" ث";
+
+        }
+
+      }
+
+    }
+
+  },1000);
+
+}
+
+</script>
 
 </body>
 </html>
