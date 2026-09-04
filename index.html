@@ -3,1696 +3,371 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>الردود</title>
-
 <style>
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-}
-
-:root{
-  --primary:#5878a4;
-  --primary-dark:#456487;
-  --green:#6f9b7c;
-  --red:#d47777;
-  --bg:#eef2f6;
-  --surface:#ffffff;
-  --text:#263342;
-  --muted:#8a96a3;
-  --border:#e7ecf1;
-}
-
-html,body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:var(--bg);
-  color:var(--text);
-}
-
-body{
-  display:flex;
-  justify-content:center;
-}
-
-.app{
-  width:100%;
-  max-width:520px;
-  height:100dvh;
-  background:#f7f9fb;
-  display:flex;
-  flex-direction:column;
-  position:relative;
-  overflow:hidden;
-  box-shadow:0 0 35px rgba(30,50,70,.08);
-}
+*{ box-sizing:border-box; margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
+:root{ --primary:#5878a4; --primary-dark:#456487; --green:#6f9b7c; --red:#d47777; --bg:#eef2f6; --surface:#ffffff; --text:#263342; --muted:#8a96a3; --border:#e7ecf1; }
+html,body{ width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--text); }
+body{ display:flex; justify-content:center; }
+.app{ width:100%; max-width:520px; height:100dvh; background:#f7f9fb; display:flex; flex-direction:column; position:relative; overflow:hidden; box-shadow:0 0 35px rgba(30,50,70,.08); }
 
 /* ================= HEADER ================= */
-
-.header{
-  height:66px;
-  flex-shrink:0;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:10px 15px;
-  background:rgba(255,255,255,.96);
-  border-bottom:1px solid var(--border);
-  z-index:20;
-}
-
-.header-title{
-  display:flex;
-  align-items:center;
-  gap:11px;
-}
-
-.back-arrow{
-  width:36px;
-  height:36px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  border-radius:12px;
-  background:#f2f5f8;
-  color:#647180;
-  font-size:21px;
-}
-
-.title-area{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-
-.title{
-  font-size:17px;
-  font-weight:700;
-  color:#263342;
-}
-
-.subtitle{
-  font-size:10px;
-  color:#93a0ad;
-}
-
-.status-dot{
-  width:9px;
-  height:9px;
-  border-radius:50%;
-  background:var(--red);
-  box-shadow:0 0 0 4px rgba(212,119,119,.10);
-}
+.header{ height:66px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:10px 15px; background:rgba(255,255,255,.96); border-bottom:1px solid var(--border); z-index:20; }
+.header-title{ display:flex; align-items:center; gap:11px; }
+.back-arrow{ width:36px; height:36px; display:flex; justify-content:center; align-items:center; border-radius:12px; background:#f2f5f8; color:#647180; font-size:21px; }
+.title-area{ display:flex; flex-direction:column; gap:2px; }
+.title{ font-size:17px; font-weight:700; color:#263342; }
+.subtitle{ font-size:10px; color:#93a0ad; }
+.status-dot{ width:9px; height:9px; border-radius:50%; background:var(--red); box-shadow:0 0 0 4px rgba(212,119,119,.10); }
 
 /* Header actions */
+.header-actions{ display:flex; align-items:center; gap:7px; position:relative; }
+.mute-btn, .call-btn{ width:38px; height:38px; border:0; border-radius:13px; color:white; cursor:pointer; font-size:16px; display:flex; justify-content:center; align-items:center; transition:.2s; }
+.mute-btn{ background:var(--green); box-shadow:0 5px 13px rgba(111,155,124,.20); }
+.call-btn{ background:var(--primary); box-shadow:0 5px 13px rgba(88,120,164,.20); }
+.mute-btn:active, .call-btn:active{ transform:scale(.92); }
 
-.header-actions{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  position:relative;
-}
-
-.mute-btn{
-  width:38px;
-  height:38px;
-  border:0;
-  border-radius:13px;
-  background:var(--green);
-  color:white;
-  cursor:pointer;
-  font-size:16px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  box-shadow:0 5px 13px rgba(111,155,124,.20);
-  transition:.2s;
-}
-
-.mute-btn:active{
-  transform:scale(.92);
-}
-
-.users-counter{
-  display:none;
-  align-items:center;
-  gap:5px;
-  background:#f1f4f7;
-  border:1px solid #e7ecf1;
-  border-radius:12px;
-  padding:7px 10px;
-  font-size:12px;
-  color:#667382;
-}
-
-.menu-btn{
-  display:none;
-  width:37px;
-  height:37px;
-  border:0;
-  border-radius:12px;
-  background:#f2f5f8;
-  color:#5f6b77;
-  font-size:22px;
-  cursor:pointer;
-}
+.users-counter{ display:none; align-items:center; gap:5px; background:#f1f4f7; border:1px solid #e7ecf1; border-radius:12px; padding:7px 10px; font-size:12px; color:#667382; }
+.menu-btn{ display:none; width:37px; height:37px; border:0; border-radius:12px; background:#f2f5f8; color:#5f6b77; font-size:22px; cursor:pointer; }
 
 /* ================= DROPDOWN ================= */
-
-.dropdown-menu{
-  position:absolute;
-  top:48px;
-  left:0;
-  width:275px;
-  background:white;
-  border:1px solid var(--border);
-  border-radius:17px;
-  box-shadow:0 15px 40px rgba(30,45,65,.15);
-  display:none;
-  flex-direction:column;
-  z-index:1000;
-  overflow:hidden;
-  padding:12px;
-}
-
-.dropdown-title{
-  font-size:12px;
-  font-weight:700;
-  color:var(--primary);
-  text-align:center;
-  padding:5px 0 11px;
-  border-bottom:1px solid #edf1f4;
-}
-
-.log-item{
-  font-size:12px;
-  color:#66717d;
-  padding:10px 4px;
-  border-bottom:1px dashed #edf1f4;
-}
-
-.log-row{
-  display:flex;
-  justify-content:space-between;
-  margin:4px 0;
-}
-
-.status-dot{
-  flex-shrink:0;
-}
+.dropdown-menu{ position:absolute; top:48px; left:0; width:275px; background:white; border:1px solid var(--border); border-radius:17px; box-shadow:0 15px 40px rgba(30,45,65,.15); display:none; flex-direction:column; z-index:1000; overflow:hidden; padding:12px; }
+.dropdown-title{ font-size:12px; font-weight:700; color:var(--primary); text-align:center; padding:5px 0 11px; border-bottom:1px solid #edf1f4; }
+.log-item{ font-size:12px; color:#66717d; padding:10px 4px; border-bottom:1px dashed #edf1f4; }
+.log-row{ display:flex; justify-content:space-between; margin:4px 0; }
 
 /* ================= TICKER ================= */
-
-.ticker-container{
-  display:none;
-  height:34px;
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  overflow:hidden;
-  white-space:nowrap;
-  color:var(--primary);
-  font-size:11px;
-  font-weight:600;
-  position:relative;
-}
-
-.ticker-track{
-  height:100%;
-  display:inline-flex;
-  align-items:center;
-  animation:ticker 24s linear infinite;
-}
-
-.ticker-group{
-  display:inline-flex;
-  align-items:center;
-  gap:35px;
-  padding-right:35px;
-  flex-shrink:0;
-}
-
-@keyframes ticker{
-  from{transform:translateX(0)}
-  to{transform:translateX(-50%)}
-}
+.ticker-container{ display:none; height:34px; background:#fff; border-bottom:1px solid var(--border); overflow:hidden; white-space:nowrap; color:var(--primary); font-size:11px; font-weight:600; position:relative; }
+.ticker-track{ height:100%; display:inline-flex; align-items:center; animation:ticker 24s linear infinite; }
+.ticker-group{ display:inline-flex; align-items:center; gap:35px; padding-right:35px; flex-shrink:0; }
+@keyframes ticker{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
 /* ================= MESSAGES ================= */
-
-.messages{
-  flex:1;
-  overflow-y:auto;
-  padding:20px 15px 16px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  scroll-behavior:smooth;
-  background:
-    radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%),
-    #f7f9fb;
-}
-
-.messages::-webkit-scrollbar{
-  width:4px;
-}
-
-.messages::-webkit-scrollbar-thumb{
-  background:#d8e0e7;
-  border-radius:10px;
-}
-
-.message-wrapper{
-  position:relative;
-  width:100%;
-  animation:messageIn .25s ease;
-}
-
-@keyframes messageIn{
-  from{
-    opacity:0;
-    transform:translateY(7px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-}
-
-.message{
-  width:100%;
-  display:flex;
-  align-items:flex-start;
-  gap:10px;
-  background:rgba(255,255,255,.95);
-  border:1px solid #e9edf1;
-  border-radius:18px;
-  padding:11px;
-  box-shadow:0 3px 12px rgba(30,50,70,.035);
-  transition:.2s;
-}
-
-.message:hover{
-  box-shadow:0 5px 18px rgba(30,50,70,.07);
-}
-
-.comment-avatar{
-  width:38px;
-  height:38px;
-  min-width:38px;
-  border-radius:13px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  color:white;
-  font-weight:700;
-  font-size:14px;
-  box-shadow:0 4px 10px rgba(30,50,70,.10);
-}
-
-.comment-body{
-  flex:1;
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-
-.comment-header-info{
-  display:flex;
-  align-items:center;
-  gap:7px;
-}
-
-.comment-username{
-  background:#3f4a56 !important;
-  color:white !important;
-  padding:4px 9px;
-  border-radius:8px;
-  font-size:10px;
-  font-weight:600;
-}
-
-.comment-username.admin-name{
-  background:var(--primary) !important;
-}
-
-.comment-time{
-  font-size:10px;
-  color:#a0aab4;
-}
-
-.message-text{
-  font-size:14px;
-  line-height:1.65;
-  color:#303b47;
-  word-break:break-word;
-}
-
-.comment-actions{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:3px;
-}
-
-.action-buttons-group{
-  display:flex;
-  gap:13px;
-}
-
-.action-btn{
-  background:none;
-  border:0;
-  color:#8b96a1;
-  cursor:pointer;
-  font-size:11px;
-  padding:3px;
-  transition:.2s;
-}
-
-.action-btn:hover{
-  color:var(--primary);
-}
-
-.timer-text{
-  color:#b66c6c;
-  background:#fff3f3;
-  border:1px solid #f6e0e0;
-  padding:3px 7px;
-  border-radius:7px;
-  font-size:10px;
-  font-weight:700;
-}
+.messages{ flex:1; overflow-y:auto; padding:20px 15px 16px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; background: radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%), #f7f9fb; }
+.messages::-webkit-scrollbar{ width:4px; }
+.messages::-webkit-scrollbar-thumb{ background:#d8e0e7; border-radius:10px; }
+.message-wrapper{ position:relative; width:100%; animation:messageIn .25s ease; }
+@keyframes messageIn{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:translateY(0); } }
+.message{ width:100%; display:flex; align-items:flex-start; gap:10px; background:rgba(255,255,255,.95); border:1px solid #e9edf1; border-radius:18px; padding:11px; box-shadow:0 3px 12px rgba(30,50,70,.035); transition:.2s; }
+.comment-avatar{ width:38px; height:38px; min-width:38px; border-radius:13px; display:flex; justify-content:center; align-items:center; color:white; font-weight:700; font-size:14px; box-shadow:0 4px 10px rgba(30,50,70,.10); }
+.comment-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+.comment-header-info{ display:flex; align-items:center; gap:7px; }
+.comment-username{ background:#3f4a56 !important; color:white !important; padding:4px 9px; border-radius:8px; font-size:10px; font-weight:600; }
+.comment-username.admin-name{ background:var(--primary) !important; }
+.comment-time{ font-size:10px; color:#a0aab4; }
+.message-text{ font-size:14px; line-height:1.65; color:#303b47; word-break:break-word; }
+.comment-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:3px; }
+.action-buttons-group{ display:flex; gap:13px; }
+.action-btn{ background:none; border:0; color:#8b96a1; cursor:pointer; font-size:11px; padding:3px; transition:.2s; }
+.timer-text{ color:#b66c6c; background:#fff3f3; border:1px solid #f6e0e0; padding:3px 7px; border-radius:7px; font-size:10px; font-weight:700; }
 
 /* ================= INPUT ================= */
+.input-area{ flex-shrink:0; display:flex; align-items:center; gap:9px; padding:10px 13px; background:rgba(255,255,255,.97); border-top:1px solid var(--border); box-shadow:0 -5px 20px rgba(30,50,70,.035); }
+input{ flex:1; min-width:0; height:45px; border:1px solid #dfe5ea; border-radius:15px; outline:none; padding:0 16px; font-size:13px; background:#f8fafb; color:#303b47; transition:.2s; }
+input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(88,120,164,.07); }
+.icon-btn{ width:45px; height:45px; min-width:45px; border:0; border-radius:15px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:.2s; }
+.mic-btn{ background:#f2f5f8; color:#647180; }
+.mic-btn.recording{ background:var(--red); color:white; animation:pulse 1s infinite; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.send-btn{ background:var(--primary); color:white; box-shadow:0 5px 14px rgba(88,120,164,.22); }
+.send-btn:hover{ background:var(--primary-dark); }
 
-.input-area{
-  flex-shrink:0;
-  display:flex;
-  align-items:center;
-  gap:9px;
-  padding:10px 13px;
-  background:rgba(255,255,255,.97);
-  border-top:1px solid var(--border);
-  box-shadow:0 -5px 20px rgba(30,50,70,.035);
-}
-
-input{
-  flex:1;
-  min-width:0;
-  height:45px;
-  border:1px solid #dfe5ea;
-  border-radius:15px;
-  outline:none;
-  padding:0 16px;
-  font-size:13px;
-  background:#f8fafb;
-  color:#303b47;
-  transition:.2s;
-}
-
-input::placeholder{
-  color:#a0aab4;
-}
-
-input:focus{
-  border-color:#9db0c5;
-  background:white;
-  box-shadow:0 0 0 3px rgba(88,120,164,.07);
-}
-
-button.send-btn{
-  width:45px;
-  height:45px;
-  min-width:45px;
-  border:0;
-  border-radius:15px;
-  background:var(--primary);
-  color:white;
-  cursor:pointer;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  box-shadow:0 5px 14px rgba(88,120,164,.22);
-  transition:.2s;
-}
-
-button.send-btn:hover{
-  background:var(--primary-dark);
-}
-
-button.send-btn:active{
-  transform:scale(.92);
-}
-
-/* ================= BLOCK SCREEN ================= */
-
-#blockScreen{
-  position:fixed;
-  inset:0;
-  background:#f7f9fb;
-  display:none;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  padding:30px;
-  z-index:9999;
-  color:#384553;
-}
-
-.block-card{
-  max-width:380px;
-  background:white;
-  border:1px solid var(--border);
-  border-radius:25px;
-  padding:30px 24px;
-  box-shadow:0 15px 45px rgba(30,50,70,.10);
-}
-
-.block-icon{
-  width:65px;
-  height:65px;
-  border-radius:20px;
-  background:#fff1f1;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:28px;
-  margin:0 auto 18px;
-}
-
-.block-title{
-  font-size:18px;
-  font-weight:700;
-  margin-bottom:10px;
-}
-
-.block-text{
-  font-size:13px;
-  line-height:1.8;
-  color:#8995a0;
-}
-
-/* ================= MOBILE ================= */
-
-@media(max-width:520px){
-
-  .app{
-    max-width:none;
-    box-shadow:none;
-  }
-
-  .header{
-    height:62px;
-    padding:9px 12px;
-  }
-
-  .messages{
-    padding:15px 11px;
-  }
-
-  .message{
-    border-radius:16px;
-    padding:10px;
-  }
-
-  .message-text{
-    font-size:13.5px;
-  }
-
-  .input-area{
-    padding:9px 10px;
-  }
-
-  input{
-    height:44px;
-  }
-
-  button.send-btn{
-    width:44px;
-    min-width:44px;
-    height:44px;
-  }
-}
+/* ================= MODAL / OVERLAYS ================= */
+#blockScreen, #callScreen{ position:fixed; inset:0; background:#f7f9fb; display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
+.block-card{ max-width:380px; background:white; border:1px solid var(--border); border-radius:25px; padding:30px 24px; box-shadow:0 15px 45px rgba(30,50,70,.10); }
+.block-icon{ width:65px; height:65px; border-radius:20px; background:#fff1f1; display:flex; justify-content:center; align-items:center; font-size:28px; margin:0 auto 18px; }
+.block-title{ font-size:18px; font-weight:700; margin-bottom:10px; }
+.block-text{ font-size:13px; line-height:1.8; color:#8995a0; }
+.call-actions{ display:flex; gap:15px; margin-top:20px; justify-content:center; }
+.end-call-btn{ background:var(--red); color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700; }
 </style>
 </head>
-
 <body>
 
 <div id="blockScreen">
   <div class="block-card">
     <div class="block-icon">🔒</div>
     <div class="block-title">الشات مشغول حالياً</div>
-    <div class="block-text">
-      يوجد مستخدم آخر يتحدث مع المدير في الوقت الحالي.<br>
-      يُسمح لمستخدم واحد فقط بالتحدث مع المدير في نفس الوقت.<br>
-      <br>
-      الرجاء المحاولة لاحقاً.
+    <div class="block-text">يوجد مستخدم آخر يتحدث مع المدير في الوقت الحالي.<br>الرجاء المحاولة لاحقاً.</div>
+  </div>
+</div>
+
+<div id="callScreen">
+  <div class="block-card">
+    <div class="block-icon" style="background:#eef2f6;">📞</div>
+    <div class="block-title">مكالمة صوتية جارية</div>
+    <div class="block-text" id="callStatusText">جاري الاتصال بالمدير...</div>
+    <div class="call-actions">
+      <button class="end-call-btn" onclick="endCall()">إنهاء المكالمة</button>
     </div>
   </div>
 </div>
 
 <div class="app">
-
   <!-- HEADER -->
   <div class="header">
-
     <div class="header-title">
-
       <span class="back-arrow">←</span>
-
       <div class="title-area">
         <div class="title">الردود</div>
-        <div class="subtitle">المحادثة المباشرة</div>
+        <div class="subtitle">المحادثة المباشرة مع الميزات الجديدة</div>
       </div>
-
       <span id="statusDot" class="status-dot"></span>
-
     </div>
-
     <div class="header-actions">
-
-      <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">
-        🔔
-      </button>
-
-      <div id="usersCounter" class="users-counter">
-        👤 <span id="onlineCount">0</span>
-      </div>
-
-      <button id="menuBtn" class="menu-btn">
-        ⋮
-      </button>
-
+      <button id="callBtn" class="call-btn" title="اتصال صوتي" onclick="startCall()">📞</button>
+      <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
+      <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">0</span></div>
+      <button id="menuBtn" class="menu-btn">⋮</button>
       <div id="dropdownMenu" class="dropdown-menu">
-
-        <div class="dropdown-title">
-          سجل دخول وخروج الزائر
-        </div>
-
+        <div class="dropdown-title">سجل دخول وخروج الزائر</div>
         <div id="visitorLogContainer">
-          <div class="log-item">
-            جاري التحميل...
-          </div>
+          <div class="log-item">جاري التحميل...</div>
         </div>
-
       </div>
-
     </div>
   </div>
-
 
   <!-- TICKER -->
   <div id="tickerContainer" class="ticker-container">
-
     <div class="ticker-track">
-
       <div class="ticker-group">
-        <span>سبحان الله 📿</span>
-        <span>الحمد لله 📿</span>
-        <span>الله أكبر 📿</span>
-        <span>استغفر الله 📿</span>
+        <span>سبحان الله 📿</span> <span>الحمد لله 📿</span> <span>الله أكبر 📿</span> <span>استغفر الله 📿</span>
       </div>
-
       <div class="ticker-group">
-        <span>سبحان الله 📿</span>
-        <span>الحمد لله 📿</span>
-        <span>الله أكبر 📿</span>
-        <span>استغفر الله 📿</span>
+        <span>سبحان الله 📿</span> <span>الحمد لله 📿</span> <span>الله أكبر 📿</span> <span>استغفر الله 📿</span>
       </div>
-
     </div>
   </div>
-
 
   <!-- MESSAGES -->
   <div class="messages" id="messages"></div>
 
-
   <!-- INPUT -->
   <div class="input-area">
-
-    <input
-      type="text"
-      id="messageInput"
-      placeholder="اكتب رسالتك هنا..."
-      autocomplete="off"
-    >
-
-    <button
-      class="send-btn"
-      onclick="sendMessage()"
-      title="إرسال"
-    >
-
-      <svg
-        height="18"
-        viewBox="0 0 24 24"
-        width="18"
-        fill="#ffffff"
-      >
-        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-      </svg>
-
+    <input type="text" id="messageInput" placeholder="اكتب رسالتك أو سجل ريكورد..." autocomplete="off">
+    <button id="micBtn" class="icon-btn mic-btn" title="تسجيل صوتي" onclick="toggleRecord()">🎤</button>
+    <button class="icon-btn send-btn" onclick="sendMessage()" title="إرسال">
+      <svg height="18" viewBox="0 0 24 24" width="18" fill="#ffffff"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
     </button>
-
   </div>
-
 </div>
 
-
-<audio
-  id="notificationSound"
-  src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
-  preload="auto">
-</audio>
-
+<audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
 <script type="module">
-
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  where,
-  onSnapshot,
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-
-
-/* ================= FIREBASE ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
-
   apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
-
   authDomain:"chat-site-2911b.firebaseapp.com",
-
-  databaseURL:
-  "https://chat-site-2911b-default-rtdb.firebaseio.com",
-
+  databaseURL: "https://chat-site-2911b-default-rtdb.firebaseio.com",
   projectId:"chat-site-2911b",
-
-  storageBucket:
-  "chat-site-2911b.firebasestorage.app",
-
+  storageBucket: "chat-site-2911b.firebasestorage.app",
   messagingSenderId:"7306613696",
-
-  appId:
-  "1:7306613696:web:5479f7634c7e903bbdae25",
-
+  appId: "1:7306613696:web:5479f7634c7e903bbdae25",
   measurementId:"G-KZ4L2JHQN4"
 };
 
-
 const app = initializeApp(firebaseConfig);
-
 const db = getFirestore(app);
 
-
-/* ================= VARIABLES ================= */
-
 let blockIncomingFromAdmin = false;
-
-const urlParams =
-new URLSearchParams(window.location.search);
-
-
-if(urlParams.get("admin")==="mysecret123"){
-
-  localStorage.setItem("is_admin","true");
-
-}
-
-
-const isAdmin =
-localStorage.getItem("is_admin")==="true";
-
-
-const bellBtn =
-document.getElementById("bellBtn");
-
-const menuBtn =
-document.getElementById("menuBtn");
-
-const dropdownMenu =
-document.getElementById("dropdownMenu");
-
-
-/* ================= ROLE ================= */
+const urlParams = new URLSearchParams(window.location.search);
+if(urlParams.get("admin")==="mysecret123"){ localStorage.setItem("is_admin","true"); }
+const isAdmin = localStorage.getItem("is_admin")==="true";
+const bellBtn = document.getElementById("bellBtn");
+const menuBtn = document.getElementById("menuBtn");
+const dropdownMenu = document.getElementById("dropdownMenu");
 
 if(isAdmin){
-
-  document.getElementById("usersCounter")
-  .style.display="flex";
-
+  document.getElementById("usersCounter").style.display="flex";
   menuBtn.style.display="block";
-
 }else{
-
-  document.getElementById("tickerContainer")
-  .style.display="block";
-
+  document.getElementById("tickerContainer").style.display="block";
 }
-
-
-/* ================= MENU ================= */
 
 menuBtn.addEventListener("click",(e)=>{
-
   e.stopPropagation();
-
-  dropdownMenu.style.display =
-  dropdownMenu.style.display==="flex"
-  ? "none"
-  : "flex";
-
+  dropdownMenu.style.display = dropdownMenu.style.display==="flex" ? "none" : "flex";
 });
+window.addEventListener("click",()=>{ dropdownMenu.style.display="none"; });
 
-
-window.addEventListener("click",()=>{
-
-  dropdownMenu.style.display="none";
-
-});
-
-
-/* ================= USER ID ================= */
-
-let myId =
-localStorage.getItem("chat_user_id");
-
-
+let myId = localStorage.getItem("chat_user_id");
 if(!myId){
-
-  myId =
-  "user_"+Math.random()
-  .toString(36)
-  .substring(2);
-
-  localStorage.setItem(
-    "chat_user_id",
-    myId
-  );
-
+  myId = "user_"+Math.random().toString(36).substring(2);
+  localStorage.setItem("chat_user_id", myId);
 }
 
-
-/* ================= BELL ================= */
-
-bellBtn.addEventListener(
-"click",
-async function(){
-
+bellBtn.addEventListener("click", async function(){
   if(isAdmin) return;
-
-  const bellStatusRef =
-  doc(db,"status","bell_alert");
-
+  const bellStatusRef = doc(db,"status","bell_alert");
   try{
-
-    const docSnap =
-    await getDoc(bellStatusRef);
-
+    const docSnap = await getDoc(bellStatusRef);
     let currentState="green";
-
-    if(docSnap.exists())
-      currentState =
-      docSnap.data().state || "green";
-
-    const newState =
-      currentState==="red"
-      ? "green"
-      : "red";
-
-    await setDoc(
-      bellStatusRef,
-      {
-        state:newState,
-        timestamp:Date.now()
-      }
-    );
-
+    if(docSnap.exists()) currentState = docSnap.data().state || "green";
+    const newState = currentState==="red" ? "green" : "red";
+    await setDoc(bellStatusRef, { state:newState, timestamp:Date.now() });
   }catch(e){}
-
 });
 
-
-/* ================= BELL LISTENER ================= */
-
-const bellStatusRef =
-doc(db,"status","bell_alert");
-
-
-onSnapshot(
-bellStatusRef,
-(docSnap)=>{
-
+const bellStatusRef = doc(db,"status","bell_alert");
+onSnapshot(bellStatusRef, (docSnap)=>{
   if(!docSnap.exists()) return;
-
-  const state =
-  docSnap.data().state || "green";
-
-
+  const state = docSnap.data().state || "green";
   if(state==="red"){
-
     bellBtn.style.background="#d47777";
-
-    bellBtn.style.boxShadow=
-    "0 0 16px rgba(212,119,119,.65)";
-
-
-    if(!isAdmin){
-
-      blockIncomingFromAdmin=true;
-
-      for(const docId in messageElements){
-
-        messageElements[docId]
-        .element.remove();
-
-        delete messageElements[docId];
-
-      }
-
-    }
-
-
-    if(isAdmin){
-
-      const sound =
-      document.getElementById(
-        "notificationSound"
-      );
-
-      if(sound){
-
-        sound.currentTime=0;
-
-        sound.play().catch(()=>{});
-
-      }
-
-    }
-
+    bellBtn.style.boxShadow= "0 0 16px rgba(212,119,119,.65)";
   }else{
-
     bellBtn.style.background="#6f9b7c";
-
-    bellBtn.style.boxShadow=
-    "0 0 12px rgba(111,155,124,.25)";
-
-    if(!isAdmin)
-      blockIncomingFromAdmin=false;
-
+    bellBtn.style.boxShadow= "0 0 12px rgba(111,155,124,.25)";
   }
-
 });
 
-
-/* ================= VISITOR STATUS ================= */
-
-const activeVisitorDocRef =
-doc(db,"status","active_visitor");
-
-
-const logContainer =
-document.getElementById(
-  "visitorLogContainer"
-);
-
-
-const loginTimeStr =
-new Date().toLocaleTimeString(
-  "ar-EG",
-  {
-    hour:"2-digit",
-    minute:"2-digit"
-  }
-);
-
-
-/* ================= ADMIN STATUS ================= */
+const activeVisitorDocRef = doc(db,"status","active_visitor");
+const logContainer = document.getElementById("visitorLogContainer");
+const loginTimeStr = new Date().toLocaleTimeString("ar-EG", { hour:"2-digit", minute:"2-digit" });
 
 if(isAdmin){
-
-  const adminStatusRef =
-  doc(db,"status","admin_status");
-
-
-  setDoc(
-    adminStatusRef,
-    {
-      online:true,
-      lastSeen:Date.now()
-    }
-  );
-
-
-  setInterval(()=>{
-
-    setDoc(
-      adminStatusRef,
-      {
-        online:true,
-        lastSeen:Date.now()
-      },
-      {merge:true}
-    );
-
-  },4000);
-
-
-  onSnapshot(
-  activeVisitorDocRef,
-  (docSnap)=>{
-
-    const countSpan =
-    document.getElementById(
-      "onlineCount"
-    );
-
-
-    if(docSnap.exists()){
-
-      const data =
-      docSnap.data();
-
-
-      if(
-        data.active &&
-        Date.now()-data.lastSeen<6000
-      ){
-
-        countSpan.textContent="1";
-
-
-        logContainer.innerHTML=`
-
-          <div class="log-item">
-
-            <div
-              class="log-row"
-              style="
-              color:#6f9b7c;
-              font-weight:700;
-              "
-            >
-              <span>🟢 متصل حالياً</span>
-            </div>
-
-            <div class="log-row">
-
-              <span>دخل في:</span>
-
-              <span>
-                ${data.loginTime || "غير متوفر"}
-              </span>
-
-            </div>
-
-          </div>
-
-        `;
-
-      }else{
-
-        countSpan.textContent="0";
-
-
-        let logoutDisplay =
-        data.logoutTime
-        ?
-        `<span>خرج في:</span>
-         <span>${data.logoutTime}</span>`
-        :
-        `<span>لم يحدد وقت خروج</span>`;
-
-
-        let loginDisplay =
-        data.loginTime
-        ?
-        `<span>دخل في:</span>
-         <span>${data.loginTime}</span>`
-        :
-        "";
-
-
-        logContainer.innerHTML=`
-
-          <div class="log-item">
-
-            <div
-              class="log-row"
-              style="
-              color:#8d969f;
-              font-weight:700;
-              "
-            >
-              <span>⚪ غادر الموقع</span>
-            </div>
-
-            <div class="log-row">
-              ${loginDisplay}
-            </div>
-
-            <div class="log-row">
-              ${logoutDisplay}
-            </div>
-
-          </div>
-
-        `;
-
-      }
-
-    }else{
-
-      countSpan.textContent="0";
-
-      logContainer.innerHTML=`
-        <div
-          class="log-item"
-          style="
-          color:#888;
-          text-align:center;
-          "
-        >
-          لا يوجد سجلات حتى الآن
-        </div>
-      `;
-
-    }
-
-  });
-
-}
-
-
-/* ================= VISITOR ================= */
-
-else{
-
+  const adminStatusRef = doc(db,"status","admin_status");
+  setDoc(adminStatusRef, { online:true, lastSeen:Date.now() });
+  setInterval(()=>{ setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); },4000);
+} else {
   async function registerVisitor(){
-
     try{
-
-      const docSnap =
-      await getDoc(
-        activeVisitorDocRef
-      );
-
-
-      if(
-        docSnap.exists() &&
-        docSnap.data().active &&
-        Date.now()-docSnap.data().lastSeen<6000 &&
-        docSnap.data().userId!==myId
-      ){
-
-        document.getElementById(
-          "blockScreen"
-        ).style.display="flex";
-
+      const docSnap = await getDoc(activeVisitorDocRef);
+      if(docSnap.exists() && docSnap.data().active && Date.now()-docSnap.data().lastSeen<6000 && docSnap.data().userId!==myId){
+        document.getElementById("blockScreen").style.display="flex";
         return;
-
       }
-
-
-      await setDoc(
-        activeVisitorDocRef,
-        {
-          active:true,
-          userId:myId,
-          loginTime:loginTimeStr,
-          logoutTime:"",
-          lastSeen:Date.now()
-        }
-      );
-
-
+      await setDoc(activeVisitorDocRef, { active:true, userId:myId, loginTime:loginTimeStr, logoutTime:"", lastSeen:Date.now() });
       setInterval(async()=>{
-
         try{
-
-          await setDoc(
-            activeVisitorDocRef,
-            {
-              active:true,
-              userId:myId,
-              loginTime:loginTimeStr,
-              lastSeen:Date.now()
-            },
-            {merge:true}
-          );
-
+          await setDoc(activeVisitorDocRef, { active:true, userId:myId, loginTime:loginTimeStr, lastSeen:Date.now() }, {merge:true});
         }catch(e){}
-
       },3000);
-
-
-      window.addEventListener(
-      "beforeunload",
-      ()=>{
-
-        const logoutTimeStr =
-        new Date().toLocaleTimeString(
-          "ar-EG",
-          {
-            hour:"2-digit",
-            minute:"2-digit"
-          }
-        );
-
-
-        setDoc(
-          activeVisitorDocRef,
-          {
-            active:false,
-            userId:myId,
-            loginTime:loginTimeStr,
-            logoutTime:logoutTimeStr,
-            lastSeen:0
-          },
-          {merge:true}
-        );
-
-      });
-
     }catch(e){}
-
   }
-
-
   registerVisitor();
-
 }
 
-
-/* ================= SEND MESSAGE ================= */
-
-window.sendMessage =
-async function(){
-
-  const input =
-  document.getElementById(
-    "messageInput"
-  );
-
-
-  const text =
-  input.value.trim();
-
-
-  if(text==="") return;
-
-
-  const currentTime =
-  Date.now();
-
-
-  input.value="";
-
-
+window.sendMessage = async function(customText, isAudio=false){
+  const input = document.getElementById("messageInput");
+  const text = customText || input.value.trim();
+  if(!text) return;
+  if(!customText) input.value="";
   try{
-
-    await addDoc(
-      collection(db,"messages"),
-      {
-        text:text,
-        senderId:myId,
-        isAdminMessage:isAdmin,
-        createdAt:currentTime,
-        read:isAdmin
-      }
-    );
-
+    await addDoc(collection(db,"messages"), {
+      text: text,
+      senderId: myId,
+      isAdminMessage: isAdmin,
+      isAudio: isAudio,
+      createdAt: Date.now(),
+      read: isAdmin
+    });
   }catch(error){}
-
 };
 
-
-/* ================= ENTER ================= */
-
-document
-.getElementById("messageInput")
-.addEventListener(
-"keypress",
-function(event){
-
-  if(event.key==="Enter")
-    sendMessage();
-
+document.getElementById("messageInput").addEventListener("keypress", function(event){
+  if(event.key==="Enter") sendMessage();
 });
 
+// ميزة الريكورد الصوتي المبسطة
+let mediaRecorder;
+let audioChunks = [];
+window.toggleRecord = async function(){
+  const micBtn = document.getElementById("micBtn");
+  if(!mediaRecorder || mediaRecorder.state === "inactive"){
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = function() {
+          window.sendMessage(reader.result, true);
+        };
+      };
+      mediaRecorder.start();
+      micBtn.classList.add("recording");
+    } catch(err) {
+      alert("تعذر الوصول للميكروفون.");
+    }
+  } else {
+    mediaRecorder.stop();
+    micBtn.classList.remove("recording");
+  }
+};
 
-/* ================= QUERY ================= */
+// ميزة الاتصال الصوتي الوهمية/التفاعلية
+window.startCall = function(){
+  document.getElementById("callScreen").style.display = "flex";
+  setTimeout(()=>{
+    document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
+  }, 2000);
+};
+window.endCall = function(){
+  document.getElementById("callScreen").style.display = "none";
+  document.getElementById("callStatusText").textContent = "جاري الاتصال بالمدير...";
+};
 
-let q;
-
-
-if(isAdmin){
-
-  q=query(
-    collection(db,"messages"),
-    orderBy("createdAt","asc")
-  );
-
-}else{
-
-  q=query(
-    collection(db,"messages"),
-    where(
-      "createdAt",
-      ">=",
-      Date.now()-45000
-    ),
-    orderBy("createdAt","asc")
-  );
-
-}
-
-
-/* ================= MESSAGE ELEMENTS ================= */
-
+let q = isAdmin ? query(collection(db,"messages"), orderBy("createdAt","asc")) : query(collection(db,"messages"), where("createdAt", ">=", Date.now()-45000), orderBy("createdAt","asc"));
 const messageElements={};
 
-const pageLoadTime=Date.now();
-
-
-/* ================= SNAPSHOT ================= */
-
-onSnapshot(
-q,
-{includeMetadataChanges:true},
-(snapshot)=>{
-
-  const messagesContainer =
-  document.getElementById(
-    "messages"
-  );
-
-
-  snapshot.docChanges()
-  .forEach((change)=>{
-
-    const docId =
-    change.doc.id;
-
-    const data =
-    change.doc.data();
-
-
-    /* ---------- ADD ---------- */
-
+onSnapshot(q, (snapshot)=>{
+  const messagesContainer = document.getElementById("messages");
+  snapshot.docChanges().forEach((change)=>{
+    const docId = change.doc.id;
+    const data = change.doc.data();
     if(change.type==="added"){
+      if(messageElements[docId]) return;
+      const wrapperDiv = document.createElement("div");
+      wrapperDiv.className= "message-wrapper";
+      const messageDiv = document.createElement("div");
+      messageDiv.className= "message";
+      
+      const avatarDiv = document.createElement("div");
+      avatarDiv.className= "comment-avatar";
+      avatarDiv.textContent = data.isAdminMessage ? "ل" : "ش";
+      avatarDiv.style.background = data.isAdminMessage ? "#5878a4" : "#6f9b7c";
+      messageDiv.appendChild(avatarDiv);
 
-      if(messageElements[docId])
-        return;
+      const bodyDiv = document.createElement("div");
+      bodyDiv.className= "comment-body";
+      
+      const headerInfo = document.createElement("div");
+      headerInfo.className= "comment-header-info";
+      const userSpan = document.createElement("span");
+      userSpan.className= "comment-username" + (data.isAdminMessage ? " admin-name" : "");
+      userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
+      headerInfo.appendChild(userSpan);
+      bodyDiv.appendChild(headerInfo);
 
-
-      if(
-        !isAdmin &&
-        blockIncomingFromAdmin &&
-        data.isAdminMessage
-      )
-        return;
-
-
-      /* Wrapper */
-
-      const wrapperDiv =
-      document.createElement("div");
-
-      wrapperDiv.id=
-      "wrap_"+docId;
-
-      wrapperDiv.className=
-      "message-wrapper";
-
-
-      /* Message */
-
-      const messageDiv =
-      document.createElement("div");
-
-      messageDiv.id=
-      "msg_"+docId;
-
-      messageDiv.className=
-      "message";
-
-
-      /* Avatar */
-
-      const avatarDiv =
-      document.createElement("div");
-
-      avatarDiv.className=
-      "comment-avatar";
-
-
-      if(data.isAdminMessage){
-
-        avatarDiv.textContent="ل";
-
-        avatarDiv.style.background=
-        "#5878a4";
-
-      }else{
-
-        avatarDiv.textContent="ش";
-
-        avatarDiv.style.background=
-        "#6f9b7c";
-
+      if(data.isAudio){
+        const audioEl = document.createElement("audio");
+        audioEl.controls = true;
+        audioEl.src = data.text;
+        audioEl.style.width = "100%";
+        bodyDiv.appendChild(audioEl);
+      } else {
+        const textSpan = document.createElement("span");
+        textSpan.className = "message-text";
+        textSpan.textContent = data.text;
+        bodyDiv.appendChild(textSpan);
       }
 
-
-      messageDiv.appendChild(
-        avatarDiv
-      );
-
-
-      /* Body */
-
-      const bodyDiv =
-      document.createElement("div");
-
-      bodyDiv.className=
-      "comment-body";
-
-
-      /* Header */
-
-      const headerInfo =
-      document.createElement("div");
-
-      headerInfo.className=
-      "comment-header-info";
-
-
-      const userSpan =
-      document.createElement("span");
-
-      userSpan.className=
-      "comment-username";
-
-
-      if(data.isAdminMessage){
-
-        userSpan.classList.add(
-          "admin-name"
-        );
-
-        userSpan.textContent=
-        "@المدير";
-
-      }else{
-
-        userSpan.textContent=
-        "@زائر";
-
-      }
-
-
-      headerInfo.appendChild(
-        userSpan
-      );
-
-
-      const timeSpan =
-      document.createElement("span");
-
-      timeSpan.className=
-      "comment-time";
-
-      timeSpan.textContent=
-      "• الآن";
-
-
-      headerInfo.appendChild(
-        timeSpan
-      );
-
-
-      bodyDiv.appendChild(
-        headerInfo
-      );
-
-
-      /* Text */
-
-      const textSpan =
-      document.createElement("span");
-
-      textSpan.className=
-      "message-text";
-
-      textSpan.textContent=
-      data.text;
-
-
-      bodyDiv.appendChild(
-        textSpan
-      );
-
-
-      /* Actions */
-
-      const actionsDiv =
-      document.createElement("div");
-
-      actionsDiv.className=
-      "comment-actions";
-
-
-      const actionButtonsGroup =
-      document.createElement("div");
-
-      actionButtonsGroup.className=
-      "action-buttons-group";
-
-
-      const likeBtn =
-      document.createElement("button");
-
-      likeBtn.className=
-      "action-btn";
-
-      likeBtn.innerHTML=
-      "👍 <span>1</span>";
-
-
-      actionButtonsGroup.appendChild(
-        likeBtn
-      );
-
-
-      const dislikeBtn =
-      document.createElement("button");
-
-      dislikeBtn.className=
-      "action-btn";
-
-      dislikeBtn.innerHTML=
-      "👎";
-
-
-      actionButtonsGroup.appendChild(
-        dislikeBtn
-      );
-
-
-      actionsDiv.appendChild(
-        actionButtonsGroup
-      );
-
-
-      /* Timer */
-
-      if(!isAdmin){
-
-        const timerSpan =
-        document.createElement("span");
-
-        timerSpan.className=
-        "timer-text";
-
-
-        actionsDiv.appendChild(
-          timerSpan
-        );
-
-
-        wrapperDiv.dataset.createdAt=
-        data.createdAt;
-
-      }
-
-
-      bodyDiv.appendChild(
-        actionsDiv
-      );
-
-
-      messageDiv.appendChild(
-        bodyDiv
-      );
-
-      wrapperDiv.appendChild(
-        messageDiv
-      );
-
-
-      messagesContainer.appendChild(
-        wrapperDiv
-      );
-
-
-      messagesContainer.scrollTop=
-      messagesContainer.scrollHeight;
-
-
-      messageElements[docId]={
-        element:wrapperDiv,
-        data:data
-      };
-
-
-      /* Mark read */
-
-      if(
-        isAdmin &&
-        !data.isAdminMessage &&
-        !data.read
-      ){
-
-        updateDoc(
-          doc(db,"messages",docId),
-          {read:true}
-        );
-
-      }
-
-
-      /* Sound */
-
-      if(
-        isAdmin &&
-        data.createdAt>pageLoadTime &&
-        data.senderId!==myId
-      ){
-
-        const sound =
-        document.getElementById(
-          "notificationSound"
-        );
-
-
-        if(sound){
-
-          sound.currentTime=0;
-
-          sound.play()
-          .catch(()=>{});
-
-        }
-
-      }
-
+      messageDiv.appendChild(bodyDiv);
+      wrapperDiv.appendChild(messageDiv);
+      messagesContainer.appendChild(wrapperDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      messageElements[docId] = { element: wrapperDiv, data: data };
     }
-
-
-    /* ---------- REMOVE ---------- */
-
-    else if(
-      change.type==="removed"
-    ){
-
-      if(messageElements[docId]){
-
-        messageElements[docId]
-        .element.remove();
-
-        delete messageElements[docId];
-
-      }
-
-    }
-
   });
-
 });
-
-
-/* ================= VISITOR TIMER ================= */
-
-if(!isAdmin){
-
-  setInterval(()=>{
-
-    const now=Date.now();
-
-
-    for(
-      const docId in messageElements
-    ){
-
-      const item=
-      messageElements[docId];
-
-
-      const timeLeft=
-      35000-
-      (now-item.data.createdAt);
-
-
-      if(timeLeft<=0){
-
-        item.element.remove();
-
-        delete messageElements[docId];
-
-      }else{
-
-        const timerSpan=
-        item.element.querySelector(
-          ".timer-text"
-        );
-
-
-        if(timerSpan){
-
-          timerSpan.textContent=
-          Math.ceil(
-            timeLeft/1000
-          )+" ث";
-
-        }
-
-      }
-
-    }
-
-  },1000);
-
-}
-
 </script>
-
 </body>
 </html>
