@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الردود - اتصال مباشر</title>
-<!-- مكتبة PeerJS للاتصال الصوتي المباشر عبر الإنترنت -->
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
 *{ box-sizing:border-box; margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
@@ -13,7 +12,6 @@ html,body{ width:100%; height:100%; overflow:hidden; background:var(--bg); color
 body{ display:flex; justify-content:center; }
 .app{ width:100%; max-width:520px; height:100dvh; background:#f7f9fb; display:flex; flex-direction:column; position:relative; overflow:hidden; box-shadow:0 0 35px rgba(30,50,70,.08); }
 
-/* ================= HEADER ================= */
 .header{ height:66px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:10px 15px; background:rgba(255,255,255,.96); border-bottom:1px solid var(--border); z-index:20; }
 .header-title{ display:flex; align-items:center; gap:11px; }
 .back-arrow{ width:36px; height:36px; display:flex; justify-content:center; align-items:center; border-radius:12px; background:#f2f5f8; color:#647180; font-size:21px; }
@@ -22,28 +20,24 @@ body{ display:flex; justify-content:center; }
 .subtitle{ font-size:10px; color:#93a0ad; }
 .status-dot{ width:9px; height:9px; border-radius:50%; background:var(--red); box-shadow:0 0 0 4px rgba(212,119,119,.10); }
 
-/* Header actions */
 .header-actions{ display:flex; align-items:center; gap:7px; position:relative; }
 .mute-btn, .call-btn{ width:38px; height:38px; border:0; border-radius:13px; color:white; cursor:pointer; font-size:16px; display:flex; justify-content:center; align-items:center; transition:.2s; }
 .mute-btn{ background:var(--green); box-shadow:0 5px 13px rgba(111,155,124,.20); }
 .call-btn{ background:var(--primary); box-shadow:0 5px 13px rgba(88,120,164,.20); }
-.mute-btn:active, .call-btn:active{ transform:scale(.92); }
+.call-btn:active{ transform:scale(.92); }
 
 .users-counter{ display:none; align-items:center; gap:5px; background:#f1f4f7; border:1px solid #e7ecf1; border-radius:12px; padding:7px 10px; font-size:12px; color:#667382; }
 .menu-btn{ display:none; width:37px; height:37px; border:0; border-radius:12px; background:#f2f5f8; color:#5f6b77; font-size:22px; cursor:pointer; }
 
-/* ================= DROPDOWN ================= */
 .dropdown-menu{ position:absolute; top:48px; left:0; width:275px; background:white; border:1px solid var(--border); border-radius:17px; box-shadow:0 15px 40px rgba(30,45,65,.15); display:none; flex-direction:column; z-index:1000; overflow:hidden; padding:12px; }
 .dropdown-title{ font-size:12px; font-weight:700; color:var(--primary); text-align:center; padding:5px 0 11px; border-bottom:1px solid #edf1f4; }
 .log-item{ font-size:12px; color:#66717d; padding:10px 4px; border-bottom:1px dashed #edf1f4; }
 
-/* ================= TICKER ================= */
 .ticker-container{ display:none; height:34px; background:#fff; border-bottom:1px solid var(--border); overflow:hidden; white-space:nowrap; color:var(--primary); font-size:11px; font-weight:600; position:relative; }
 .ticker-track{ height:100%; display:inline-flex; align-items:center; animation:ticker 24s linear infinite; }
 .ticker-group{ display:inline-flex; align-items:center; gap:35px; padding-right:35px; flex-shrink:0; }
 @keyframes ticker{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
-/* ================= MESSAGES (WhatsApp Layout) ================= */
 .messages{ flex:1; overflow-y:auto; padding:20px 15px 16px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; background: radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%), #f7f9fb; }
 .messages::-webkit-scrollbar{ width:4px; }
 .messages::-webkit-scrollbar-thumb{ background:#d8e0e7; border-radius:10px; }
@@ -51,7 +45,6 @@ body{ display:flex; justify-content:center; }
 .message-wrapper{ position:relative; width:100%; display:flex; margin-bottom:4px; animation:messageIn .25s ease; }
 @keyframes messageIn{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:translateY(0); } }
 
-/* اتجاهات الواتساب: رسائلك يمين، والطرف الآخر يسار */
 .message-wrapper.my-message { justify-content: flex-end; }
 .message-wrapper.other-message { justify-content: flex-start; }
 
@@ -67,7 +60,6 @@ body{ display:flex; justify-content:center; }
 .comment-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:3px; }
 .timer-text{ color:#b66c6c; background:#fff3f3; border:1px solid #f6e0e0; padding:2px 6px; border-radius:6px; font-size:9px; font-weight:700; }
 
-/* ================= INPUT ================= */
 .input-area{ flex-shrink:0; display:flex; align-items:center; gap:9px; padding:10px 13px; background:rgba(255,255,255,.97); border-top:1px solid var(--border); box-shadow:0 -5px 20px rgba(30,50,70,.035); }
 input{ flex:1; min-width:0; height:45px; border:1px solid #dfe5ea; border-radius:15px; outline:none; padding:0 16px; font-size:13px; background:#f8fafb; color:#303b47; transition:.2s; }
 input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(88,120,164,.07); }
@@ -78,7 +70,6 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 .send-btn{ background:var(--primary); color:white; box-shadow:0 5px 14px rgba(88,120,164,.22); }
 .send-btn:hover{ background:var(--primary-dark); }
 
-/* ================= MODALS ================= */
 #blockScreen, #callScreen{ position:fixed; inset:0; background:rgba(247,249,251,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
 .block-card{ max-width:380px; width:100%; background:white; border:1px solid var(--border); border-radius:25px; padding:30px 24px; box-shadow:0 15px 45px rgba(30,50,70,.10); }
 .block-icon{ width:65px; height:65px; border-radius:20px; background:#fff1f1; display:flex; justify-content:center; align-items:center; font-size:28px; margin:0 auto 18px; }
@@ -87,6 +78,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 .call-actions{ display:flex; gap:12px; justify-content:center; }
 .answer-call-btn{ background:var(--green); color:white; border:none; padding:10px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:14px; }
 .end-call-btn{ background:var(--red); color:white; border:none; padding:10px 22px; border-radius:12px; cursor:pointer; font-weight:700; font-size:14px; }
+#callTimerDisplay { font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 10px; display: none; }
 </style>
 </head>
 <body>
@@ -104,17 +96,16 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     <div class="block-icon" style="background:#eef2f6;">📞</div>
     <div class="block-title">مكالمة صوتية مباشرة</div>
     <div class="block-text" id="callStatusText">جاري الاتصال...</div>
-    <div class="call-actions" id="callActionsContainer">
+    <div id="callTimerDisplay">00:00</div>
+    <div class="call-actions" id="callActionsContainer" style="margin-top:15px;">
       <button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>
     </div>
   </div>
 </div>
 
-<!-- عنصر خفي لتشغيل صوت المكالمة -->
-<audio id="remoteAudio" autoplay></audio>
+<audio id="remoteAudio" autoplay playsinline></audio>
 
 <div class="app">
-  <!-- HEADER -->
   <div class="header">
     <div class="header-title">
       <span class="back-arrow">←</span>
@@ -138,7 +129,6 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     </div>
   </div>
 
-  <!-- TICKER -->
   <div id="tickerContainer" class="ticker-container">
     <div class="ticker-track">
       <div class="ticker-group">
@@ -150,10 +140,8 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     </div>
   </div>
 
-  <!-- MESSAGES -->
   <div class="messages" id="messages"></div>
 
-  <!-- INPUT -->
   <div class="input-area">
     <input type="text" id="messageInput" placeholder="اكتب رسالتك أو سجل ريكورد..." autocomplete="off">
     <button id="micBtn" class="icon-btn mic-btn" title="تسجيل صوتي" onclick="toggleRecord()">🎤</button>
@@ -207,15 +195,32 @@ if(!myId){
   localStorage.setItem("chat_user_id", myId);
 }
 
-// معرف فريد للطرف الآخر في الاتصال (المدير له معرف ثابت، الزائر معرفه متغير)
-const targetPeerId = isAdmin ? localStorage.getItem("active_visitor_peer") : "admin_main_peer_id";
-
-// إعداد خدمة الاتصال المباشر (PeerJS)
-const myPeerId = isAdmin ? "admin_main_peer_id" : "visitor_" + myId;
+const myPeerId = (isAdmin ? "admin_main_peer_id_" : "visitor_peer_") + myId;
 const peer = new Peer(myPeerId);
 
 let localStream = null;
 let currentCall = null;
+let callTimerInterval = null;
+let callSeconds = 0;
+
+function startTimer() {
+  callSeconds = 0;
+  const timerDisplay = document.getElementById("callTimerDisplay");
+  timerDisplay.style.display = "block";
+  timerDisplay.textContent = "00:00";
+  clearInterval(callTimerInterval);
+  callTimerInterval = setInterval(() => {
+    callSeconds++;
+    let mins = Math.floor(callSeconds / 60).toString().padStart(2, '0');
+    let secs = (callSeconds % 60).toString().padStart(2, '0');
+    timerDisplay.textContent = `${mins}:${secs}`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(callTimerInterval);
+  document.getElementById("callTimerDisplay").style.display = "none";
+}
 
 peer.on('call', (call) => {
   currentCall = call;
@@ -228,38 +233,44 @@ peer.on('call', (call) => {
 });
 
 window.triggerCall = async function(){
-  if(!isAdmin) {
-    // إذا كان زائراً، نحدث معرفه عند المدير عبر فايربيس
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch(err) {
+    alert("تعذر الوصول للميكروفون. يجدر السماح بالصلاحيات.");
+    return;
+  }
+
+  let targetId = "";
+  if(isAdmin) {
+    const visDoc = await getDoc(doc(db, "status", "active_visitor"));
+    if(visDoc.exists() && visDoc.data().peerId) {
+      targetId = visDoc.data().peerId;
+    } else {
+      alert("لا يوجد زائر نشط حالياً للاتصال به.");
+      return;
+    }
+  } else {
+    targetId = "admin_main_peer_id_" + (localStorage.getItem("admin_fixed_id") || "admin");
     await setDoc(doc(db, "status", "active_visitor"), { peerId: myPeerId }, { merge: true });
   }
-  
+
   document.getElementById("callScreen").style.display = "flex";
   document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر... 📞";
   document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
 
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    
-    // تحديد من نتصل به
-    let callTarget = targetPeerId;
-    if(isAdmin) {
-      const visDoc = await getDoc(doc(db, "status", "active_visitor"));
-      if(visDoc.exists()) callTarget = visDoc.data().peerId;
-    }
+  const call = peer.call(targetId, localStream);
+  currentCall = call;
+  
+  call.on('stream', (remoteStream) => {
+    const remoteAudio = document.getElementById("remoteAudio");
+    remoteAudio.srcObject = remoteStream;
+    remoteAudio.play().catch(e => console.log(e));
+    document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
+    startTimer();
+  });
 
-    const call = peer.call(callTarget, localStream);
-    currentCall = call;
-    
-    call.on('stream', (remoteStream) => {
-      document.getElementById("remoteAudio").srcObject = remoteStream;
-      document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
-    });
-
-    call.on('close', () => { endCall(); });
-  } catch(err) {
-    alert("تعذر الوصول للميكروفون أو بدء المكالمة.");
-    endCall();
-  }
+  call.on('close', () => { endCall(); });
+  call.on('error', () => { endCall(); });
 };
 
 window.acceptCall = async function(){
@@ -267,9 +278,12 @@ window.acceptCall = async function(){
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     currentCall.answer(localStream);
     currentCall.on('stream', (remoteStream) => {
-      document.getElementById("remoteAudio").srcObject = remoteStream;
+      const remoteAudio = document.getElementById("remoteAudio");
+      remoteAudio.srcObject = remoteStream;
+      remoteAudio.play().catch(e => console.log(e));
       document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
       document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
+      startTimer();
     });
   } catch(err) {
     alert("تعذر تشغيل الميكروفون.");
@@ -279,37 +293,13 @@ window.acceptCall = async function(){
 
 window.endCall = function(){
   document.getElementById("callScreen").style.display = "none";
+  stopTimer();
   if(currentCall) { currentCall.close(); currentCall = null; }
   if(localStream) {
     localStream.getTracks().forEach(track => track.stop());
     localStream = null;
   }
 };
-
-bellBtn.addEventListener("click", async function(){
-  if(isAdmin) return;
-  const bellStatusRef = doc(db,"status","bell_alert");
-  try{
-    const docSnap = await getDoc(bellStatusRef);
-    let currentState="green";
-    if(docSnap.exists()) currentState = docSnap.data().state || "green";
-    const newState = currentState==="red" ? "green" : "red";
-    await setDoc(bellStatusRef, { state:newState, timestamp:Date.now() });
-  }catch(e){}
-});
-
-const bellStatusRef = doc(db,"status","bell_alert");
-onSnapshot(bellStatusRef, (docSnap)=>{
-  if(!docSnap.exists()) return;
-  const state = docSnap.data().state || "green";
-  if(state==="red"){
-    bellBtn.style.background="#d47777";
-    bellBtn.style.boxShadow= "0 0 16px rgba(212,119,119,.65)";
-  }else{
-    bellBtn.style.background="#6f9b7c";
-    bellBtn.style.boxShadow= "0 0 12px rgba(111,155,124,.25)";
-  }
-});
 
 const activeVisitorDocRef = doc(db,"status","active_visitor");
 const loginTimeStr = new Date().toLocaleTimeString("ar-EG", { hour:"2-digit", minute:"2-digit" });
@@ -321,11 +311,6 @@ if(isAdmin){
 } else {
   async function registerVisitor(){
     try{
-      const docSnap = await getDoc(activeVisitorDocRef);
-      if(docSnap.exists() && docSnap.data().active && Date.now()-docSnap.data().lastSeen<6000 && docSnap.data().userId!==myId){
-        document.getElementById("blockScreen").style.display="flex";
-        return;
-      }
       await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, loginTime:loginTimeStr, logoutTime:"", lastSeen:Date.now() });
       setInterval(async()=>{
         try{
