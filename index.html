@@ -213,30 +213,34 @@ if(!myId){
 
 const activeVisitorDocRef = doc(db, "status", "active_visitor");
 
+// التحقق الفوري ولحظي عند إدخال كلمة السر لمنع أي دخول متزامن
 window.verifyVisitorPassword = async function() {
   const pass = document.getElementById("visitorPassInput").value.trim();
   if(pass === "2026") {
-    // التحقق مما إذا كان هناك زائر آخر متصل بالفعل
-    const visSnap = await getDoc(activeVisitorDocRef);
-    if(visSnap.exists()) {
-      const data = visSnap.data();
-      // إذا كان الزائر نشطاً وفي آخر 6 ثوانٍ (متصل حالياً) ولم يكن هو نفسه
-      if(data.active && (Date.now() - data.lastSeen < 6000) && data.userId !== myId) {
-        document.getElementById("passwordScreen").style.display = "none";
-        document.getElementById("blockScreen").style.display = "flex";
-        return;
+    try {
+      const visSnap = await getDoc(activeVisitorDocRef);
+      if(visSnap.exists()) {
+        const data = visSnap.data();
+        // إذا كان هناك زائر نشط آخر آخر ظهور له أقل من 7 ثوانٍ وليس هو نفس المستخدم
+        if(data.active && (Date.now() - data.lastSeen < 7000) && data.userId !== myId) {
+          document.getElementById("passwordScreen").style.display = "none";
+          document.getElementById("blockScreen").style.display = "flex";
+          return;
+        }
       }
-    }
-    
-    // تسجيل الزائر الحالي كزائر وحيد نشط
-    await setDoc(activeVisitorDocRef, { 
-      active: true, 
-      userId: myId, 
-      peerId: myPeerId, 
-      lastSeen: Date.now() 
-    });
+      
+      // حجز المكان فوراً للزائر الحالي لمنع أي زائر آخر من الدخول في نفس اللحظة
+      await setDoc(activeVisitorDocRef, { 
+        active: true, 
+        userId: myId, 
+        peerId: myPeerId, 
+        lastSeen: Date.now() 
+      });
 
-    document.getElementById("passwordScreen").style.display = "none";
+      document.getElementById("passwordScreen").style.display = "none";
+    } catch(e) {
+      alert("حدث خطأ في الاتصال بقاعدة البيانات، يجدر إعادة المحاولة.");
+    }
   } else {
     alert("كلمة السر غير صحيحة!");
   }
@@ -425,9 +429,19 @@ if(isAdmin){
   setDoc(adminStatusRef, { online:true, lastSeen:Date.now() });
   setInterval(()=>{ setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); },4000);
 } else {
+  // نبض لتأكيد تواجد الزائر الحالي ومنع أي زائر آخر من الدخول طالما هو متصل
   setInterval(async()=>{
     if(document.getElementById("passwordScreen").style.display === "none" && document.getElementById("blockScreen").style.display === "none"){
       try{
+        const visSnap = await getDoc(activeVisitorDocRef);
+        if(visSnap.exists() && visSnap.data().userId !== myId) {
+          // إذا دخل زائر آخر وأصبح هو المسيطر، يتم حظر هذا الزائر القديم تلقائياً
+          const data = visSnap.data();
+          if(data.active && (Date.now() - data.lastSeen < 7000)) {
+            document.getElementById("blockScreen").style.display = "flex";
+            return;
+          }
+        }
         await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
       }catch(e){}
     }
