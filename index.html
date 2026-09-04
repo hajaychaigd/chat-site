@@ -53,9 +53,10 @@ body{ display:flex; justify-content:center; }
 
 .comment-avatar{ width:30px; height:30px; min-width:30px; border-radius:10px; display:flex; justify-content:center; align-items:center; color:white; font-weight:700; font-size:12px; box-shadow:0 4px 10px rgba(30,50,70,.10); }
 .comment-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
-.comment-header-info{ display:flex; align-items:center; gap:7px; }
+.comment-header-info{ display:flex; align-items:center; justify-content:space-between; gap:7px; }
 .comment-username{ background:#3f4a56 !important; color:white !important; padding:2px 6px; border-radius:5px; font-size:8px; font-weight:600; }
 .comment-username.admin-name{ background:var(--primary) !important; }
+.msg-time { font-size: 9px; color: var(--muted); }
 
 .message-text{ font-size:14px; line-height:1.5; color:#303b47; word-break:break-word; }
 
@@ -245,7 +246,6 @@ function stopTimer() {
   document.getElementById("callTimerDisplay").style.display = "none";
 }
 
-// استقبال مكالمات PeerJS التقليدية
 peer.on('call', (call) => {
   currentCall = call;
   document.getElementById("callScreen").style.display = "flex";
@@ -256,7 +256,6 @@ peer.on('call', (call) => {
   `;
 });
 
-// مراقبة جدول المكالمات في فايربيس لإظهار شاشة الرنين فوراً عند الطرفين
 onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
   if (docSnap.exists()) {
     const data = docSnap.data();
@@ -271,7 +270,6 @@ onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
       endCall();
     }
   } else {
-    // إذا تم مسح وثيقة المكالمة يتم إغلاق الشاشة تلقائياً
     if(document.getElementById("callScreen").style.display === "flex") {
       endCall();
     }
@@ -309,7 +307,6 @@ window.triggerCall = async function(){
   document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر... 📞";
   document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
 
-  // إرسال إشعار الرنين عبر فايربيس فوراً
   await setDoc(doc(db, "status", "active_call"), {
     caller: myPeerId,
     receiver: targetId,
@@ -336,7 +333,6 @@ window.acceptCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     
-    // إذا كان الاستقبال عبر إشعار الفايربيس ولم يتم تعيين currentCall بعد، نقوم بالرد بناءً على المتصل المسجل
     const callDoc = await getDoc(doc(db, "status", "active_call"));
     if(callDoc.exists() && !currentCall) {
       const callerPeerId = callDoc.data().caller;
@@ -518,10 +514,19 @@ onSnapshot(q, (snapshot)=>{
       
       const headerInfo = document.createElement("div");
       headerInfo.className= "comment-header-info";
+      
       const userSpan = document.createElement("span");
       userSpan.className= "comment-username" + (data.isAdminMessage ? " admin-name" : "");
       userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
       headerInfo.appendChild(userSpan);
+
+      // إضافة وقت إرسال الرسالة
+      const timeSpan = document.createElement("span");
+      timeSpan.className = "msg-time";
+      const messageDate = new Date(data.createdAt);
+      timeSpan.textContent = messageDate.toLocaleTimeString("ar-EG", { hour: '2-digit', minute: '2-digit' });
+      headerInfo.appendChild(timeSpan);
+
       bodyDiv.appendChild(headerInfo);
 
       if(data.isAudio){
@@ -548,7 +553,7 @@ onSnapshot(q, (snapshot)=>{
 
       if(!isAdmin){
         const age = Date.now() - data.createdAt;
-        if(age >= 50000) return;
+        if(age >= 180000) return; // 3 دقائق = 180000 مللي ثانية
 
         const actionsDiv = document.createElement("div");
         actionsDiv.className = "comment-actions";
@@ -579,14 +584,16 @@ if(!isAdmin){
     const now = Date.now();
     for(const docId in messageElements){
       const item = messageElements[docId];
-      const timeLeft = 1100000 - (now - item.data.createdAt);
+      const timeLeft = 180000 - (now - item.data.createdAt); // 3 دقائق
       if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
       }else{
         const timerSpan = document.getElementById("timer_" + docId);
         if(timerSpan){
-          timerSpan.textContent = " خلال: " + Math.ceil(timeLeft/1000) + " ث";
+          const mins = Math.floor(timeLeft / 60000);
+          const secs = Math.ceil((timeLeft % 60000) / 1000);
+          timerSpan.textContent = `يحذف خلال: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
       }
     }
