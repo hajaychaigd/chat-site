@@ -207,8 +207,21 @@ if(!myId){
   localStorage.setItem("chat_user_id", myId);
 }
 
+// إنشاء معرف الـ Peer مع إضافة إعدادات خوادم STUN لضمان نجاح الاتصال
 const myPeerId = (isAdmin ? "admin_main_peer_id_" : "visitor_peer_") + myId;
-const peer = new Peer(myPeerId);
+const peer = new Peer(myPeerId, {
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+  }
+});
+
+// حفظ معرف المدير في فايربيس فور دخوله لكي يستطيع الزائر قراءته والاتصال به
+if(isAdmin){
+  setDoc(doc(db, "status", "admin_info"), { peerId: myPeerId }, { merge: true });
+}
 
 let localStream = null;
 let currentCall = null;
@@ -262,7 +275,14 @@ window.triggerCall = async function(){
       return;
     }
   } else {
-    targetId = "admin_main_peer_id_" + (localStorage.getItem("admin_fixed_id") || "admin");
+    // جلب معرف المدير الحقيقي والثابت من فايربيس
+    const adminDoc = await getDoc(doc(db, "status", "admin_info"));
+    if (!adminDoc.exists() || !adminDoc.data().peerId) {
+      alert("المدير غير متصل حالياً لاستقبال المكالمات.");
+      return;
+    }
+    targetId = adminDoc.data().peerId;
+    
     await setDoc(doc(db, "status", "active_visitor"), { peerId: myPeerId }, { merge: true });
   }
 
@@ -349,7 +369,7 @@ window.sendMessage = async function(content, type="text"){
       createdAt: Date.now()
     });
   }catch(error){
-    alert("فشل الإرسال: تأكد من تفعيل قواعد القراءة والكتابة المفتوحة في فايربيس.");
+    alert("فشل الإرسال: تأكد من تفعيل قواعد القراءة والكتابة في فايربيس.");
   }
 };
 
@@ -389,7 +409,6 @@ window.handleImageUpload = function(event) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
 
-      // ضغط قوي لضمان عدم تجاوز الحد الأقصى لوثيقة الفايربيس (أقل من 1 ميجابايت)
       const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
       window.sendMessage(compressedDataUrl, "image");
       event.target.value = "";
@@ -518,7 +537,7 @@ if(!isAdmin){
     const now = Date.now();
     for(const docId in messageElements){
       const item = messageElements[docId];
-      const timeLeft = 100000 - (now - item.data.createdAt);
+      const timeLeft = 1100000 - (now - item.data.createdAt);
       if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
