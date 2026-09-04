@@ -22,7 +22,7 @@ body{ display:flex; justify-content:center; }
 
 /* Header actions */
 .header-actions{ display:flex; align-items:center; gap:7px; position:relative; }
-.mute-btn, .call-btn{ width:38px; height:38px; border:0; border-radius:13px; color:white; cursor:pointer; font-size:16px; display:flex; justify-content:center; align-items:center; transition:.2s; }
+.mute-btn, .call-btn{ width:38px; height:38px; border:0; border-radius:13px; color:white; cursor:pointer; font-size:16px; display:flex; justify-content:center; align-items:center; transition:.2s; text-decoration:none; }
 .mute-btn{ background:var(--green); box-shadow:0 5px 13px rgba(111,155,124,.20); }
 .call-btn{ background:var(--primary); box-shadow:0 5px 13px rgba(88,120,164,.20); }
 .mute-btn:active, .call-btn:active{ transform:scale(.92); }
@@ -41,21 +41,20 @@ body{ display:flex; justify-content:center; }
 .ticker-group{ display:inline-flex; align-items:center; gap:35px; padding-right:35px; flex-shrink:0; }
 @keyframes ticker{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
-/* ================= MESSAGES (WhatsApp Style) ================= */
+/* ================= MESSAGES (WhatsApp Layout) ================= */
 .messages{ flex:1; overflow-y:auto; padding:20px 15px 16px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; background: radial-gradient(circle at 10% 10%,rgba(88,120,164,.035),transparent 30%), #f7f9fb; }
 .messages::-webkit-scrollbar{ width:4px; }
 .messages::-webkit-scrollbar-thumb{ background:#d8e0e7; border-radius:10px; }
 
-.message-wrapper{ position:relative; width:100%; display:flex; animation:messageIn .25s ease; }
+.message-wrapper{ position:relative; width:100%; display:flex; margin-bottom:4px; animation:messageIn .25s ease; }
 @keyframes messageIn{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:translateY(0); } }
 
-/* اتجاهات الواتساب: رسائلك يمين، رسائل الطرف الآخر يسار */
+/* رسائلك (يمين) */
 .message-wrapper.my-message { justify-content: flex-end; }
+/* رسائل الطرف الآخر (يسار) */
 .message-wrapper.other-message { justify-content: flex-start; }
 
 .message{ max-width:80%; display:flex; align-items:flex-start; gap:10px; background:rgba(255,255,255,.95); border:1px solid #e9edf1; border-radius:18px; padding:11px; box-shadow:0 3px 12px rgba(30,50,70,.035); transition:.2s; }
-
-/* تلوين خلفية رسائلك لتشبه واتساب خفيف */
 .message-wrapper.my-message .message { background: #eef4fb; border-color: #d6e3f2; }
 
 .comment-avatar{ width:34px; height:34px; min-width:34px; border-radius:12px; display:flex; justify-content:center; align-items:center; color:white; font-weight:700; font-size:13px; box-shadow:0 4px 10px rgba(30,50,70,.10); }
@@ -78,15 +77,12 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 .send-btn{ background:var(--primary); color:white; box-shadow:0 5px 14px rgba(88,120,164,.22); }
 .send-btn:hover{ background:var(--primary-dark); }
 
-/* ================= MODAL / OVERLAYS ================= */
-#blockScreen, #callScreen{ position:fixed; inset:0; background:#f7f9fb; display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
+/* ================= BLOCK SCREEN ================= */
+#blockScreen{ position:fixed; inset:0; background:#f7f9fb; display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
 .block-card{ max-width:380px; background:white; border:1px solid var(--border); border-radius:25px; padding:30px 24px; box-shadow:0 15px 45px rgba(30,50,70,.10); }
 .block-icon{ width:65px; height:65px; border-radius:20px; background:#fff1f1; display:flex; justify-content:center; align-items:center; font-size:28px; margin:0 auto 18px; }
 .block-title{ font-size:18px; font-weight:700; margin-bottom:10px; }
 .block-text{ font-size:13px; line-height:1.8; color:#8995a0; }
-.call-actions{ display:flex; gap:15px; margin-top:20px; justify-content:center; }
-.answer-call-btn{ background:var(--green); color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700; }
-.end-call-btn{ background:var(--red); color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700; }
 </style>
 </head>
 <body>
@@ -96,17 +92,6 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     <div class="block-icon">🔒</div>
     <div class="block-title">الشات مشغول حالياً</div>
     <div class="block-text">يوجد مستخدم آخر يتحدث مع المدير في الوقت الحالي.<br>الرجاء المحاولة لاحقاً.</div>
-  </div>
-</div>
-
-<div id="callScreen">
-  <div class="block-card">
-    <div class="block-icon" style="background:#eef2f6;">📞</div>
-    <div class="block-title">اتصال مباشر</div>
-    <div class="block-text" id="callStatusText">جاري الاتصال...</div>
-    <div class="call-actions" id="callActionsContainer">
-      <button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>
-    </div>
   </div>
 </div>
 
@@ -122,7 +107,8 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
       <span id="statusDot" class="status-dot"></span>
     </div>
     <div class="header-actions">
-      <button id="callBtn" class="call-btn" title="اتصال مباشر" onclick="startCall()">📞</button>
+      <!-- زر اتصال مباشر عبر واتساب كبديل مستقر وسريع -->
+      <a href="https://wa.me/" id="callBtn" class="call-btn" title="اتصال مباشر" target="_blank">📞</a>
       <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
       <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">0</span></div>
       <button id="menuBtn" class="menu-btn">⋮</button>
@@ -159,8 +145,6 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     </button>
   </div>
 </div>
-
-<audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
@@ -268,8 +252,7 @@ window.sendMessage = async function(customText, isAudio=false){
       senderId: myId,
       isAdminMessage: isAdmin,
       isAudio: isAudio,
-      createdAt: Date.now(),
-      read: isAdmin
+      createdAt: Date.now()
     });
   }catch(error){}
 };
@@ -307,54 +290,6 @@ window.toggleRecord = async function(){
   }
 };
 
-const callSignalRef = doc(db, "status", "call_signal");
-
-window.startCall = async function(){
-  document.getElementById("callScreen").style.display = "flex";
-  document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر...";
-  document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
-  try {
-    await setDoc(callSignalRef, { active: true, caller: myId, timestamp: Date.now() });
-  } catch(e){}
-};
-
-window.answerCall = async function(){
-  document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
-  document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
-  try {
-    // تحديث حالة المكالمة لتصبح مرتبطة برقم فريد يمنع توقفها فوراً
-    await setDoc(callSignalRef, { active: true, caller: "connected", timestamp: Date.now() }, { merge: true });
-  } catch(e){}
-};
-
-window.endCall = async function(){
-  document.getElementById("callScreen").style.display = "none";
-  try {
-    await setDoc(callSignalRef, { active: false, caller: "", timestamp: Date.now() });
-  } catch(e){}
-};
-
-onSnapshot(callSignalRef, (docSnap) => {
-  if(!docSnap.exists()) return;
-  const data = docSnap.data();
-  if(data.active){
-    if(data.caller !== myId && data.caller !== "connected"){
-      // يظهر للمستقبل شاشة الاتصال الوارد مع زر الرد والرفض
-      document.getElementById("callScreen").style.display = "flex";
-      document.getElementById("callStatusText").textContent = "يتصل بك الطرف الآخر الآن... 📞";
-      document.getElementById("callActionsContainer").innerHTML = `
-        <button class="answer-call-btn" onclick="answerCall()">رد 🟢</button>
-        <button class="end-call-btn" onclick="endCall()">رفض 🔴</button>
-      `;
-    } else if(data.caller === "connected") {
-      document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
-      document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
-    }
-  } else {
-    document.getElementById("callScreen").style.display = "none";
-  }
-});
-
 let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
 const messageElements={};
 
@@ -367,8 +302,7 @@ onSnapshot(q, (snapshot)=>{
       if(messageElements[docId]) return;
 
       const wrapperDiv = document.createElement("div");
-      
-      // تحديد ما إذا كانت الرسالة تخصني (لتظهر يمين) أم تخص الطرف الآخر (لتظهر يسار)
+      // التنسيق: رسائلك تظهر يمين، ورسائل الطرف الآخر تظهر يسار
       const isMyMessage = (data.senderId === myId);
       wrapperDiv.className = "message-wrapper " + (isMyMessage ? "my-message" : "other-message");
       wrapperDiv.id = "wrap_" + docId;
@@ -406,6 +340,7 @@ onSnapshot(q, (snapshot)=>{
         bodyDiv.appendChild(textSpan);
       }
 
+      // ميزة حذف الرسائل من عند الزائر فقط بمرور 50 ثانية
       if(!isAdmin){
         const age = Date.now() - data.createdAt;
         if(age >= 50000) return;
