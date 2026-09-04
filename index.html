@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الردود - اتصال مباشر</title>
+<title>اتصال مباشر</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
 *{ box-sizing:border-box; margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
@@ -120,8 +120,8 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     <div class="header-title">
       <span class="back-arrow">←</span>
       <div class="title-area">
-        <div class="title">الردود</div>
-        <div class="subtitle">المحادثة المباشرة</div>
+        <div class="title">المحادثة المباشرة</div>
+        <div class="subtitle">اتصال صوتي ورسائل فورية</div>
       </div>
       <span id="statusDot" class="status-dot"></span>
     </div>
@@ -165,7 +165,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -207,7 +207,6 @@ if(!myId){
   localStorage.setItem("chat_user_id", myId);
 }
 
-// إنشاء معرف الـ Peer مع إضافة إعدادات خوادم STUN لضمان نجاح الاتصال
 const myPeerId = (isAdmin ? "admin_main_peer_id_" : "visitor_peer_") + myId;
 const peer = new Peer(myPeerId, {
   config: {
@@ -218,7 +217,6 @@ const peer = new Peer(myPeerId, {
   }
 });
 
-// حفظ معرف المدير في فايربيس فور دخوله لكي يستطيع الزائر قراءته والاتصال به
 if(isAdmin){
   setDoc(doc(db, "status", "admin_info"), { peerId: myPeerId }, { merge: true });
 }
@@ -247,6 +245,7 @@ function stopTimer() {
   document.getElementById("callTimerDisplay").style.display = "none";
 }
 
+// استقبال مكالمات PeerJS التقليدية
 peer.on('call', (call) => {
   currentCall = call;
   document.getElementById("callScreen").style.display = "flex";
@@ -255,6 +254,28 @@ peer.on('call', (call) => {
     <button class="answer-call-btn" onclick="acceptCall()">رد 🟢</button>
     <button class="end-call-btn" onclick="endCall()">رفض 🔴</button>
   `;
+});
+
+// مراقبة جدول المكالمات في فايربيس لإظهار شاشة الرنين فوراً عند الطرفين
+onSnapshot(doc(db, "status", "active_call"), (docSnap) => {
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    if (data.receiver === myPeerId && data.status === "ringing") {
+      document.getElementById("callScreen").style.display = "flex";
+      document.getElementById("callStatusText").textContent = "يتصل بك الطرف الآخر الآن... 📞";
+      document.getElementById("callActionsContainer").innerHTML = `
+        <button class="answer-call-btn" onclick="acceptCall()">رد 🟢</button>
+        <button class="end-call-btn" onclick="endCall()">رفض 🔴</button>
+      `;
+    } else if (data.caller === myPeerId && data.status === "ended") {
+      endCall();
+    }
+  } else {
+    // إذا تم مسح وثيقة المكالمة يتم إغلاق الشاشة تلقائياً
+    if(document.getElementById("callScreen").style.display === "flex") {
+      endCall();
+    }
+  }
 });
 
 window.triggerCall = async function(){
@@ -275,20 +296,26 @@ window.triggerCall = async function(){
       return;
     }
   } else {
-    // جلب معرف المدير الحقيقي والثابت من فايربيس
     const adminDoc = await getDoc(doc(db, "status", "admin_info"));
     if (!adminDoc.exists() || !adminDoc.data().peerId) {
       alert("المدير غير متصل حالياً لاستقبال المكالمات.");
       return;
     }
     targetId = adminDoc.data().peerId;
-    
     await setDoc(doc(db, "status", "active_visitor"), { peerId: myPeerId }, { merge: true });
   }
 
   document.getElementById("callScreen").style.display = "flex";
   document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر... 📞";
   document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
+
+  // إرسال إشعار الرنين عبر فايربيس فوراً
+  await setDoc(doc(db, "status", "active_call"), {
+    caller: myPeerId,
+    receiver: targetId,
+    status: "ringing",
+    timestamp: Date.now()
+  });
 
   const call = peer.call(targetId, localStream);
   currentCall = call;
@@ -308,24 +335,39 @@ window.triggerCall = async function(){
 window.acceptCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    currentCall.answer(localStream);
-    currentCall.on('stream', (remoteStream) => {
-      const remoteAudio = document.getElementById("remoteAudio");
-      remoteAudio.srcObject = remoteStream;
-      remoteAudio.play().catch(e => console.log(e));
-      document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
-      document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
-      startTimer();
-    });
+    
+    // إذا كان الاستقبال عبر إشعار الفايربيس ولم يتم تعيين currentCall بعد، نقوم بالرد بناءً على المتصل المسجل
+    const callDoc = await getDoc(doc(db, "status", "active_call"));
+    if(callDoc.exists() && !currentCall) {
+      const callerPeerId = callDoc.data().caller;
+      currentCall = peer.call(callerPeerId, localStream);
+    } else if(currentCall) {
+      currentCall.answer(localStream);
+    }
+
+    if(currentCall) {
+      currentCall.on('stream', (remoteStream) => {
+        const remoteAudio = document.getElementById("remoteAudio");
+        remoteAudio.srcObject = remoteStream;
+        remoteAudio.play().catch(e => console.log(e));
+        document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
+        document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
+        startTimer();
+      });
+    }
   } catch(err) {
     alert("تعذر تشغيل الميكروفون.");
     endCall();
   }
 };
 
-window.endCall = function(){
+window.endCall = async function(){
   document.getElementById("callScreen").style.display = "none";
   stopTimer();
+  try {
+    await deleteDoc(doc(db, "status", "active_call"));
+  } catch(e) {}
+  
   if(currentCall) { currentCall.close(); currentCall = null; }
   if(localStream) {
     localStream.getTracks().forEach(track => track.stop());
@@ -537,7 +579,7 @@ if(!isAdmin){
     const now = Date.now();
     for(const docId in messageElements){
       const item = messageElements[docId];
-      const timeLeft = 100000 - (now - item.data.createdAt);
+      const timeLeft = 1100000 - (now - item.data.createdAt);
       if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
