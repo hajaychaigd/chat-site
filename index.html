@@ -57,8 +57,6 @@ body{ display:flex; justify-content:center; }
 .comment-time{ font-size:10px; color:#a0aab4; }
 .message-text{ font-size:14px; line-height:1.65; color:#303b47; word-break:break-word; }
 .comment-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:3px; }
-.action-buttons-group{ display:flex; gap:13px; }
-.action-btn{ background:none; border:0; color:#8b96a1; cursor:pointer; font-size:11px; padding:3px; transition:.2s; }
 .timer-text{ color:#b66c6c; background:#fff3f3; border:1px solid #f6e0e0; padding:3px 7px; border-radius:7px; font-size:10px; font-weight:700; }
 
 /* ================= INPUT ================= */
@@ -95,10 +93,10 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 <div id="callScreen">
   <div class="block-card">
     <div class="block-icon" style="background:#eef2f6;">📞</div>
-    <div class="block-title">مكالمة صوتية جارية</div>
-    <div class="block-text" id="callStatusText">جاري الاتصال بالمدير...</div>
+    <div class="block-title">اتصال مباشر</div>
+    <div class="block-text" id="callStatusText">جاري الاتصال...</div>
     <div class="call-actions">
-      <button class="end-call-btn" onclick="endCall()">إنهاء المكالمة</button>
+      <button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>
     </div>
   </div>
 </div>
@@ -110,12 +108,12 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
       <span class="back-arrow">←</span>
       <div class="title-area">
         <div class="title">الردود</div>
-        <div class="subtitle">المحادثة المباشرة مع الميزات الجديدة</div>
+        <div class="subtitle">المحادثة المباشرة</div>
       </div>
       <span id="statusDot" class="status-dot"></span>
     </div>
     <div class="header-actions">
-      <button id="callBtn" class="call-btn" title="اتصال صوتي" onclick="startCall()">📞</button>
+      <button id="callBtn" class="call-btn" title="اتصال مباشر" onclick="startCall()">📞</button>
       <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
       <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">0</span></div>
       <button id="menuBtn" class="menu-btn">⋮</button>
@@ -173,7 +171,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let blockIncomingFromAdmin = false;
 const urlParams = new URLSearchParams(window.location.search);
 if(urlParams.get("admin")==="mysecret123"){ localStorage.setItem("is_admin","true"); }
 const isAdmin = localStorage.getItem("is_admin")==="true";
@@ -273,7 +270,6 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
   if(event.key==="Enter") sendMessage();
 });
 
-// ميزة الريكورد الصوتي المبسطة
 let mediaRecorder;
 let audioChunks = [];
 window.toggleRecord = async function(){
@@ -303,19 +299,36 @@ window.toggleRecord = async function(){
   }
 };
 
-// ميزة الاتصال الصوتي الوهمية/التفاعلية
-window.startCall = function(){
+// نظام الاتصال الفعلي المرتبط بـ Firebase لإشعار الطرف الآخر
+const callSignalRef = doc(db, "status", "call_signal");
+
+window.startCall = async function(){
   document.getElementById("callScreen").style.display = "flex";
-  setTimeout(()=>{
-    document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
-  }, 2000);
-};
-window.endCall = function(){
-  document.getElementById("callScreen").style.display = "none";
-  document.getElementById("callStatusText").textContent = "جاري الاتصال بالمدير...";
+  document.getElementById("callStatusText").textContent = "جاري الاتصال بالطرف الآخر...";
+  try {
+    await setDoc(callSignalRef, { active: true, caller: myId, timestamp: Date.now() });
+  } catch(e){}
 };
 
-let q = isAdmin ? query(collection(db,"messages"), orderBy("createdAt","asc")) : query(collection(db,"messages"), where("createdAt", ">=", Date.now()-45000), orderBy("createdAt","asc"));
+window.endCall = async function(){
+  document.getElementById("callScreen").style.display = "none";
+  try {
+    await setDoc(callSignalRef, { active: false, caller: "", timestamp: Date.now() });
+  } catch(e){}
+};
+
+onSnapshot(callSignalRef, (docSnap) => {
+  if(!docSnap.exists()) return;
+  const data = docSnap.data();
+  if(data.active && data.caller !== myId){
+    document.getElementById("callScreen").style.display = "flex";
+    document.getElementById("callStatusText").textContent = "يتصل بك الطرف الآخر الآن... 📞";
+  } else if(!data.active) {
+    document.getElementById("callScreen").style.display = "none";
+  }
+});
+
+let q = isAdmin ? query(collection(db,"messages"), orderBy("createdAt","asc")) : query(collection(db,"messages"), where("createdAt", ">=", Date.now()-50000), orderBy("createdAt","asc"));
 const messageElements={};
 
 onSnapshot(q, (snapshot)=>{
@@ -325,8 +338,17 @@ onSnapshot(q, (snapshot)=>{
     const data = change.doc.data();
     if(change.type==="added"){
       if(messageElements[docId]) return;
+      
+      // إذا كانت الرسالة ليست مرسلة مني (أي رسالة الطرف الآخر)، نتحقق من وقت إنشائها
+      if(data.senderId !== myId) {
+        const age = Date.now() - data.createdAt;
+        if(age >= 50000) return; // تخطي الرسالة إذا مر عليها أكثر من 50 ثانية
+      }
+
       const wrapperDiv = document.createElement("div");
       wrapperDiv.className= "message-wrapper";
+      wrapperDiv.id = "wrap_" + docId;
+      
       const messageDiv = document.createElement("div");
       messageDiv.className= "message";
       
@@ -360,14 +382,51 @@ onSnapshot(q, (snapshot)=>{
         bodyDiv.appendChild(textSpan);
       }
 
+      // إضافة العداد التنازلي لرسائل الطرف الآخر فقط
+      if(data.senderId !== myId){
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "comment-actions";
+        const timerSpan = document.createElement("span");
+        timerSpan.className = "timer-text";
+        timerSpan.id = "timer_" + docId;
+        actionsDiv.appendChild(timerSpan);
+        bodyDiv.appendChild(actionsDiv);
+        wrapperDiv.dataset.createdAt = data.createdAt;
+      }
+
       messageDiv.appendChild(bodyDiv);
       wrapperDiv.appendChild(messageDiv);
       messagesContainer.appendChild(wrapperDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
       messageElements[docId] = { element: wrapperDiv, data: data };
+    } else if(change.type==="removed"){
+      if(messageElements[docId]){
+        messageElements[docId].element.remove();
+        delete messageElements[docId];
+      }
     }
   });
 });
+
+// حلقة العداد التنازلي وحذف رسائل الطرف الآخر بعد 50 ثانية تلقائياً من الشاشة
+setInterval(()=>{
+  const now = Date.now();
+  for(const docId in messageElements){
+    const item = messageElements[docId];
+    if(item.data.senderId !== myId){
+      const timeLeft = 50000 - (now - item.data.createdAt);
+      if(timeLeft <= 0){
+        item.element.remove();
+        delete messageElements[docId];
+      }else{
+        const timerSpan = document.getElementById("timer_" + docId);
+        if(timerSpan){
+          timerSpan.textContent = "تتحذف خلال: " + Math.ceil(timeLeft/1000) + " ث";
+        }
+      }
+    }
+  }
+}, 1000);
 </script>
 </body>
 </html>
