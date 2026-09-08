@@ -216,11 +216,9 @@ const activeVisitorDocRef = doc(db, "status", "active_visitor");
 window.verifyVisitorPassword = async function() {
   const pass = document.getElementById("visitorPassInput").value.trim();
   if(pass === "2026") {
-    // التحقق مما إذا كان هناك زائر آخر متصل بالفعل
     const visSnap = await getDoc(activeVisitorDocRef);
     if(visSnap.exists()) {
       const data = visSnap.data();
-      // إذا كان الزائر نشطاً وفي آخر 6 ثوانٍ (متصل حالياً) ولم يكن هو نفسه
       if(data.active && (Date.now() - data.lastSeen < 6000) && data.userId !== myId) {
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("blockScreen").style.display = "flex";
@@ -228,7 +226,6 @@ window.verifyVisitorPassword = async function() {
       }
     }
     
-    // تسجيل الزائر الحالي كزائر وحيد نشط
     await setDoc(activeVisitorDocRef, { 
       active: true, 
       userId: myId, 
@@ -260,7 +257,11 @@ const peer = new Peer(myPeerId, {
   config: {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' }
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' },
+      { urls: 'stun:stun.services.mozilla.com' }
     ]
   }
 });
