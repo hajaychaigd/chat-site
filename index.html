@@ -126,7 +126,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
   </div>
 </div>
 
-<audio id="remoteAudio" autoplay playsinline></audio>
+<audio id="remoteAudio" autoplay playsinline style="display:none;"></audio>
 
 <div class="app">
   <div class="header">
@@ -216,11 +216,9 @@ const activeVisitorDocRef = doc(db, "status", "active_visitor");
 window.verifyVisitorPassword = async function() {
   const pass = document.getElementById("visitorPassInput").value.trim();
   if(pass === "2026") {
-    // التحقق مما إذا كان هناك زائر آخر متصل بالفعل
     const visSnap = await getDoc(activeVisitorDocRef);
     if(visSnap.exists()) {
       const data = visSnap.data();
-      // إذا كان الزائر نشطاً وفي آخر 6 ثوانٍ (متصل حالياً) ولم يكن هو نفسه
       if(data.active && (Date.now() - data.lastSeen < 6000) && data.userId !== myId) {
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("blockScreen").style.display = "flex";
@@ -228,7 +226,6 @@ window.verifyVisitorPassword = async function() {
       }
     }
     
-    // تسجيل الزائر الحالي كزائر وحيد نشط
     await setDoc(activeVisitorDocRef, { 
       active: true, 
       userId: myId, 
@@ -260,7 +257,9 @@ const peer = new Peer(myPeerId, {
   config: {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' }
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun.services.mozilla.com' }
     ]
   }
 });
@@ -381,16 +380,11 @@ window.triggerCall = async function(){
 window.acceptCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    
-    const callDoc = await getDoc(doc(db, "status", "active_call"));
-    if(callDoc.exists() && !currentCall) {
-      const callerPeerId = callDoc.data().caller;
-      currentCall = peer.call(callerPeerId, localStream);
-    } else if(currentCall) {
-      currentCall.answer(localStream);
-    }
+    document.getElementById("callStatusText").textContent = "جاري تفعيل الصوت...";
 
     if(currentCall) {
+      currentCall.answer(localStream);
+      
       currentCall.on('stream', (remoteStream) => {
         const remoteAudio = document.getElementById("remoteAudio");
         remoteAudio.srcObject = remoteStream;
@@ -399,9 +393,15 @@ window.acceptCall = async function(){
         document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
         startTimer();
       });
+
+      currentCall.on('close', () => { endCall(); });
+      currentCall.on('error', () => { endCall(); });
+    } else {
+      alert("عذراً، لم يتم العثور على المكالمة الواردة.");
+      endCall();
     }
   } catch(err) {
-    alert("تعذر تشغيل الميكروفون.");
+    alert("تعذر تشغيل الميكروفون. يرجى السماح بالصلاحيات.");
     endCall();
   }
 };
