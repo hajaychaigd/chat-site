@@ -216,9 +216,11 @@ const activeVisitorDocRef = doc(db, "status", "active_visitor");
 window.verifyVisitorPassword = async function() {
   const pass = document.getElementById("visitorPassInput").value.trim();
   if(pass === "2026") {
+    // التحقق مما إذا كان هناك زائر آخر متصل بالفعل
     const visSnap = await getDoc(activeVisitorDocRef);
     if(visSnap.exists()) {
       const data = visSnap.data();
+      // إذا كان الزائر نشطاً وفي آخر 6 ثوانٍ (متصل حالياً) ولم يكن هو نفسه
       if(data.active && (Date.now() - data.lastSeen < 6000) && data.userId !== myId) {
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("blockScreen").style.display = "flex";
@@ -226,6 +228,7 @@ window.verifyVisitorPassword = async function() {
       }
     }
     
+    // تسجيل الزائر الحالي كزائر وحيد نشط
     await setDoc(activeVisitorDocRef, { 
       active: true, 
       userId: myId, 
@@ -257,10 +260,7 @@ const peer = new Peer(myPeerId, {
   config: {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
-      { urls: 'stun:stun3.l.google.com:19302' },
-      { urls: 'stun:stun.services.mozilla.com' }
+      { urls: 'stun:stun1.l.google.com:19302' }
     ]
   }
 });
@@ -329,7 +329,7 @@ window.triggerCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   } catch(err) {
-    alert("تعذر الوصول للميكروفون. يرجى السماح بالصلاحيات من المتصفح.");
+    alert("تعذر الوصول للميكروفون. يرجى السماح بالصلاحيات.");
     return;
   }
 
@@ -381,46 +381,27 @@ window.triggerCall = async function(){
 window.acceptCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    document.getElementById("callStatusText").textContent = "جاري تفعيل الصوت...";
+    
+    const callDoc = await getDoc(doc(db, "status", "active_call"));
+    if(callDoc.exists() && !currentCall) {
+      const callerPeerId = callDoc.data().caller;
+      currentCall = peer.call(callerPeerId, localStream);
+    } else if(currentCall) {
+      currentCall.answer(localStream);
+    }
 
     if(currentCall) {
-      currentCall.answer(localStream);
-      
       currentCall.on('stream', (remoteStream) => {
         const remoteAudio = document.getElementById("remoteAudio");
         remoteAudio.srcObject = remoteStream;
-        remoteAudio.play().catch(e => {
-          console.log("Autoplay blocked, forcing play:", e);
-          remoteAudio.play();
-        });
+        remoteAudio.play().catch(e => console.log(e));
         document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
         document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
         startTimer();
       });
-
-      currentCall.on('close', () => { endCall(); });
-      currentCall.on('error', () => { endCall(); });
-    } else {
-      const callDoc = await getDoc(doc(db, "status", "active_call"));
-      if(callDoc.exists()) {
-        const callerPeerId = callDoc.data().caller;
-        currentCall = peer.call(callerPeerId, localStream);
-        
-        currentCall.on('stream', (remoteStream) => {
-          const remoteAudio = document.getElementById("remoteAudio");
-          remoteAudio.srcObject = remoteStream;
-          remoteAudio.play().catch(e => console.log(e));
-          document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
-          document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
-          startTimer();
-        });
-      } else {
-        alert("عذراً، انتهت المكالمة.");
-        endCall();
-      }
     }
   } catch(err) {
-    alert("تعذر تشغيل الميكروفون. يرجى التأكد من إعطاء الصلاحيات.");
+    alert("تعذر تشغيل الميكروفون.");
     endCall();
   }
 };
@@ -469,7 +450,7 @@ window.sendMessage = async function(content, type="text"){
       createdAt: Date.now()
     });
   }catch(error){
-    alert("فشل الإرسال.");
+    alert("فشل الإرسال: تأكد من تفعيل قواعد القراءة والكتابة في فايربيس.");
   }
 };
 
@@ -648,7 +629,7 @@ if(!isAdmin){
     for(const docId in messageElements){
       const item = messageElements[docId];
       const timeLeft = 120000 - (now - item.data.createdAt);
-      if(timeLeft timeLeft <= 0){
+      if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
       }else{
