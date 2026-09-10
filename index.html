@@ -530,38 +530,86 @@ window.handleImageUpload = function(event) {
 
 let mediaRecorder;
 let audioChunks = [];
+let audioBlob = null;
+let audioUrl = null;
+
 window.toggleRecord = async function(){
   if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
   const micBtn = document.getElementById("micBtn");
+  
   if(!mediaRecorder || mediaRecorder.state === "inactive"){
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
+      
       mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = function() {
-          window.sendMessage(reader.result, "audio");
-        };
+      
+      mediaRecorder.onstop = () => {
+        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        audioUrl = URL.createObjectURL(audioBlob);
+        showAudioPreview(audioUrl);
       };
+
       mediaRecorder.start();
       micBtn.classList.add("recording");
+      micBtn.title = "إيقاف التسجيل";
     } catch(err) {
       alert("تعذر الوصول للميكروفون.");
     }
   } else {
     mediaRecorder.stop();
     micBtn.classList.remove("recording");
+    micBtn.title = "تسجيل صوتي";
   }
 };
 
+function showAudioPreview(url) {
+  const inputArea = document.querySelector(".input-area");
+  inputArea.innerHTML = `
+    <button class="icon-btn" style="color: #fa383e;" title="حذف" onclick="cancelAudioPreview()">🗑️</button>
+    <audio controls src="${url}" style="flex: 1; height: 36px; outline: none;"></audio>
+    <button class="icon-btn send-btn" style="color: #31a24c;" title="إرسال التسجيل" onclick="sendRecordedAudio()">
+      <svg height="18" viewBox="0 0 24 24" width="18" fill="#31a24c"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  `;
+}
+
+window.cancelAudioPreview = function() {
+  audioBlob = null;
+  audioUrl = null;
+  restoreInputArea();
+};
+
+window.sendRecordedAudio = function() {
+  if (!audioBlob) return;
+  const reader = new FileReader();
+  reader.readAsDataURL(audioBlob);
+  reader.onloadend = function() {
+    window.sendMessage(reader.result, "audio");
+    cancelAudioPreview();
+  };
+};
+
+function restoreInputArea() {
+  const inputArea = document.querySelector(".input-area");
+  inputArea.innerHTML = `
+    <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+    <button class="icon-btn image-btn" title="إرسال صورة" onclick="document.getElementById('imageInput').click()">🖼️</button>
+    <button id="micBtn" class="icon-btn mic-btn" title="تسجيل صوتي" onclick="toggleRecord()">🎤</button>
+    <input type="text" id="messageInput" placeholder="اكتب رسالة..." autocomplete="off">
+    <button class="icon-btn send-btn" onclick="sendMessage()" title="إرسال">
+      <svg height="18" viewBox="0 0 24 24" width="18"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  `;
+  
+  document.getElementById("messageInput").addEventListener("keypress", function(event){
+    if(event.key==="Enter") window.sendMessage(null, "text");
+  });
+}
+
 let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
 const messageElements={};
-
-// تحديد المدة بناءً على ما إذا كان المستخدم مديراً (5 ساعات) أو زائراً (دقيقة ونص = 90 ثانية)
 const EXPIRATION_TIME = isAdmin ? (5 * 60 * 60 * 1000) : (90 * 1000);
 
 onSnapshot(q, (snapshot)=>{
