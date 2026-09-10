@@ -230,8 +230,8 @@ window.verifyVisitorPassword = async function() {
     const visSnap = await getDoc(activeVisitorDocRef);
     if(visSnap.exists()) {
       const data = visSnap.data();
-      // تم تعديل مهلة التحقق للمستخدم الآخر لتصبح 12 ساعة (43200000 مللي ثانية)
-      if(data.active && (Date.now() - data.lastSeen < 43200000) && data.userId !== myId) {
+      // مهلة 10 ساعات (36000000 مللي ثانية) للتحقق من استدعاء المدير لشخص آخر
+      if(data.active && (Date.now() - data.lastSeen < 36000000) && data.userId !== myId) {
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("blockScreen").style.display = "flex";
         return;
@@ -636,20 +636,18 @@ onSnapshot(q, (snapshot)=>{
         bodyDiv.appendChild(textSpan);
       }
 
-      if(!isAdmin){
-        const age = Date.now() - data.createdAt;
-        // تم زيادة مهلة حذف الرسائل للزائر لتصبح 12 ساعة (43200000 مللي ثانية)
-        if(age >= 43200000) return;
+      const age = Date.now() - data.createdAt;
+      const limitTime = 36000000; // 10 ساعات للكل (رسائل المدير والزائر)
+      if(age >= limitTime) return;
 
-        const actionsDiv = document.createElement("div");
-        actionsDiv.className = "comment-actions";
-        const timerSpan = document.createElement("span");
-        timerSpan.className = "timer-text";
-        timerSpan.id = "timer_" + docId;
-        actionsDiv.appendChild(timerSpan);
-        bodyDiv.appendChild(actionsDiv);
-        wrapperDiv.dataset.createdAt = data.createdAt;
-      }
+      const actionsDiv = document.createElement("div");
+      actionsDiv.className = "comment-actions";
+      const timerSpan = document.createElement("span");
+      timerSpan.className = "timer-text";
+      timerSpan.id = "timer_" + docId;
+      actionsDiv.appendChild(timerSpan);
+      bodyDiv.appendChild(actionsDiv);
+      wrapperDiv.dataset.createdAt = data.createdAt;
 
       messageDiv.appendChild(bodyDiv);
       wrapperDiv.appendChild(messageDiv);
@@ -665,28 +663,26 @@ onSnapshot(q, (snapshot)=>{
   });
 });
 
-if(!isAdmin){
-  setInterval(()=>{
-    const now = Date.now();
-    for(const docId in messageElements){
-      const item = messageElements[docId];
-      // تحديث عداد الحذف التلقائي ليحسب على مدار 12 ساعة (43200000 مللي ثانية)
-      const timeLeft = 43200000 - (now - item.data.createdAt);
-      if(timeLeft <= 0){
-        item.element.remove();
-        delete messageElements[docId];
-      }else{
-        const timerSpan = document.getElementById("timer_" + docId);
-        if(timerSpan){
-          const hours = Math.floor(timeLeft / 3600000);
-          const mins = Math.floor((timeLeft % 3600000) / 60000);
-          const secs = Math.ceil((timeLeft % 60000) / 1000);
-          timerSpan.textContent = `يحذف خلال: ${hours}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        }
+setInterval(()=>{
+  const now = Date.now();
+  for(const docId in messageElements){
+    const item = messageElements[docId];
+    const limitTime = 36000000; // 10 ساعات للكل
+    const timeLeft = limitTime - (now - item.data.createdAt);
+    if(timeLeft <= 0){
+      item.element.remove();
+      delete messageElements[docId];
+    }else{
+      const timerSpan = document.getElementById("timer_" + docId);
+      if(timerSpan){
+        const hours = Math.floor(timeLeft / 3600000);
+        const mins = Math.floor((timeLeft % 3600000) / 60000);
+        const secs = Math.ceil((timeLeft % 60000) / 1000);
+        timerSpan.textContent = `يحذف خلال: ${hours}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
       }
     }
-  }, 1000);
-}
+  }
+}, 1000);
 </script>
 </body>
 </html>
