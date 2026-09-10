@@ -230,8 +230,7 @@ window.verifyVisitorPassword = async function() {
     const visSnap = await getDoc(activeVisitorDocRef);
     if(visSnap.exists()) {
       const data = visSnap.data();
-      // مهلة 10 ساعات (36000000 مللي ثانية) للتحقق من استدعاء المدير لشخص آخر
-      if(data.active && (Date.now() - data.lastSeen < 36000000) && data.userId !== myId) {
+      if(data.active && (Date.now() - data.lastSeen < 43200000) && data.userId !== myId) {
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("blockScreen").style.display = "flex";
         return;
@@ -561,6 +560,7 @@ window.toggleRecord = async function(){
 
 let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
 const messageElements={};
+const EXPIRATION_TIME = 5 * 60 * 60 * 1000; // 5 ساعات بالمللي ثانية
 
 onSnapshot(q, (snapshot)=>{
   const messagesContainer = document.getElementById("messages");
@@ -569,6 +569,9 @@ onSnapshot(q, (snapshot)=>{
     const data = change.doc.data();
     if(change.type==="added"){
       if(messageElements[docId]) return;
+
+      const age = Date.now() - data.createdAt;
+      if(age >= EXPIRATION_TIME) return;
 
       const wrapperDiv = document.createElement("div");
       const isMyMessage = (data.senderId === myId);
@@ -636,10 +639,6 @@ onSnapshot(q, (snapshot)=>{
         bodyDiv.appendChild(textSpan);
       }
 
-      const age = Date.now() - data.createdAt;
-      const limitTime = 36000000; // 10 ساعات للكل (رسائل المدير والزائر)
-      if(age >= limitTime) return;
-
       const actionsDiv = document.createElement("div");
       actionsDiv.className = "comment-actions";
       const timerSpan = document.createElement("span");
@@ -667,11 +666,13 @@ setInterval(()=>{
   const now = Date.now();
   for(const docId in messageElements){
     const item = messageElements[docId];
-    const limitTime = 36000000; // 10 ساعات للكل
-    const timeLeft = limitTime - (now - item.data.createdAt);
+    const timeLeft = EXPIRATION_TIME - (now - item.data.createdAt);
     if(timeLeft <= 0){
       item.element.remove();
       delete messageElements[docId];
+      if(isAdmin) {
+        window.deleteMessage(docId);
+      }
     }else{
       const timerSpan = document.getElementById("timer_" + docId);
       if(timerSpan){
