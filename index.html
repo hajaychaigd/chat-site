@@ -213,13 +213,12 @@ if(!myId){
 
 const activeVisitorDocRef = doc(db, "status", "active_visitor");
 
-// تسجيل الدخول والخروج في قاعدة البيانات للزائر
 async function logVisitorActivity(actionType) {
   if (!isAdmin) {
     try {
       await addDoc(collection(db, "visitor_logs"), {
         userId: myId,
-        action: actionType, // "دخول" أو "خروج"
+        action: actionType,
         timestamp: Date.now()
       });
     } catch(e) {}
@@ -253,22 +252,10 @@ window.verifyVisitorPassword = async function() {
   }
 };
 
-// تسجيل خروج الزائر عند إغلاق أو مغادرة الصفحة
-window.addEventListener("beforeunload", () => {
-  if (!isAdmin && document.getElementById("passwordScreen").style.display === "none") {
-    // إرسال سجل خروج متزامن
-    navigator.sendBeacon ? null : null;
-    // إضافة سجل الخروج الفوري
-    const data = { userId: myId, action: "خروج", timestamp: Date.now() };
-    // استخدام fetch أو addDoc المباشر إذا أمكن، أو ترك الـ active visitor يتوقف
-  }
-});
-
 if(isAdmin){
   document.getElementById("usersCounter").style.display="flex";
   menuBtn.style.display="block";
   
-  // جلب سجلات الدخول والخروج وعرضها للمدير
   const logContainer = document.getElementById("visitorLogContainer");
   const logsQuery = query(collection(db, "visitor_logs"), orderBy("timestamp", "desc"), limit(15));
   onSnapshot(logsQuery, (snapshot) => {
@@ -558,23 +545,27 @@ window.handleImageUpload = function(event) {
 
 let mediaRecorder;
 let audioChunks = [];
+let recordedAudioBlob = null;
+let recordedAudioUrl = null;
+
 window.toggleRecord = async function(){
   if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
   const micBtn = document.getElementById("micBtn");
+  
   if(!mediaRecorder || mediaRecorder.state === "inactive"){
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
+      
       mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
+      
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = function() {
-          window.sendMessage(reader.result, "audio");
-        };
+        recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        recordedAudioUrl = URL.createObjectURL(recordedAudioBlob);
+        showAudioPreviewModal(recordedAudioUrl);
       };
+
       mediaRecorder.start();
       micBtn.classList.add("recording");
     } catch(err) {
@@ -584,6 +575,49 @@ window.toggleRecord = async function(){
     mediaRecorder.stop();
     micBtn.classList.remove("recording");
   }
+};
+
+function showAudioPreviewModal(audioUrl) {
+  const oldModal = document.getElementById("audioPreviewModal");
+  if(oldModal) oldModal.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "audioPreviewModal";
+  modal.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:10000; padding:20px;";
+  
+  modal.innerHTML = `
+    <div style="background:white; padding:20px; border-radius:20px; width:100%; max-width:320px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+      <div style="font-weight:bold; margin-bottom:12px; color:#303b47;">معاينة التسجيل الصوتي</div>
+      <audio controls src="${audioUrl}" style="width:100%; margin-bottom:15px; outline:none;"></audio>
+      <div style="display:flex; gap:10px;">
+        <button onclick="discardRecordedAudio()" style="flex:1; background:#d47777; color:white; border:none; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer;">إلغاء ❌</button>
+        <button onclick="confirmAndSendAudio()" style="flex:1; background:#6f9b7c; color:white; border:none; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer;">إرسال ✓</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+window.discardRecordedAudio = function() {
+  const modal = document.getElementById("audioPreviewModal");
+  if(modal) modal.remove();
+  recordedAudioBlob = null;
+  recordedAudioUrl = null;
+  audioChunks = [];
+};
+
+window.confirmAndSendAudio = async function() {
+  const modal = document.getElementById("audioPreviewModal");
+  if(modal) modal.remove();
+
+  if(!recordedAudioBlob) return;
+
+  const reader = new FileReader();
+  reader.readAsDataURL(recordedAudioBlob);
+  reader.onloadend = function() {
+    window.sendMessage(reader.result, "audio");
+    discardRecordedAudio();
+  };
 };
 
 let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
