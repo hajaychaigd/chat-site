@@ -560,7 +560,9 @@ window.toggleRecord = async function(){
 
 let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
 const messageElements={};
-const EXPIRATION_TIME = 5 * 60 * 60 * 1000; // 5 ساعات بالمللي ثانية
+
+// تحديد المدة بناءً على ما إذا كان المستخدم مديراً (5 ساعات) أو زائراً (دقيقة ونص = 90 ثانية)
+const EXPIRATION_TIME = isAdmin ? (5 * 60 * 60 * 1000) : (90 * 1000);
 
 onSnapshot(q, (snapshot)=>{
   const messagesContainer = document.getElementById("messages");
@@ -676,10 +678,16 @@ setInterval(()=>{
     }else{
       const timerSpan = document.getElementById("timer_" + docId);
       if(timerSpan){
-        const hours = Math.floor(timeLeft / 3600000);
-        const mins = Math.floor((timeLeft % 3600000) / 60000);
-        const secs = Math.ceil((timeLeft % 60000) / 1000);
-        timerSpan.textContent = `يحذف خلال: ${hours}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        if(isAdmin) {
+          const hours = Math.floor(timeLeft / 3600000);
+          const mins = Math.floor((timeLeft % 3600000) / 60000);
+          const secs = Math.ceil((timeLeft % 60000) / 1000);
+          timerSpan.textContent = `يحذف خلال: ${hours}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        } else {
+          const mins = Math.floor(timeLeft / 60000);
+          const secs = Math.ceil((timeLeft % 60000) / 1000);
+          timerSpan.textContent = `يحذف خلال: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
       }
     }
   }
