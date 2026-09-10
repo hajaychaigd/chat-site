@@ -102,7 +102,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
   <div class="block-card">
     <div class="block-icon" style="background:#eef2f6;">🔐</div>
     <div class="block-title">يرجى إدخال كلمة السر</div>
-    <div class="block-text">هذا الشات مخصص لمستخدم واحد فقط مع المدير. أدخل كلمة السر للدخول.</div>
+    <div class="block-text">الشات مخصص لمستخدم واحد فقط. أدخل كلمة السر للدخول.</div>
     <input type="password" id="visitorPassInput" class="pass-input" placeholder="أدخل كلمة السر هنا..." />
     <button class="pass-btn" onclick="verifyVisitorPassword()">دخول</button>
   </div>
@@ -112,7 +112,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
   <div class="block-card">
     <div class="block-icon">🔒</div>
     <div class="block-title">الشات مشغول حالياً</div>
-    <div class="block-text">يوجد مستخدم آخر يتحدث مع المدير الآن.<br>الرجاء المحاولة لاحقاً عندما يغادر.</div>
+    <div class="block-text">يوجد مستخدم آخر يتحدث مع المدير الآن.<br>الرجاء المحاولة لاحقاً.</div>
   </div>
 </div>
 
@@ -203,8 +203,11 @@ const bellBtn = document.getElementById("bellBtn");
 const menuBtn = document.getElementById("menuBtn");
 const dropdownMenu = document.getElementById("dropdownMenu");
 
-if(!isAdmin) {
-  document.getElementById("passwordScreen").style.display = "flex";
+// إنشاء معرف جلسة فريد لكل تبويب متصفح يفتحه الزائر
+let sessionToken = sessionStorage.getItem("visitor_session_token");
+if(!sessionToken){
+  sessionToken = "sess_" + Math.random().toString(36).substring(2) + Date.now();
+  sessionStorage.setItem("visitor_session_token", sessionToken);
 }
 
 let myId = localStorage.getItem("chat_user_id");
@@ -215,23 +218,40 @@ if(!myId){
 
 const activeVisitorDocRef = doc(db, "status", "active_visitor");
 
+if(!isAdmin) {
+  document.getElementById("passwordScreen").style.display = "flex";
+  
+  // التحقق الفوري عند فتح الصفحة إذا كان هناك زائر نشط آخر بالفعل
+  getDoc(activeVisitorDocRef).then((visSnap) => {
+    if(visSnap.exists()) {
+      const data = visSnap.data();
+      // إذا كان هناك زائر نشط وحديث (نبضة أقل من 6 ثوانٍ) وليس هو نفس التبويب
+      if(data.active && (Date.now() - data.lastSeen < 6000) && data.sessionToken !== sessionToken) {
+        document.getElementById("passwordScreen").style.display = "none";
+        document.getElementById("blockScreen").style.display = "flex";
+      }
+    }
+  });
+}
+
 window.verifyVisitorPassword = async function() {
   const pass = document.getElementById("visitorPassInput").value.trim();
   if(pass === "2026") {
     const visSnap = await getDoc(activeVisitorDocRef);
     if(visSnap.exists()) {
       const data = visSnap.data();
-      // تحقق إذا كان هناك زائر آخر متصل حديثاً (آخر نبضة خلال أقل من 5 ثوانٍ)
-      if(data.active && (Date.now() - data.lastSeen < 5000) && data.userId !== myId) {
+      if(data.active && (Date.now() - data.lastSeen < 6000) && data.sessionToken !== sessionToken) {
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("blockScreen").style.display = "flex";
         return;
       }
     }
     
+    // حجز المكان لهذا الزائر فقط
     await setDoc(activeVisitorDocRef, { 
       active: true, 
       userId: myId, 
+      sessionToken: sessionToken,
       peerId: myPeerId, 
       lastSeen: Date.now() 
     });
@@ -364,7 +384,7 @@ window.triggerCall = async function(){
       return;
     }
     targetId = adminDoc.data().peerId;
-    await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, lastSeen: Date.now() }, { merge: true });
+    await setDoc(activeVisitorDocRef, { active: true, userId: myId, sessionToken: sessionToken, peerId: myPeerId, lastSeen: Date.now() }, { merge: true });
   }
 
   document.getElementById("callScreen").style.display = "flex";
@@ -419,18 +439,21 @@ if(isAdmin){
   setDoc(adminStatusRef, { online:true, lastSeen:Date.now() });
   setInterval(()=>{ setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); },4000);
 } else {
-  // إرسال نبضة حضور دورية للزائر، وإذا قام بإغلاق الصفحة يتم حذف حالة نشاطه فوراً
+  // إرسال نبضة حضور دورية، وإذا قام الزائر بتخطي كلمة السر يتم تحديث وثيقة الحجز باسمه وتوكن جلسته
   setInterval(async()=>{
     if(document.getElementById("passwordScreen").style.display === "none" && document.getElementById("blockScreen").style.display === "none"){
       try{
-        await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
+        await setDoc(activeVisitorDocRef, { active:true, userId:myId, sessionToken: sessionToken, peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
       }catch(e){}
     }
   },2000);
 
   window.addEventListener("beforeunload", async () => {
     try {
-      await deleteDoc(activeVisitorDocRef);
+      const visSnap = await getDoc(activeVisitorDocRef);
+      if(visSnap.exists() && visSnap.data().sessionToken === sessionToken) {
+        await deleteDoc(activeVisitorDocRef);
+      }
     } catch(e) {}
   });
 }
@@ -517,7 +540,6 @@ window.toggleRecord = async function(){
   }
 };
 
-// جلب آخر 12 ساعة للمدير، وكل الرسائل للزائر
 let q;
 if (isAdmin) {
   const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
