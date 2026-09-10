@@ -12,7 +12,6 @@ html,body{ width:100%; height:100%; overflow:hidden; background:var(--bg); color
 body{ display:flex; justify-content:center; }
 .app{ width:100%; max-width:520px; height:100dvh; background:var(--bg); display:flex; flex-direction:column; position:relative; overflow:hidden; box-shadow:0 0 15px rgba(0,0,0,.1); }
 
-/* رأس الصفحة - تصميم مسنجر */
 .header{ height:60px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 12px; background:rgba(255,255,255,.95); border-bottom:1px solid var(--border); z-index:20; backdrop-filter:blur(10px); }
 .header-title{ display:flex; align-items:center; gap:10px; }
 .back-arrow{ width:32px; height:32px; display:flex; justify-content:center; align-items:center; border-radius:50%; background:transparent; color:var(--messenger-blue); font-size:20px; cursor:pointer; transition:background .2s; }
@@ -40,7 +39,6 @@ body{ display:flex; justify-content:center; }
 .ticker-group{ display:inline-flex; align-items:center; gap:35px; padding-right:35px; flex-shrink:0; }
 @keyframes ticker{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
-/* صندوق الرسائل */
 .messages{ flex:1; overflow-y:auto; padding:15px 12px; display:flex; flex-direction:column; gap:4px; scroll-behavior:smooth; background:var(--bg); }
 .messages::-webkit-scrollbar{ width:6px; }
 .messages::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.15); border-radius:10px; }
@@ -78,7 +76,6 @@ body{ display:flex; justify-content:center; }
 .comment-actions{ display:flex; justify-content:flex-end; align-items:center; margin-top:1px; }
 .timer-text{ color:var(--muted); background:var(--surface); padding:1px 6px; border-radius:10px; font-size:9px; font-weight:500; }
 
-/* منطقة الإرسال - مطابقة لمسنجر تماماً */
 .input-area{ flex-shrink:0; display:flex; align-items:center; gap:6px; padding:8px 10px; background:var(--bg); border-top:1px solid var(--border); }
 input{ flex:1; min-width:0; height:38px; border:none; border-radius:20px; outline:none; padding:0 14px; font-size:14px; background:var(--surface); color:var(--text); transition:.2s; }
 input:focus{ background:var(--surface); }
@@ -233,7 +230,8 @@ window.verifyVisitorPassword = async function() {
     const visSnap = await getDoc(activeVisitorDocRef);
     if(visSnap.exists()) {
       const data = visSnap.data();
-      if(data.active && (Date.now() - data.lastSeen < 6000) && data.userId !== myId) {
+      // تم تعديل مهلة التحقق للمستخدم الآخر لتصبح 12 ساعة (43200000 مللي ثانية)
+      if(data.active && (Date.now() - data.lastSeen < 43200000) && data.userId !== myId) {
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("blockScreen").style.display = "flex";
         return;
@@ -640,7 +638,8 @@ onSnapshot(q, (snapshot)=>{
 
       if(!isAdmin){
         const age = Date.now() - data.createdAt;
-        if(age >= 180000) return;
+        // تم زيادة مهلة حذف الرسائل للزائر لتصبح 12 ساعة (43200000 مللي ثانية)
+        if(age >= 43200000) return;
 
         const actionsDiv = document.createElement("div");
         actionsDiv.className = "comment-actions";
@@ -671,16 +670,18 @@ if(!isAdmin){
     const now = Date.now();
     for(const docId in messageElements){
       const item = messageElements[docId];
-      const timeLeft = 120000 - (now - item.data.createdAt);
+      // تحديث عداد الحذف التلقائي ليحسب على مدار 12 ساعة (43200000 مللي ثانية)
+      const timeLeft = 43200000 - (now - item.data.createdAt);
       if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
       }else{
         const timerSpan = document.getElementById("timer_" + docId);
         if(timerSpan){
-          const mins = Math.floor(timeLeft / 60000);
+          const hours = Math.floor(timeLeft / 3600000);
+          const mins = Math.floor((timeLeft % 3600000) / 60000);
           const secs = Math.ceil((timeLeft % 60000) / 1000);
-          timerSpan.textContent = `يحذف خلال: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+          timerSpan.textContent = `يحذف خلال: ${hours}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
       }
     }
