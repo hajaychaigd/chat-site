@@ -18,7 +18,15 @@ body{ display:flex; justify-content:center; }
 .title-area{ display:flex; flex-direction:column; gap:2px; }
 .title{ font-size:17px; font-weight:700; color:#263342; }
 .subtitle{ font-size:10px; color:#93a0ad; }
-.status-dot{ width:9px; height:9px; border-radius:50%; background:var(--red); box-shadow:0 0 0 4px rgba(212,119,119,.10); }
+.status-dot{ width:9px; height:9px; border-radius:50%; background:var(--red); box-shadow:0 0 0 4px rgba(212,119,119,.10); transition:.2s; }
+.status-dot.online{ background:var(--green); box-shadow:0 0 0 4px rgba(111,155,124,.12); }
+.presence-list{ max-height:260px; overflow-y:auto; margin-top:8px; }
+.presence-item{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 4px; border-bottom:1px dashed #edf1f4; font-size:12px; }
+.presence-user{ display:flex; align-items:center; gap:7px; min-width:0; }
+.presence-name{ font-weight:700; color:#46515d; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.presence-state{ display:flex; align-items:center; gap:5px; font-size:10px; color:#8a96a3; white-space:nowrap; }
+.presence-dot{ width:7px; height:7px; border-radius:50%; background:#c9d0d7; }
+.presence-dot.online{ background:var(--green); box-shadow:0 0 0 3px rgba(111,155,124,.10); }
 
 .header-actions{ display:flex; align-items:center; gap:7px; position:relative; }
 .mute-btn, .call-btn{ width:38px; height:38px; border:0; border-radius:13px; color:white; cursor:pointer; font-size:16px; display:flex; justify-content:center; align-items:center; transition:.2s; }
@@ -101,6 +109,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
     <div class="block-icon" style="background:#eef2f6;">🔐</div>
     <div class="block-title">يرجى إدخال كلمة السر</div>
     <div class="block-text">هذا الشات يتطلب كلمة سر للمتابعة والإرسال.</div>
+    <input type="text" id="visitorNameInput" class="pass-input" placeholder="اكتب اسمك..." maxlength="40" />
     <input type="password" id="visitorPassInput" class="pass-input" placeholder="أدخل كلمة السر هنا..." />
     <button class="pass-btn" onclick="verifyVisitorPassword()">دخول</button>
   </div>
@@ -148,6 +157,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
         <div id="visitorLogContainer">
           <div class="log-item">جاري التحميل...</div>
         </div>
+        <div id="presenceList" class="presence-list"></div>
       </div>
     </div>
   </div>
@@ -212,32 +222,64 @@ if(!myId){
 }
 
 const activeVisitorDocRef = doc(db, "status", "active_visitor");
+const myPresenceRef = doc(db, "presence", myId);
+const presenceCollectionRef = collection(db, "presence");
+let visitorName = localStorage.getItem("visitor_name") || "";
 
 window.verifyVisitorPassword = async function() {
   const pass = document.getElementById("visitorPassInput").value.trim();
-  if(pass === "2026") {
-    const visSnap = await getDoc(activeVisitorDocRef);
-    if(visSnap.exists()) {
-      const data = visSnap.data();
-      if(data.active && (Date.now() - data.lastSeen < 6000) && data.userId !== myId) {
-        document.getElementById("passwordScreen").style.display = "none";
-        document.getElementById("blockScreen").style.display = "flex";
-        return;
-      }
-    }
-    
-    await setDoc(activeVisitorDocRef, { 
-      active: true, 
-      userId: myId, 
-      peerId: myPeerId, 
-      lastSeen: Date.now() 
-    });
-
-    document.getElementById("passwordScreen").style.display = "none";
-  } else {
+  const nameInput = document.getElementById("visitorNameInput");
+  const name = nameInput.value.trim();
+  if(pass !== "2026") {
     alert("كلمة السر غير صحيحة!");
+    return;
+  }
+  if(!name) {
+    alert("اكتب اسمك أولاً حتى يظهر للمدير.");
+    nameInput.focus();
+    return;
+  }
+  visitorName = name;
+  localStorage.setItem("visitor_name", visitorName);
+  try {
+    await setDoc(myPresenceRef, { userId:myId, name:visitorName, peerId:myPeerId, role:"visitor", online:true, lastSeen:Date.now() }, {merge:true});
+    await setDoc(activeVisitorDocRef, { active:true, userId:myId, name:visitorName, peerId:myPeerId, lastSeen:Date.now() }, {merge:true});
+    await addDoc(collection(db, "visitor_logs"), { userId:myId, name:visitorName, type:"login", createdAt:Date.now() });
+    document.getElementById("passwordScreen").style.display = "none";
+    updateOwnStatus(true);
+  } catch(error) {
+    console.error(error);
+    alert("تعذر تسجيل الدخول. تأكد من قواعد Firestore.");
   }
 };
+
+function updateOwnStatus(online){
+  const dot=document.getElementById("statusDot");
+  if(dot) dot.classList.toggle("online",!!online);
+}
+function setHeaderStatus(online,label){
+  const dot=document.getElementById("statusDot");
+  const subtitle=document.querySelector(".subtitle");
+  if(dot) dot.classList.toggle("online",!!online);
+  if(subtitle && label) subtitle.textContent=label;
+}
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+}
+function renderPresence(snapshot){
+  if(!isAdmin) return;
+  const list=document.getElementById("presenceList");
+  const users=[]; snapshot.forEach(x=>users.push(x.data()));
+  users.sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
+  const onlineUsers=users.filter(u=>u.role==="visitor" && Date.now()-(u.lastSeen||0)<8000);
+  document.getElementById("onlineCount").textContent=onlineUsers.length;
+  list.innerHTML=users.length?users.map(u=>{
+    const online=u.role==="visitor" && Date.now()-(u.lastSeen||0)<8000;
+    return `<div class="presence-item"><div class="presence-user"><span class="presence-dot ${online?'online':''}"></span><span class="presence-name">${escapeHtml(u.name||"زائر")}</span></div><span class="presence-state">${online?'متصل':'غير متصل'}</span></div>`;
+  }).join(""):"<div class='log-item'>لا يوجد زوار حتى الآن.</div>";
+  const firstOnline=onlineUsers[0];
+  setHeaderStatus(!!firstOnline, firstOnline ? `الزائر: ${firstOnline.name} • متصل` : "لا يوجد زائر متصل حالياً");
+}
 
 if(isAdmin){
   document.getElementById("usersCounter").style.display="flex";
@@ -251,6 +293,22 @@ menuBtn.addEventListener("click",(e)=>{
   dropdownMenu.style.display = dropdownMenu.style.display==="flex" ? "none" : "flex";
 });
 window.addEventListener("click",()=>{ dropdownMenu.style.display="none"; });
+
+if(isAdmin){
+  onSnapshot(presenceCollectionRef, renderPresence);
+  onSnapshot(collection(db,"visitor_logs"), snap=>{
+    const logs=[]; snap.forEach(x=>logs.push(x.data()));
+    logs.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    const c=document.getElementById("visitorLogContainer");
+    c.innerHTML=logs.slice(0,8).map(l=>`<div class="log-item">${escapeHtml(l.name||"زائر")} — ${l.type==="login"?"دخل الشات":"خرج من الشات"}<br><small>${new Date(l.createdAt).toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join("")||"<div class='log-item'>لا يوجد سجل بعد.</div>";
+  });
+} else {
+  onSnapshot(doc(db,"status","admin_status"), snap=>{
+    const d=snap.exists()?snap.data():{};
+    const online=!!d.online && Date.now()-(d.lastSeen||0)<8000;
+    setHeaderStatus(online,online?"المدير • متصل":"المدير • غير متصل");
+  });
+}
 
 const myPeerId = (isAdmin ? "admin_main_peer_id_" : "visitor_peer_") + myId;
 const peer = new Peer(myPeerId, {
@@ -438,11 +496,19 @@ if(isAdmin){
   setInterval(async()=>{
     if(document.getElementById("passwordScreen").style.display === "none" && document.getElementById("blockScreen").style.display === "none"){
       try{
-        await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
+        await setDoc(myPresenceRef, { userId:myId, name:visitorName||"زائر", peerId:myPeerId, role:"visitor", online:true, lastSeen:Date.now() }, {merge:true});
+        await setDoc(activeVisitorDocRef, { active:true, userId:myId, name:visitorName||"زائر", peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
       }catch(e){}
     }
   },3000);
 }
+
+window.addEventListener("beforeunload",()=>{
+  if(!isAdmin && document.getElementById("passwordScreen").style.display==="none"){
+    setDoc(myPresenceRef,{online:false,lastSeen:Date.now()},{merge:true}).catch(()=>{});
+    addDoc(collection(db,"visitor_logs"),{userId:myId,name:visitorName||"زائر",type:"logout",createdAt:Date.now()}).catch(()=>{});
+  }
+});
 
 window.sendMessage = async function(content, type="text"){
   if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
