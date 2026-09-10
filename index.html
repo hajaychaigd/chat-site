@@ -102,7 +102,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
   <div class="block-card">
     <div class="block-icon" style="background:#eef2f6;">🔐</div>
     <div class="block-title">يرجى إدخال كلمة السر</div>
-    <div class="block-text">هذا الشات يتطلب كلمة سر للمتابعة والإرسال.</div>
+    <div class="block-text">هذا الشات مخصص لمستخدم واحد فقط مع المدير. أدخل كلمة السر للدخول.</div>
     <input type="password" id="visitorPassInput" class="pass-input" placeholder="أدخل كلمة السر هنا..." />
     <button class="pass-btn" onclick="verifyVisitorPassword()">دخول</button>
   </div>
@@ -112,7 +112,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
   <div class="block-card">
     <div class="block-icon">🔒</div>
     <div class="block-title">الشات مشغول حالياً</div>
-    <div class="block-text">يوجد مستخدم آخر يتحدث مع المدير في الوقت الحالي.<br>الرجاء المحاولة لاحقاً.</div>
+    <div class="block-text">يوجد مستخدم آخر يتحدث مع المدير الآن.<br>الرجاء المحاولة لاحقاً عندما يغادر.</div>
   </div>
 </div>
 
@@ -136,19 +136,19 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
       <span class="back-arrow">←</span>
       <div class="title-area">
         <div class="title">المحادثة المباشرة</div>
-        <div class="subtitle">اتصال صوتي ورسائل فورية</div>
+        <div class="subtitle">مستخدم واحد مع المدير</div>
       </div>
       <span id="statusDot" class="status-dot"></span>
     </div>
     <div class="header-actions">
       <button id="callBtn" class="call-btn" title="اتصال صوتي" onclick="triggerCall()">📞</button>
       <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
-      <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">0</span></div>
+      <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">1</span></div>
       <button id="menuBtn" class="menu-btn">⋮</button>
       <div id="dropdownMenu" class="dropdown-menu">
-        <div class="dropdown-title">سجل دخول وخروج الزائر</div>
+        <div class="dropdown-title">حالة الزائر الحالي</div>
         <div id="visitorLogContainer">
-          <div class="log-item">جاري التحميل...</div>
+          <div class="log-item">متصل الآن</div>
         </div>
       </div>
     </div>
@@ -221,7 +221,8 @@ window.verifyVisitorPassword = async function() {
     const visSnap = await getDoc(activeVisitorDocRef);
     if(visSnap.exists()) {
       const data = visSnap.data();
-      if(data.active && (Date.now() - data.lastSeen < 6000) && data.userId !== myId) {
+      // تحقق إذا كان هناك زائر آخر متصل حديثاً (آخر نبضة خلال أقل من 5 ثوانٍ)
+      if(data.active && (Date.now() - data.lastSeen < 5000) && data.userId !== myId) {
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("blockScreen").style.display = "flex";
         return;
@@ -299,13 +300,8 @@ function stopTimer() {
 function handleRemoteStream(remoteStream) {
   const remoteAudio = document.getElementById("remoteAudio");
   remoteAudio.srcObject = remoteStream;
-  remoteAudio.play().then(() => {
-    console.log("تم تشغيل الصوت بنجاح");
-  }).catch(e => {
-    console.log("خطأ في تشغيل الصوت التلقائي:", e);
-    document.body.addEventListener('click', () => {
-      remoteAudio.play();
-    }, { once: true });
+  remoteAudio.play().catch(e => {
+    document.body.addEventListener('click', () => { remoteAudio.play(); }, { once: true });
   });
   document.getElementById("callStatusText").textContent = "المكالمة نشطة الآن...";
   document.getElementById("callActionsContainer").innerHTML = '<button class="end-call-btn" onclick="endCall()">إنهاء الاتصال</button>';
@@ -348,7 +344,7 @@ window.triggerCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   } catch(err) {
-    alert("تعذر الوصول للميكروفون. يرجى السماح بالصلاحيات.");
+    alert("تعذر الوصول للميكروفون.");
     return;
   }
 
@@ -385,10 +381,7 @@ window.triggerCall = async function(){
   const call = peer.call(targetId, localStream);
   currentCall = call;
   
-  call.on('stream', (remoteStream) => {
-    handleRemoteStream(remoteStream);
-  });
-
+  call.on('stream', (remoteStream) => { handleRemoteStream(remoteStream); });
   call.on('close', () => { endCall(); });
   call.on('error', () => { endCall(); });
 };
@@ -396,20 +389,15 @@ window.triggerCall = async function(){
 window.acceptCall = async function(){
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    
     if(currentCall) {
       currentCall.answer(localStream);
-      currentCall.on('stream', (remoteStream) => {
-        handleRemoteStream(remoteStream);
-      });
+      currentCall.on('stream', (remoteStream) => { handleRemoteStream(remoteStream); });
     } else {
       const callDoc = await getDoc(doc(db, "status", "active_call"));
       if(callDoc.exists()) {
         const callerPeerId = callDoc.data().caller;
         currentCall = peer.call(callerPeerId, localStream);
-        currentCall.on('stream', (remoteStream) => {
-          handleRemoteStream(remoteStream);
-        });
+        currentCall.on('stream', (remoteStream) => { handleRemoteStream(remoteStream); });
       }
     }
   } catch(err) {
@@ -421,15 +409,9 @@ window.acceptCall = async function(){
 window.endCall = async function(){
   document.getElementById("callScreen").style.display = "none";
   stopTimer();
-  try {
-    await deleteDoc(doc(db, "status", "active_call"));
-  } catch(e) {}
-  
+  try { await deleteDoc(doc(db, "status", "active_call")); } catch(e) {}
   if(currentCall) { currentCall.close(); currentCall = null; }
-  if(localStream) {
-    localStream.getTracks().forEach(track => track.stop());
-    localStream = null;
-  }
+  if(localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; }
 };
 
 if(isAdmin){
@@ -437,13 +419,20 @@ if(isAdmin){
   setDoc(adminStatusRef, { online:true, lastSeen:Date.now() });
   setInterval(()=>{ setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); },4000);
 } else {
+  // إرسال نبضة حضور دورية للزائر، وإذا قام بإغلاق الصفحة يتم حذف حالة نشاطه فوراً
   setInterval(async()=>{
     if(document.getElementById("passwordScreen").style.display === "none" && document.getElementById("blockScreen").style.display === "none"){
       try{
         await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
       }catch(e){}
     }
-  },3000);
+  },2000);
+
+  window.addEventListener("beforeunload", async () => {
+    try {
+      await deleteDoc(activeVisitorDocRef);
+    } catch(e) {}
+  });
 }
 
 window.sendMessage = async function(content, type="text"){
@@ -462,16 +451,12 @@ window.sendMessage = async function(content, type="text"){
       createdAt: Date.now()
     });
   }catch(error){
-    alert("فشل الإرسال: تأكد من تفعيل قواعد القراءة والكتابة في فايربيس.");
+    alert("فشل الإرسال.");
   }
 };
 
 window.deleteMessage = async function(docId) {
-  try {
-    await deleteDoc(doc(db, "messages", docId));
-  } catch(e) {
-    alert("تعذر حذف الرسالة.");
-  }
+  try { await deleteDoc(doc(db, "messages", docId)); } catch(e) {}
 };
 
 document.getElementById("messageInput").addEventListener("keypress", function(event){
@@ -489,30 +474,17 @@ window.handleImageUpload = function(event) {
     img.src = e.target.result;
     img.onload = function() {
       const canvas = document.createElement('canvas');
-      const MAX_WIDTH = 500;
-      const MAX_HEIGHT = 500;
-      let width = img.width;
-      let height = img.height;
-
+      const MAX_WIDTH = 500, MAX_HEIGHT = 500;
+      let width = img.width, height = img.height;
       if (width > height) {
-        if (width > MAX_WIDTH) {
-          height *= MAX_WIDTH / width;
-          width = MAX_WIDTH;
-        }
+        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
       } else {
-        if (height > MAX_HEIGHT) {
-          width *= MAX_HEIGHT / height;
-          height = MAX_HEIGHT;
-        }
+        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
       }
-
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = width; canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
-
-      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
-      window.sendMessage(compressedDataUrl, "image");
+      window.sendMessage(canvas.toDataURL('image/jpeg', 0.6), "image");
       event.target.value = "";
     };
   };
@@ -534,22 +506,18 @@ window.toggleRecord = async function(){
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
-        reader.onloadend = function() {
-          window.sendMessage(reader.result, "audio");
-        };
+        reader.onloadend = function() { window.sendMessage(reader.result, "audio"); };
       };
       mediaRecorder.start();
       micBtn.classList.add("recording");
-    } catch(err) {
-      alert("تعذر الوصول للميكروفون.");
-    }
+    } catch(err) { alert("تعذر الوصول للميكروفون."); }
   } else {
     mediaRecorder.stop();
     micBtn.classList.remove("recording");
   }
 };
 
-// التعديل هنا: إذا كان المستخدم هو المدير، يتم جلب الرسائل خلال آخر 12 ساعة فقط (12 ساعة = 43200000 مللي ثانية)
+// جلب آخر 12 ساعة للمدير، وكل الرسائل للزائر
 let q;
 if (isAdmin) {
   const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
@@ -604,7 +572,6 @@ onSnapshot(q, (snapshot)=>{
       if(data.isAudio){
         const audioWrapper = document.createElement("div");
         audioWrapper.className = "message-body-audio";
-        
         const audioEl = document.createElement("audio");
         audioEl.controls = true;
         audioEl.src = data.text;
@@ -614,11 +581,9 @@ onSnapshot(q, (snapshot)=>{
           const deleteBtn = document.createElement("button");
           deleteBtn.className = "delete-audio-btn";
           deleteBtn.innerHTML = "🗑️";
-          deleteBtn.title = "حذف التسجيل";
           deleteBtn.onclick = () => window.deleteMessage(docId);
           audioWrapper.appendChild(deleteBtn);
         }
-
         bodyDiv.appendChild(audioWrapper);
       } else if(data.isImage){
         const imgWrapper = document.createElement("div");
@@ -637,7 +602,6 @@ onSnapshot(q, (snapshot)=>{
       if(!isAdmin){
         const age = Date.now() - data.createdAt;
         if(age >= 180000) return;
-
         const actionsDiv = document.createElement("div");
         actionsDiv.className = "comment-actions";
         const timerSpan = document.createElement("span");
