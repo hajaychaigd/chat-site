@@ -180,7 +180,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -203,7 +203,6 @@ const bellBtn = document.getElementById("bellBtn");
 const menuBtn = document.getElementById("menuBtn");
 const dropdownMenu = document.getElementById("dropdownMenu");
 
-// إنشاء معرف جلسة فريد لكل تبويب متصفح يفتحه الزائر
 let sessionToken = sessionStorage.getItem("visitor_session_token");
 if(!sessionToken){
   sessionToken = "sess_" + Math.random().toString(36).substring(2) + Date.now();
@@ -221,42 +220,64 @@ const activeVisitorDocRef = doc(db, "status", "active_visitor");
 if(!isAdmin) {
   document.getElementById("passwordScreen").style.display = "flex";
   
-  // التحقق الفوري عند فتح الصفحة إذا كان هناك زائر نشط آخر بالفعل
-  getDoc(activeVisitorDocRef).then((visSnap) => {
+  // التحقق الفوري عند فتح الصفحة باستخدام المعاملات (Transaction) لمنع التداخل
+  runTransaction(db, async (transaction) => {
+    const visSnap = await transaction.get(activeVisitorDocRef);
     if(visSnap.exists()) {
       const data = visSnap.data();
-      // إذا كان هناك زائر نشط وحديث (نبضة أقل من 6 ثوانٍ) وليس هو نفس التبويب
-      if(data.active && (Date.now() - data.lastSeen < 6000) && data.sessionToken !== sessionToken) {
-        document.getElementById("passwordScreen").style.display = "none";
-        document.getElementById("blockScreen").style.display = "flex";
+      // إذا كان هناك زائر نشط وحديث (نبضة أقل من 8 ثوانٍ) وليس هو نفس التبويب
+      if(data.active && (Date.now() - data.lastSeen < 8000) && data.sessionToken !== sessionToken) {
+        return "busy";
       }
     }
-  });
-}
-
-window.verifyVisitorPassword = async function() {
-  const pass = document.getElementById("visitorPassInput").value.trim();
-  if(pass === "2026") {
-    const visSnap = await getDoc(activeVisitorDocRef);
-    if(visSnap.exists()) {
-      const data = visSnap.data();
-      if(data.active && (Date.now() - data.lastSeen < 6000) && data.sessionToken !== sessionToken) {
-        document.getElementById("passwordScreen").style.display = "none";
-        document.getElementById("blockScreen").style.display = "flex";
-        return;
-      }
-    }
-    
-    // حجز المكان لهذا الزائر فقط
-    await setDoc(activeVisitorDocRef, { 
+    // إذا لم يكن هناك زائر، قم بحجز المكان مؤقتاً بالبصمة الحالية
+    transaction.set(activeVisitorDocRef, { 
       active: true, 
       userId: myId, 
       sessionToken: sessionToken,
       peerId: myPeerId, 
       lastSeen: Date.now() 
     });
+    return "allowed";
+  }).then((result) => {
+    if(result === "busy") {
+      document.getElementById("passwordScreen").style.display = "none";
+      document.getElementById("blockScreen").style.display = "flex";
+    }
+  }).catch((err) => {});
+}
 
-    document.getElementById("passwordScreen").style.display = "none";
+window.verifyVisitorPassword = async function() {
+  const pass = document.getElementById("visitorPassInput").value.trim();
+  if(pass === "2026") {
+    try {
+      const result = await runTransaction(db, async (transaction) => {
+        const visSnap = await transaction.get(activeVisitorDocRef);
+        if(visSnap.exists()) {
+          const data = visSnap.data();
+          if(data.active && (Date.now() - data.lastSeen < 8000) && data.sessionToken !== sessionToken) {
+            return "busy";
+          }
+        }
+        transaction.set(activeVisitorDocRef, { 
+          active: true, 
+          userId: myId, 
+          sessionToken: sessionToken,
+          peerId: myPeerId, 
+          lastSeen: Date.now() 
+        });
+        return "success";
+      });
+
+      if(result === "busy") {
+        document.getElementById("passwordScreen").style.display = "none";
+        document.getElementById("blockScreen").style.display = "flex";
+      } else {
+        document.getElementById("passwordScreen").style.display = "none";
+      }
+    } catch(e) {
+      alert("حدث خطأ في الاتصال، حاول مرة أخرى.");
+    }
   } else {
     alert("كلمة السر غير صحيحة!");
   }
@@ -384,7 +405,6 @@ window.triggerCall = async function(){
       return;
     }
     targetId = adminDoc.data().peerId;
-    await setDoc(activeVisitorDocRef, { active: true, userId: myId, sessionToken: sessionToken, peerId: myPeerId, lastSeen: Date.now() }, { merge: true });
   }
 
   document.getElementById("callScreen").style.display = "flex";
@@ -439,14 +459,17 @@ if(isAdmin){
   setDoc(adminStatusRef, { online:true, lastSeen:Date.now() });
   setInterval(()=>{ setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); },4000);
 } else {
-  // إرسال نبضة حضور دورية، وإذا قام الزائر بتخطي كلمة السر يتم تحديث وثيقة الحجز باسمه وتوكن جلسته
+  // تحديث الحضور باستمرار للزائر الحالي فقط
   setInterval(async()=>{
     if(document.getElementById("passwordScreen").style.display === "none" && document.getElementById("blockScreen").style.display === "none"){
       try{
-        await setDoc(activeVisitorDocRef, { active:true, userId:myId, sessionToken: sessionToken, peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
+        const visSnap = await getDoc(activeVisitorDocRef);
+        if(visSnap.exists() && visSnap.data().sessionToken === sessionToken) {
+          await setDoc(activeVisitorDocRef, { active:true, userId:myId, sessionToken: sessionToken, peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
+        }
       }catch(e){}
     }
-  },2000);
+  },3000);
 
   window.addEventListener("beforeunload", async () => {
     try {
