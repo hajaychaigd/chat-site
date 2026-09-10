@@ -180,7 +180,7 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -466,7 +466,6 @@ window.sendMessage = async function(content, type="text"){
   }
 };
 
-// دالة حذف رسالة معينة من قاعدة البيانات
 window.deleteMessage = async function(docId) {
   try {
     await deleteDoc(doc(db, "messages", docId));
@@ -550,7 +549,15 @@ window.toggleRecord = async function(){
   }
 };
 
-let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
+// التعديل هنا: إذا كان المستخدم هو المدير، يتم جلب الرسائل خلال آخر 12 ساعة فقط (12 ساعة = 43200000 مللي ثانية)
+let q;
+if (isAdmin) {
+  const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
+  q = query(collection(db, "messages"), where("createdAt", ">=", twelveHoursAgo), orderBy("createdAt", "asc"));
+} else {
+  q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+}
+
 const messageElements={};
 
 onSnapshot(q, (snapshot)=>{
@@ -603,7 +610,6 @@ onSnapshot(q, (snapshot)=>{
         audioEl.src = data.text;
         audioWrapper.appendChild(audioEl);
 
-        // إضافة زر الحذف بجانب التسجيل الصوتي
         if(isMyMessage || isAdmin){
           const deleteBtn = document.createElement("button");
           deleteBtn.className = "delete-audio-btn";
