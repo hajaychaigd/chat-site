@@ -36,13 +36,13 @@ body{ display:flex; justify-content:center; }
 @keyframes ticker{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
 /* منطقة المحادثة */
-.messages{ flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:4px; background:#ffffff; scroll-behavior:smooth; }
+.messages{ flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:6px; background:#ffffff; scroll-behavior:smooth; }
 .messages::-webkit-scrollbar{ width:6px; }
 .messages::-webkit-scrollbar-thumb{ background:#bcc0c4; border-radius:10px; }
 
-.message-wrapper{ display:flex; width:100%; margin-bottom:2px; }
-.message-wrapper.my-message { justify-content: flex-end; }
-.message-wrapper.other-message { justify-content: flex-start; }
+.message-wrapper{ display:flex; flex-direction:column; width:100%; margin-bottom:4px; }
+.message-wrapper.my-message { align-items: flex-end; }
+.message-wrapper.other-message { align-items: flex-start; }
 
 /* فقاعات الرسائل مطابقة لماسنجر */
 .message { max-width: 75%; padding: 8px 12px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-break: break-word; position: relative; display: flex; flex-direction: column; gap: 2px; }
@@ -54,7 +54,9 @@ body{ display:flex; justify-content:center; }
 
 .message-body-audio audio { width: 180px; height: 32px; outline: none; }
 .message-body-image img { width: 100%; max-width: 180px; border-radius: 12px; display: block; }
-.timer-text{ font-size: 9px; color: #ffcccc; margin-top: 2px; font-weight: bold; }
+
+/* عداد الوقت خارج الفقاعة */
+.timer-text{ font-size: 10px; color: var(--text-sub); margin-top: 2px; padding: 0 4px; }
 
 /* شريط الكتابة السفلي */
 .input-area{ flex-shrink:0; display:flex; align-items:center; gap:8px; padding:10px 12px; background:#ffffff; border-top:1px solid var(--border-color); position:relative; }
@@ -599,6 +601,9 @@ onSnapshot(q, (snapshot)=>{
       timeSpan.textContent = messageDate.toLocaleTimeString("ar-EG", { hour: '2-digit', minute: '2-digit' });
       bodyDiv.appendChild(timeSpan);
 
+      messageDiv.appendChild(bodyDiv);
+      wrapperDiv.appendChild(messageDiv);
+
       if(!isAdmin){
         const age = Date.now() - data.createdAt;
         if(age >= 180000) return;
@@ -606,12 +611,10 @@ onSnapshot(q, (snapshot)=>{
         const timerSpan = document.createElement("span");
         timerSpan.className = "timer-text";
         timerSpan.id = "timer_" + docId;
-        bodyDiv.appendChild(timerSpan);
+        wrapperDiv.appendChild(timerSpan);
         wrapperDiv.dataset.createdAt = data.createdAt;
       }
 
-      messageDiv.appendChild(bodyDiv);
-      wrapperDiv.appendChild(messageDiv);
       messagesContainer.appendChild(wrapperDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
       messageElements[docId] = { element: wrapperDiv, data: data };
@@ -629,7 +632,7 @@ if(!isAdmin){
     const now = Date.now();
     for(const docId in messageElements){
       const item = messageElements[docId];
-      const timeLeft = 120000 - (now - item.data.createdAt);
+      const timeLeft = 180000 - (now - item.data.createdAt);
       if(timeLeft <= 0){
         item.element.remove();
         delete messageElements[docId];
