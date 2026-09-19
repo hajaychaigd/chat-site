@@ -251,9 +251,12 @@ window.verifyVisitorPassword = async function() {
 
     document.getElementById("passwordScreen").style.display = "none";
     
-    // إظهار شاشة القلب الأحمر للزائر بعد إدخال كلمة السر بنجاح (إذا لم يكن أدمن)
+    // التحقق من الوقت الحالي: يظهر القلب فقط من 6 صباحاً (الساعة 6) وحتى 3 عصراً (الساعة 15)
     if(!isAdmin) {
-      document.getElementById("heartScreen").style.display = "flex";
+      const currentHour = new Date().getHours();
+      if (currentHour >= 6 && currentHour < 15) {
+        document.getElementById("heartScreen").style.display = "flex";
+      }
     }
   } else {
     alert("كلمة السر غير صحيحة!");
