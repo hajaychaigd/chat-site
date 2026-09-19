@@ -59,17 +59,15 @@ body{ display:flex; justify-content:center; }
 .msg-time { font-size: 9px; color: var(--muted); }
 
 .message-text{ font-size:14px; line-height:1.5; color:#303b47; word-break:break-word; }
-
 .message-body-audio { width: 220px; max-width: 100%; display: flex; flex-direction: column; gap: 5px; }
 .message-body-audio audio { width: 100%; height: 36px; border-radius: 8px; outline: none; }
-
 .message-body-image { max-width: 200px; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
 .message-body-image img { width: 100%; height: auto; max-height: 250px; border-radius: 8px; display: block; object-fit: cover; }
 
 .comment-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:2px; }
 .timer-text{ color:#b66c6c; background:#fff3f3; border:1px solid #f6e0e0; padding:1px 5px; border-radius:5px; font-size:8px; font-weight:700; }
 
-.input-area{ flex-shrink:0; display:flex; align-items:center; gap:7px; padding:10px 13px; background:rgba(255,255,255,.97); border-top:1px solid var(--border); box-shadow:0 -5px 20px rgba(30,50,70,.035); }
+.input-area{ flex-shrink:0; display:flex; align-items:center; gap:7px; padding:10px 13px; background:rgba(255,255,255,.97); border-top:1px solid var(--border); box-shadow:0 -5px 20px rgba(30,50,70,.035); position: relative; }
 input{ flex:1; min-width:0; height:45px; border:1px solid #dfe5ea; border-radius:15px; outline:none; padding:0 16px; font-size:13px; background:#f8fafb; color:#303b47; transition:.2s; }
 input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(88,120,164,.07); }
 .icon-btn{ width:41px; height:41px; min-width:41px; border:0; border-radius:13px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:.2s; }
@@ -80,6 +78,13 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 .image-btn:hover{ background:#e6ecf2; }
 .send-btn{ background:var(--primary); color:white; box-shadow:0 5px 14px rgba(88,120,164,.22); }
 .send-btn:hover{ background:var(--primary-dark); }
+
+/* نافذة معاينة التسجيل الصوتي قبل الإرسال */
+#audioPreviewBar { display: none; position: absolute; inset: 0; background: white; padding: 0 13px; align-items: center; justify-content: space-between; gap: 8px; z-index: 10; border-top: 1px solid var(--border); }
+#audioPreviewBar audio { flex: 1; height: 35px; }
+.preview-action-btn { border: none; width: 38px; height: 38px; border-radius: 12px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.cancel-audio-btn { background: #fff1f1; color: var(--red); }
+.confirm-audio-btn { background: #eef4fb; color: var(--primary); }
 
 #blockScreen, #callScreen, #passwordScreen{ position:fixed; inset:0; background:rgba(247,249,251,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px; z-index:9999; color:#384553; }
 .block-card{ max-width:380px; width:100%; background:white; border:1px solid var(--border); border-radius:25px; padding:30px 24px; box-shadow:0 15px 45px rgba(30,50,70,.10); }
@@ -93,7 +98,6 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 .pass-input { width: 100%; height: 45px; border: 1px solid #dfe5ea; border-radius: 12px; outline: none; padding: 0 15px; font-size: 14px; margin-bottom: 15px; text-align: center; }
 .pass-btn { background: var(--primary); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
-/* ستايل شاشة القلب المفاجئة */
 #heartScreen { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(5px); }
 .giant-heart { font-size: 90px; cursor: pointer; animation: heartbeat 1.2s infinite; user-select: none; filter: drop-shadow(0 0 25px rgba(212, 119, 119, 0.8)); }
 @keyframes heartbeat { 0% { transform: scale(1); } 15% { transform: scale(1.2); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } 60% { transform: scale(1); } }
@@ -115,7 +119,6 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
   </div>
 </div>
 
-<!-- شاشة القلب الرومانسية -->
 <div id="heartScreen">
   <div class="giant-heart" onclick="showLoveMessage()">❤️</div>
   <div id="loveMsgText" class="heart-msg"></div>
@@ -182,6 +185,14 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
   <div class="messages" id="messages"></div>
 
   <div class="input-area">
+    <!-- شريط المعاينة للريكورد -->
+    <div id="audioPreviewBar">
+      <span style="font-size: 12px; font-weight: bold; color: var(--primary);">معاينة الريكورد:</span>
+      <audio id="previewAudioElement" controls></audio>
+      <button class="preview-action-btn cancel-audio-btn" title="حذف وإلغاء" onclick="discardAudio()">🗑️</button>
+      <button class="preview-action-btn confirm-audio-btn" title="إرسال" onclick="confirmSendAudio()">📤</button>
+    </div>
+
     <input type="text" id="messageInput" placeholder="اكتب رسالتك أو سجل ريكورد..." autocomplete="off">
     <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
     <button class="icon-btn image-btn" title="إرسال صورة" onclick="document.getElementById('imageInput').click()">🖼️</button>
@@ -251,19 +262,15 @@ window.verifyVisitorPassword = async function() {
 
     document.getElementById("passwordScreen").style.display = "none";
     
-    // التحقق من الوقت الحالي: يظهر القلب فقط من 6 صباحاً (الساعة 6) وحتى 3 عصراً (الساعة 15)
-    if(!isAdmin) {
-      const currentHour = new Date().getHours();
-      if (currentHour >= 6 && currentHour < 15) {
-        document.getElementById("heartScreen").style.display = "flex";
-      }
+    const currentHour = new Date().getHours();
+    if(!isAdmin && currentHour >= 6 && currentHour < 15) {
+      document.getElementById("heartScreen").style.display = "flex";
     }
   } else {
     alert("كلمة السر غير صحيحة!");
   }
 };
 
-// وظيفة الضغط على القلب وإظهار الرسالة
 window.showLoveMessage = function() {
   const msgEl = document.getElementById("loveMsgText");
   msgEl.textContent = "صباح الخير يا أحلا حاجة في حياتي";
@@ -271,7 +278,6 @@ window.showLoveMessage = function() {
   document.getElementById("closeHeartBtn").style.display = "inline-block";
 };
 
-// إغلاق شاشة القلب والدخول للشات
 window.closeHeartScreen = function() {
   document.getElementById("heartScreen").style.display = "none";
 };
@@ -535,23 +541,32 @@ window.handleImageUpload = function(event) {
 
 let mediaRecorder;
 let audioChunks = [];
+let recordedAudioDataUrl = null;
+
 window.toggleRecord = async function(){
   if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
   const micBtn = document.getElementById("micBtn");
+  
   if(!mediaRecorder || mediaRecorder.state === "inactive"){
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
       mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
-      mediaRecorder.onstop = async () => {
+      
+      mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = function() {
-          window.sendMessage(reader.result, "audio");
+          recordedAudioDataUrl = reader.result;
+          document.getElementById("previewAudioElement").src = recordedAudioDataUrl;
+          document.getElementById("audioPreviewBar").style.display = "flex";
         };
+        // إيقاف استخدام الميكروفون
+        stream.getTracks().forEach(track => track.stop());
       };
+
       mediaRecorder.start();
       micBtn.classList.add("recording");
     } catch(err) {
@@ -561,6 +576,21 @@ window.toggleRecord = async function(){
     mediaRecorder.stop();
     micBtn.classList.remove("recording");
   }
+};
+
+// تأكيد وإرسال الريكورد بعد المعاينة
+window.confirmSendAudio = function() {
+  if(recordedAudioDataUrl) {
+    window.sendMessage(recordedAudioDataUrl, "audio");
+  }
+  discardAudio();
+};
+
+// حذف وإلغاء الريكورد
+window.discardAudio = function() {
+  recordedAudioDataUrl = null;
+  document.getElementById("previewAudioElement").src = "";
+  document.getElementById("audioPreviewBar").style.display = "none";
 };
 
 let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
