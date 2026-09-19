@@ -92,6 +92,15 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
 #callTimerDisplay { font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 10px; display: none; }
 .pass-input { width: 100%; height: 45px; border: 1px solid #dfe5ea; border-radius: 12px; outline: none; padding: 0 15px; font-size: 14px; margin-bottom: 15px; text-align: center; }
 .pass-btn { background: var(--primary); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+
+/* ستايل شاشة القلب المفاجئة */
+#heartScreen { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(5px); }
+.giant-heart { font-size: 90px; cursor: pointer; animation: heartbeat 1.2s infinite; user-select: none; filter: drop-shadow(0 0 25px rgba(212, 119, 119, 0.8)); }
+@keyframes heartbeat { 0% { transform: scale(1); } 15% { transform: scale(1.2); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } 60% { transform: scale(1); } }
+.heart-msg { margin-top: 25px; color: #fff; font-size: 22px; font-weight: bold; text-align: center; padding: 0 20px; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+.heart-msg.show { opacity: 1; transform: translateY(0); }
+.close-heart-btn { margin-top: 25px; background: #fff; color: #333; border: none; padding: 10px 25px; border-radius: 20px; font-weight: bold; cursor: pointer; display: none; transition: 0.2s; }
+.close-heart-btn:hover { background: #f0f0f0; }
 </style>
 </head>
 <body>
@@ -100,10 +109,17 @@ input:focus{ border-color:#9db0c5; background:white; box-shadow:0 0 0 3px rgba(8
   <div class="block-card">
     <div class="block-icon" style="background:#eef2f6;">🔐</div>
     <div class="block-title">يرجى إدخال كلمة السر</div>
-    <div class="block-text">هذا الشات يتطلب كلمة سر للمتابعة والإرسال.</div>
+    <div class="block-text">هذا الشات يتطلب كلمة السر للمتابعة والإرسال.</div>
     <input type="password" id="visitorPassInput" class="pass-input" placeholder="أدخل كلمة السر هنا..." />
     <button class="pass-btn" onclick="verifyVisitorPassword()">دخول</button>
   </div>
+</div>
+
+<!-- شاشة القلب الرومانسية -->
+<div id="heartScreen">
+  <div class="giant-heart" onclick="showLoveMessage()">❤️</div>
+  <div id="loveMsgText" class="heart-msg"></div>
+  <button id="closeHeartBtn" class="close-heart-btn" onclick="closeHeartScreen()">ابدأ المحادثة ✨</button>
 </div>
 
 <div id="blockScreen">
@@ -234,9 +250,27 @@ window.verifyVisitorPassword = async function() {
     });
 
     document.getElementById("passwordScreen").style.display = "none";
+    
+    // إظهار شاشة القلب الأحمر للزائر بعد إدخال كلمة السر بنجاح (إذا لم يكن أدمن)
+    if(!isAdmin) {
+      document.getElementById("heartScreen").style.display = "flex";
+    }
   } else {
     alert("كلمة السر غير صحيحة!");
   }
+};
+
+// وظيفة الضغط على القلب وإظهار الرسالة
+window.showLoveMessage = function() {
+  const msgEl = document.getElementById("loveMsgText");
+  msgEl.textContent = "صباح الخير يا أحلا حاجة في حياتي";
+  msgEl.classList.add("show");
+  document.getElementById("closeHeartBtn").style.display = "inline-block";
+};
+
+// إغلاق شاشة القلب والدخول للشات
+window.closeHeartScreen = function() {
+  document.getElementById("heartScreen").style.display = "none";
 };
 
 if(isAdmin){
@@ -423,7 +457,7 @@ if(isAdmin){
   setInterval(()=>{ setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); },4000);
 } else {
   setInterval(async()=>{
-    if(document.getElementById("passwordScreen").style.display === "none" && document.getElementById("blockScreen").style.display === "none"){
+    if(document.getElementById("passwordScreen").style.display === "none" && document.getElementById("blockScreen").style.display === "none" && document.getElementById("heartScreen").style.display === "none"){
       try{
         await setDoc(activeVisitorDocRef, { active:true, userId:myId, peerId: myPeerId, lastSeen:Date.now() }, {merge:true});
       }catch(e){}
