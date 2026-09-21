@@ -358,17 +358,13 @@ window.checkAnswer = async function(selectedIndex) {
   }
 };
 
-// 
-  مراقبة تحديثات المدير لحظياً للزائر
+// مراقبة تحديثات المدير لحظياً للزائر
 onSnapshot(activeVisitorDocRef, (docSnap) => {
   if(docSnap.exists() && !isAdmin) {
     const data = docSnap.data();
     if(data.disableQuiz === true) {
       document.getElementById("heartScreen").style.display = "none";
       document.getElementById("floatingBanner").style.display = "none";
-    } else if(data.disableQuiz === false && document.getElementById("passwordScreen").style.display === "none") {
-      // لو المدير رجع شغل الأسئلة تاني والزائر داخل، ممكن تظهر له لو لسه مخلصش
-      // (اختياري، يترك كما ترغب أو يتم التحكم بها)
     }
     if(data.bypassQuiz === true) {
       document.getElementById("heartScreen").style.display = "none";
