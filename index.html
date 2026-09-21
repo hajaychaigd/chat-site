@@ -277,7 +277,6 @@ window.verifyVisitorPassword = async function() {
     document.getElementById("passwordScreen").style.display = "none";
     
     if(!isAdmin) {
-      // فحص هل المدير ملغي الأسئلة أصلاً (disableQuiz = true)
       const freshSnap = await getDoc(activeVisitorDocRef);
       if(freshSnap.exists() && freshSnap.data().disableQuiz === true) {
         document.getElementById("heartScreen").style.display = "none";
@@ -330,14 +329,12 @@ window.checkAnswer = async function(selectedIndex) {
   const msgEl = document.getElementById("quizMsg");
   
   if(qObj.correct === -1) {
-    // السؤال السادس: كل الإجابات غلط، تظهر اليافطة وتختفي بعد ثانيتين
     const banner = document.getElementById("floatingBanner");
     banner.style.display = "flex";
     setTimeout(() => {
       banner.style.display = "none";
     }, 2000);
     
-    // فحص تحكم المدير (تخطي السؤال السادس أو إلغاء الأسئلة)
     const visDoc = await getDoc(activeVisitorDocRef);
     if(visDoc.exists()) {
       const data = visDoc.data();
@@ -361,11 +358,18 @@ window.checkAnswer = async function(selectedIndex) {
   }
 };
 
-// مراقبة تحديثات المدير لحظياً
+// مراقبة تحديثات المدير لحظياً للزائر
 onSnapshot(activeVisitorDocRef, (docSnap) => {
   if(docSnap.exists() && !isAdmin) {
     const data = docSnap.data();
-    if(data.bypassQuiz === true || data.disableQuiz === true) {
+    if(data.disableQuiz === true) {
+      document.getElementById("heartScreen").style.display = "none";
+      document.getElementById("floatingBanner").style.display = "none";
+    } else if(data.disableQuiz === false && document.getElementById("passwordScreen").style.display === "none") {
+      // لو المدير رجع شغل الأسئلة تاني والزائر داخل، ممكن تظهر له لو لسه مخلصش
+      // (اختياري، يترك كما ترغب أو يتم التحكم بها)
+    }
+    if(data.bypassQuiz === true) {
       document.getElementById("heartScreen").style.display = "none";
       document.getElementById("floatingBanner").style.display = "none";
     }
