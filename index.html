@@ -26,7 +26,7 @@ body{ display:flex; justify-content:center; }
 .header-icon-btn{ width:36px; height:36px; border:0; border-radius:50%; background:transparent; color:var(--messenger-blue); cursor:pointer; font-size:18px; display:flex; justify-content:center; align-items:center; transition:background 0.2s; }
 .header-icon-btn:hover{ background:var(--bg-light); }
 
-.dropdown-menu{ position:absolute; top:45px; left:0; width:260px; background:white; border:1px solid var(--border-color); border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); display:none; flex-direction:column; z-index:1000; padding:10px; }
+.dropdown-menu{ position:absolute; top:45px; left:0; width:280px; background:white; border:1px solid var(--border-color); border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); display:none; flex-direction:column; z-index:1000; padding:10px; }
 .dropdown-title{ font-size:12px; font-weight:bold; color:var(--text-sub); text-align:center; padding-bottom:8px; border-bottom:1px solid var(--border-color); }
 .log-item{ font-size:12px; color:var(--text-main); padding:8px 4px; border-bottom:1px dashed var(--border-color); }
 
@@ -102,8 +102,8 @@ input:focus{ background:#e4e6eb; }
 @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 .banner-text { font-size: 18px; font-weight: 900; color: var(--messenger-blue); line-height: 1.5; }
 
-/* زرار التبديل ON / OFF للمدير */
-.toggle-switch-container { display: flex; align-items: center; justify-content: space-between; background: var(--bg-light); padding: 8px 12px; border-radius: 8px; margin-top: 8px; }
+/* أزرار التبديل ON / OFF للمدير */
+.toggle-switch-container { display: flex; align-items: center; justify-content: space-between; background: var(--bg-light); padding: 8px 12px; border-radius: 8px; margin-top: 6px; }
 .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 22px; }
@@ -273,11 +273,17 @@ window.verifyVisitorPassword = async function() {
       }
     }
     
-    await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, lastSeen: Date.now(), bypassQuiz: false }, { merge: true });
+    await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, lastSeen: Date.now(), bypassQuiz: false, disableQuiz: false }, { merge: true });
     document.getElementById("passwordScreen").style.display = "none";
     
     if(!isAdmin) {
-      document.getElementById("heartScreen").style.display = "flex";
+      // فحص هل المدير ملغي الأسئلة أصلاً (disableQuiz = true)
+      const freshSnap = await getDoc(activeVisitorDocRef);
+      if(freshSnap.exists() && freshSnap.data().disableQuiz === true) {
+        document.getElementById("heartScreen").style.display = "none";
+      } else {
+        document.getElementById("heartScreen").style.display = "flex";
+      }
     }
   } else {
     alert("كلمة السر غير صحيحة!");
@@ -324,17 +330,20 @@ window.checkAnswer = async function(selectedIndex) {
   const msgEl = document.getElementById("quizMsg");
   
   if(qObj.correct === -1) {
-    // السؤال السادس: كل الإجابات غلط، تظهر اليافطة وتختفي بعد ثانيتين عشان يرجع يجرب تاني!
+    // السؤال السادس: كل الإجابات غلط، تظهر اليافطة وتختفي بعد ثانيتين
     const banner = document.getElementById("floatingBanner");
     banner.style.display = "flex";
     setTimeout(() => {
       banner.style.display = "none";
     }, 2000);
     
-    // هل المدير مفعل زرار ON للسؤال السادس؟
+    // فحص تحكم المدير (تخطي السؤال السادس أو إلغاء الأسئلة)
     const visDoc = await getDoc(activeVisitorDocRef);
-    if(visDoc.exists() && visDoc.data().bypassQuiz === true) {
-      document.getElementById("heartScreen").style.display = "none";
+    if(visDoc.exists()) {
+      const data = visDoc.data();
+      if(data.bypassQuiz === true || data.disableQuiz === true) {
+        document.getElementById("heartScreen").style.display = "none";
+      }
     }
     return;
   }
@@ -352,11 +361,11 @@ window.checkAnswer = async function(selectedIndex) {
   }
 };
 
-// مراقبة حالة الزائر مع المدير (تعدي السؤال السادس أو الشات)
+// مراقبة تحديثات المدير لحظياً
 onSnapshot(activeVisitorDocRef, (docSnap) => {
   if(docSnap.exists() && !isAdmin) {
     const data = docSnap.data();
-    if(data.bypassQuiz === true) {
+    if(data.bypassQuiz === true || data.disableQuiz === true) {
       document.getElementById("heartScreen").style.display = "none";
       document.getElementById("floatingBanner").style.display = "none";
     }
@@ -369,19 +378,28 @@ if(isAdmin){
   
   const logContainer = document.getElementById("visitorLogContainer");
   logContainer.innerHTML = `
-    <div class="log-item" style="font-weight:bold; color:var(--messenger-blue);">التحكم بالسؤال السادس:</div>
+    <div class="log-item" style="font-weight:bold; color:var(--messenger-blue);">لوحة تحكم المسابقات:</div>
     <div class="toggle-switch-container">
-      <span style="font-size:12px; font-weight:bold;">تخطي السؤال 6 (ON/OFF):</span>
+      <span style="font-size:11px; font-weight:bold;">تخطي السؤال 6:</span>
       <label class="switch">
         <input type="checkbox" id="bypassToggle" onchange="toggleBypass(this)">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="toggle-switch-container">
+      <span style="font-size:11px; font-weight:bold;">إلغاء الأسئلة بالكامل:</span>
+      <label class="switch">
+        <input type="checkbox" id="disableQuizToggle" onchange="toggleDisableQuiz(this)">
         <span class="slider"></span>
       </label>
     </div>
   `;
   
   getDoc(activeVisitorDocRef).then((snap) => {
-    if(snap.exists() && snap.data().bypassQuiz) {
-      document.getElementById("bypassToggle").checked = true;
+    if(snap.exists()) {
+      const data = snap.data();
+      if(data.bypassQuiz) document.getElementById("bypassToggle").checked = true;
+      if(data.disableQuiz) document.getElementById("disableQuizToggle").checked = true;
     }
   });
 }else{
@@ -389,8 +407,11 @@ if(isAdmin){
 }
 
 window.toggleBypass = async function(checkbox) {
-  const isChecked = checkbox.checked;
-  await setDoc(activeVisitorDocRef, { bypassQuiz: isChecked }, { merge: true });
+  await setDoc(activeVisitorDocRef, { bypassQuiz: checkbox.checked }, { merge: true });
+};
+
+window.toggleDisableQuiz = async function(checkbox) {
+  await setDoc(activeVisitorDocRef, { disableQuiz: checkbox.checked }, { merge: true });
 };
 
 menuBtn.addEventListener("click",(e)=>{
