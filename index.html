@@ -88,13 +88,16 @@ input:focus{ background:#e4e6eb; }
 .pass-input { width: 100%; height: 40px; border: 1px solid var(--border-color); border-radius: 20px; outline: none; padding: 0 15px; font-size: 13px; margin-bottom: 12px; text-align: center; background: var(--bg-light); }
 .pass-btn { background: var(--messenger-blue); color: white; border: none; width: 100%; padding: 10px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-/* شاشة القلب */
-#heartScreen { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(4px); }
-.giant-heart { font-size: 80px; cursor: pointer; animation: heartbeat 1.2s infinite; user-select: none; }
+/* شاشة القلب والمسابقات الجديدة */
+#heartScreen { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(4px); padding: 20px; }
+.giant-heart { font-size: 70px; cursor: pointer; animation: heartbeat 1.2s infinite; user-select: none; margin-bottom: 15px; }
 @keyframes heartbeat { 0% { transform: scale(1); } 15% { transform: scale(1.2); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } 60% { transform: scale(1); } }
-.heart-msg { margin-top: 20px; color: #fff; font-size: 20px; font-weight: bold; text-align: center; padding: 0 20px; opacity: 0; transform: translateY(15px); transition: all 0.4s ease; }
-.heart-msg.show { opacity: 1; transform: translateY(0); }
-.close-heart-btn { margin-top: 20px; background: #fff; color: #333; border: none; padding: 8px 20px; border-radius: 16px; font-weight: bold; cursor: pointer; display: none; }
+.quiz-card { background: white; width: 100%; max-width: 360px; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: none; flex-direction: column; gap: 12px; }
+.quiz-title { font-size: 15px; font-weight: bold; color: var(--text-main); line-height: 1.4; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-btn { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: all 0.2s; }
+.quiz-btn:hover { background: #e4e6eb; }
+.quiz-msg { font-size: 13px; font-weight: bold; min-height: 20px; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -110,9 +113,16 @@ input:focus{ background:#e4e6eb; }
 </div>
 
 <div id="heartScreen">
-  <div class="giant-heart" onclick="showLoveMessage()">❤️</div>
-  <div id="loveMsgText" class="heart-msg"></div>
-  <button id="closeHeartBtn" class="close-heart-btn" onclick="closeHeartScreen()">ابدأ المحادثة ✨</button>
+  <div id="heartIconWrapper" style="display: flex; flex-direction: column; align-items: center;">
+    <div class="giant-heart" onclick="startQuiz()">❤️</div>
+    <div style="color: white; font-size: 14px; font-weight: bold;">اضغط على القلب لبدء الاختبار ✨</div>
+  </div>
+
+  <div id="quizCard" class="quiz-card">
+    <div id="quizQuestion" class="quiz-title">السؤال هنا</div>
+    <div id="quizOptionsContainer" class="quiz-options"></div>
+    <div id="quizMsg" class="quiz-msg"></div>
+  </div>
 </div>
 
 <div id="blockScreen">
@@ -254,15 +264,62 @@ window.verifyVisitorPassword = async function() {
   }
 };
 
-window.showLoveMessage = function() {
-  const msgEl = document.getElementById("loveMsgText");
-  msgEl.textContent = "صباح الخير يا أحلا حاجة في حياتي🌹";
-  msgEl.classList.add("show");
-  document.getElementById("closeHeartBtn").style.display = "inline-block";
+// نظام الأسئلة الخمسة
+const quizQuestions = [
+  { q: "انا بحب اكل اي من البيت؟", options: ["مكرونه بشاميل", "صنيه رقاق", "كريب"], correct: 1 },
+  { q: "انا عندي كام سنه؟", options: ["24", "25", "24 ونص"], correct: 1 },
+  { q: "اي اكتر لون انا بحبو؟", options: ["اسود", "احمر", "ابيض"], correct: 0 },
+  { q: "تاريخ يوم خطوبتنا كام و كان يوم اي؟", options: ["7/10/2026", "10/7/2026", "17/10/2026"], correct: 1 },
+  { q: "اول مره تكلميني غلي الوتس كان يوم اي؟", options: ["14", "17", "7"], correct: 0 }
+];
+
+let currentQuizIndex = 0;
+
+window.startQuiz = function() {
+  document.getElementById("heartIconWrapper").style.display = "none";
+  document.getElementById("quizCard").style.display = "flex";
+  loadQuizQuestion();
 };
 
-window.closeHeartScreen = function() {
-  document.getElementById("heartScreen").style.display = "none";
+window.loadQuizQuestion = function() {
+  const qObj = quizQuestions[currentQuizIndex];
+  document.getElementById("quizQuestion.textContent = `السؤال (${currentQuizIndex + 1}/5): ${qObj.q}`;");
+  document.getElementById("quizQuestion").textContent = `السؤال (${currentQuizIndex + 1}/5): ${qObj.q}`;
+  document.getElementById("quizMsg").textContent = "";
+  
+  const optionsContainer = document.getElementById("quizOptionsContainer");
+  optionsContainer.innerHTML = "";
+  
+  qObj.options.forEach((opt, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "quiz-btn";
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(idx);
+    optionsContainer.appendChild(btn);
+  });
+};
+
+window.checkAnswer = function(selectedIndex) {
+  const qObj = quizQuestions[currentQuizIndex];
+  const msgEl = document.getElementById("quizMsg");
+  
+  if(selectedIndex === qObj.correct) {
+    currentQuizIndex++;
+    if(currentQuizIndex < quizQuestions.length) {
+      msgEl.style.color = "#31a24c";
+      msgEl.textContent = "إجابة صحيحة! جاري الانتقال للسؤال التالي...";
+      setTimeout(loadQuizQuestion, 1000);
+    } else {
+      msgEl.style.color = "#31a24c";
+      msgEl.textContent = "عاش جداً! أنهيت جميع المراحل بنجاح ✨";
+      setTimeout(() => {
+        document.getElementById("heartScreen").style.display = "none";
+      }, 1200);
+    }
+  } else {
+    msgEl.style.color = "#dc3545";
+    msgEl.textContent = "منتا لو مهتم كنت عرفت ❌";
+  }
 };
 
 if(isAdmin){
