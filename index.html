@@ -44,7 +44,6 @@ body{ display:flex; justify-content:center; }
 .message-wrapper.my-message { align-items: flex-end; }
 .message-wrapper.other-message { align-items: flex-start; }
 
-/* فقاعات الرسائل مطابقة لماسنجر */
 .message { max-width: 75%; padding: 8px 12px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-break: break-word; position: relative; display: flex; flex-direction: column; gap: 2px; }
 .message-wrapper.my-message .message { background: var(--messenger-blue); color: #ffffff; border-bottom-right-radius: 4px; }
 .message-wrapper.other-message .message { background: #e4e6eb; color: var(--text-main); border-bottom-left-radius: 4px; }
@@ -54,8 +53,6 @@ body{ display:flex; justify-content:center; }
 
 .message-body-audio audio { width: 180px; height: 32px; outline: none; }
 .message-body-image img { width: 100%; max-width: 180px; border-radius: 12px; display: block; }
-
-/* عداد الوقت خارج الفقاعة */
 .timer-text{ font-size: 10px; color: var(--text-sub); margin-top: 2px; padding: 0 4px; }
 
 /* شريط الكتابة السفلي */
@@ -88,7 +85,7 @@ input:focus{ background:#e4e6eb; }
 .pass-input { width: 100%; height: 40px; border: 1px solid var(--border-color); border-radius: 20px; outline: none; padding: 0 15px; font-size: 13px; margin-bottom: 12px; text-align: center; background: var(--bg-light); }
 .pass-btn { background: var(--messenger-blue); color: white; border: none; width: 100%; padding: 10px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-/* شاشة القلب والمسابقات واليافطة */
+/* شاشة القلب والمسابقات واليافطة المؤقتة */
 #heartScreen { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(4px); padding: 20px; text-align: center; }
 .giant-heart { font-size: 70px; cursor: pointer; animation: heartbeat 1.2s infinite; user-select: none; margin-bottom: 15px; }
 @keyframes heartbeat { 0% { transform: scale(1); } 15% { transform: scale(1.2); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } 60% { transform: scale(1); } }
@@ -99,9 +96,20 @@ input:focus{ background:#e4e6eb; }
 .quiz-btn:hover { background: #e4e6eb; }
 .quiz-msg { font-size: 13px; font-weight: bold; min-height: 20px; margin-top: 4px; }
 
-/* اليافطة الكبيرة */
-.banner-card { display: none; flex-direction: column; align-items: center; gap: 15px; background: white; padding: 30px; border-radius: 20px; max-width: 360px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-.banner-text { font-size: 20px; font-weight: 900; color: var(--messenger-blue); line-height: 1.5; }
+/* اليافطة الكبيرة المؤقتة (تظهر وتختفي) */
+#floatingBanner { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 20000; padding: 20px; }
+.banner-card { background: white; padding: 30px; border-radius: 20px; max-width: 360px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; display: flex; flex-direction: column; gap: 15px; animation: popIn 0.3s ease; }
+@keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.banner-text { font-size: 18px; font-weight: 900; color: var(--messenger-blue); line-height: 1.5; }
+
+/* زرار التبديل ON / OFF للمدير */
+.toggle-switch-container { display: flex; align-items: center; justify-content: space-between; background: var(--bg-light); padding: 8px 12px; border-radius: 8px; margin-top: 8px; }
+.switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 22px; }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+input:checked + .slider { background-color: #31a24c; }
+input:checked + .slider:before { transform: translateX(22px); }
 </style>
 </head>
 <body>
@@ -127,11 +135,13 @@ input:focus{ background:#e4e6eb; }
     <div id="quizOptionsContainer" class="quiz-options"></div>
     <div id="quizMsg" class="quiz-msg"></div>
   </div>
+</div>
 
-  <div id="bannerCard" class="banner-card">
+<!-- اليافطة الكبيرة المؤقتة التي تظهر وتختفي -->
+<div id="floatingBanner">
+  <div class="banner-card">
     <div style="font-size: 40px;">💬</div>
-    <div class="banner-text">انتي لو مهتمه هتعرفي تكلميني😒😑</div>
-    <div style="font-size: 12px; color: var(--text-sub);">انتظري حتى يقوم المدير بالسماح لك بالدخول...</div>
+    <div class="banner-text">لو مهتمه هتعرفي تكلميني</div>
   </div>
 </div>
 
@@ -263,7 +273,7 @@ window.verifyVisitorPassword = async function() {
       }
     }
     
-    await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, lastSeen: Date.now(), approved: false });
+    await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, lastSeen: Date.now(), bypassQuiz: false }, { merge: true });
     document.getElementById("passwordScreen").style.display = "none";
     
     if(!isAdmin) {
@@ -281,7 +291,7 @@ const quizQuestions = [
   { q: "اي اكتر لون انا بحبو؟", options: ["اسود", "احمر", "ابيض"], correct: 0 },
   { q: "تاريخ يوم خطوبتنا كام و كان يوم اي؟", options: ["7/10/2026", "10/7/2026", "17/10/2026"], correct: 1 },
   { q: "اول مره تكلميني غلي الوتس كان يوم اي؟", options: ["14", "17", "7"], correct: 0 },
-  { q: "لما جبتي الفشار انا كلت كام؟", options: ["556", "100", "26", "66", "18", "13", "14", "56", "82", "20", "23"], correct: -1 } // كله غلط، يعرض اليافطة بانتظار موافقة المدير
+  { q: "لما جبتي الفشار انا كلت كام؟", options: ["556", "100", "26", "66", "18", "13", "14", "56", "82", "20", "23"], correct: -1 }
 ];
 
 let currentQuizIndex = 0;
@@ -309,14 +319,23 @@ window.loadQuizQuestion = function() {
   });
 };
 
-window.checkAnswer = function(selectedIndex) {
+window.checkAnswer = async function(selectedIndex) {
   const qObj = quizQuestions[currentQuizIndex];
   const msgEl = document.getElementById("quizMsg");
   
   if(qObj.correct === -1) {
-    // السؤال السادس: كل الإجابات تؤدي لإظهار اليافطة الكبيرة بانتظار المدير
-    document.getElementById("quizCard").style.display = "none";
-    document.getElementById("bannerCard").style.display = "flex";
+    // السؤال السادس: كل الإجابات غلط، تظهر اليافطة وتختفي بعد ثانيتين عشان يرجع يجرب تاني!
+    const banner = document.getElementById("floatingBanner");
+    banner.style.display = "flex";
+    setTimeout(() => {
+      banner.style.display = "none";
+    }, 2000);
+    
+    // هل المدير مفعل زرار ON للسؤال السادس؟
+    const visDoc = await getDoc(activeVisitorDocRef);
+    if(visDoc.exists() && visDoc.data().bypassQuiz === true) {
+      document.getElementById("heartScreen").style.display = "none";
+    }
     return;
   }
 
@@ -333,12 +352,13 @@ window.checkAnswer = function(selectedIndex) {
   }
 };
 
-// مراقبة موافقة المدير للزائر
+// مراقبة حالة الزائر مع المدير (تعدي السؤال السادس أو الشات)
 onSnapshot(activeVisitorDocRef, (docSnap) => {
   if(docSnap.exists() && !isAdmin) {
     const data = docSnap.data();
-    if(data.approved === true) {
+    if(data.bypassQuiz === true) {
       document.getElementById("heartScreen").style.display = "none";
+      document.getElementById("floatingBanner").style.display = "none";
     }
   }
 });
@@ -347,19 +367,30 @@ if(isAdmin){
   document.getElementById("usersCounter").style.display="flex";
   menuBtn.style.display="flex";
   
-  // زرار أو خيار للمدير في القائمة لفتح الشات للزائر المنتظر
   const logContainer = document.getElementById("visitorLogContainer");
   logContainer.innerHTML = `
-    <div class="log-item" style="font-weight:bold; color:var(--messenger-blue);">التحكم بالزائر:</div>
-    <button class="pass-btn" style="margin-top:6px; font-size:12px; padding:6px;" onclick="approveVisitor()">فتح الشات للزائر ✨</button>
+    <div class="log-item" style="font-weight:bold; color:var(--messenger-blue);">التحكم بالسؤال السادس:</div>
+    <div class="toggle-switch-container">
+      <span style="font-size:12px; font-weight:bold;">تخطي السؤال 6 (ON/OFF):</span>
+      <label class="switch">
+        <input type="checkbox" id="bypassToggle" onchange="toggleBypass(this)">
+        <span class="slider"></span>
+      </label>
+    </div>
   `;
+  
+  getDoc(activeVisitorDocRef).then((snap) => {
+    if(snap.exists() && snap.data().bypassQuiz) {
+      document.getElementById("bypassToggle").checked = true;
+    }
+  });
 }else{
   document.getElementById("tickerContainer").style.display="block";
 }
 
-window.approveVisitor = async function() {
-  await setDoc(activeVisitorDocRef, { approved: true }, { merge: true });
-  alert("تم السماح للزائر بفتح الشات بنجاح!");
+window.toggleBypass = async function(checkbox) {
+  const isChecked = checkbox.checked;
+  await setDoc(activeVisitorDocRef, { bypassQuiz: isChecked }, { merge: true });
 };
 
 menuBtn.addEventListener("click",(e)=>{
