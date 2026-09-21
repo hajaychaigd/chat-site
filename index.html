@@ -26,7 +26,7 @@ body{ display:flex; justify-content:center; }
 .header-icon-btn{ width:36px; height:36px; border:0; border-radius:50%; background:transparent; color:var(--messenger-blue); cursor:pointer; font-size:18px; display:flex; justify-content:center; align-items:center; transition:background 0.2s; }
 .header-icon-btn:hover{ background:var(--bg-light); }
 
-.dropdown-menu{ position:absolute; top:45px; left:0; width:280px; background:white; border:1px solid var(--border-color); border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); display:none; flex-direction:column; z-index:1000; padding:10px; }
+.dropdown-menu{ position:absolute; top:45px; left:0; width:260px; background:white; border:1px solid var(--border-color); border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); display:none; flex-direction:column; z-index:1000; padding:10px; }
 .dropdown-title{ font-size:12px; font-weight:bold; color:var(--text-sub); text-align:center; padding-bottom:8px; border-bottom:1px solid var(--border-color); }
 .log-item{ font-size:12px; color:var(--text-main); padding:8px 4px; border-bottom:1px dashed var(--border-color); }
 
@@ -44,6 +44,7 @@ body{ display:flex; justify-content:center; }
 .message-wrapper.my-message { align-items: flex-end; }
 .message-wrapper.other-message { align-items: flex-start; }
 
+/* فقاعات الرسائل مطابقة لماسنجر */
 .message { max-width: 75%; padding: 8px 12px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-break: break-word; position: relative; display: flex; flex-direction: column; gap: 2px; }
 .message-wrapper.my-message .message { background: var(--messenger-blue); color: #ffffff; border-bottom-right-radius: 4px; }
 .message-wrapper.other-message .message { background: #e4e6eb; color: var(--text-main); border-bottom-left-radius: 4px; }
@@ -53,6 +54,8 @@ body{ display:flex; justify-content:center; }
 
 .message-body-audio audio { width: 180px; height: 32px; outline: none; }
 .message-body-image img { width: 100%; max-width: 180px; border-radius: 12px; display: block; }
+
+/* عداد الوقت خارج الفقاعة */
 .timer-text{ font-size: 10px; color: var(--text-sub); margin-top: 2px; padding: 0 4px; }
 
 /* شريط الكتابة السفلي */
@@ -85,31 +88,13 @@ input:focus{ background:#e4e6eb; }
 .pass-input { width: 100%; height: 40px; border: 1px solid var(--border-color); border-radius: 20px; outline: none; padding: 0 15px; font-size: 13px; margin-bottom: 12px; text-align: center; background: var(--bg-light); }
 .pass-btn { background: var(--messenger-blue); color: white; border: none; width: 100%; padding: 10px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-/* شاشة القلب والمسابقات واليافطة المؤقتة */
-#heartScreen { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(4px); padding: 20px; text-align: center; }
-.giant-heart { font-size: 70px; cursor: pointer; animation: heartbeat 1.2s infinite; user-select: none; margin-bottom: 15px; }
+/* شاشة القلب الصباحية */
+#heartScreen { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(4px); }
+.giant-heart { font-size: 80px; cursor: pointer; animation: heartbeat 1.2s infinite; user-select: none; }
 @keyframes heartbeat { 0% { transform: scale(1); } 15% { transform: scale(1.2); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } 60% { transform: scale(1); } }
-.quiz-card { background: white; width: 100%; max-width: 380px; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: none; flex-direction: column; gap: 12px; max-height: 85vh; overflow-y: auto; }
-.quiz-title { font-size: 15px; font-weight: bold; color: var(--text-main); line-height: 1.4; }
-.quiz-options { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; padding: 4px; }
-.quiz-btn { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: all 0.2s; }
-.quiz-btn:hover { background: #e4e6eb; }
-.quiz-msg { font-size: 13px; font-weight: bold; min-height: 20px; margin-top: 4px; }
-
-/* اليافطة الكبيرة المؤقتة (تظهر وتختفي) */
-#floatingBanner { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 20000; padding: 20px; }
-.banner-card { background: white; padding: 30px; border-radius: 20px; max-width: 360px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; display: flex; flex-direction: column; gap: 15px; animation: popIn 0.3s ease; }
-@keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-.banner-text { font-size: 18px; font-weight: 900; color: var(--messenger-blue); line-height: 1.5; }
-
-/* أزرار التبديل ON / OFF للمدير */
-.toggle-switch-container { display: flex; align-items: center; justify-content: space-between; background: var(--bg-light); padding: 8px 12px; border-radius: 8px; margin-top: 6px; }
-.switch { position: relative; display: inline-block; width: 44px; height: 22px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 22px; }
-.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-input:checked + .slider { background-color: #31a24c; }
-input:checked + .slider:before { transform: translateX(22px); }
+.heart-msg { margin-top: 20px; color: #fff; font-size: 20px; font-weight: bold; text-align: center; padding: 0 20px; opacity: 0; transform: translateY(15px); transition: all 0.4s ease; }
+.heart-msg.show { opacity: 1; transform: translateY(0); }
+.close-heart-btn { margin-top: 20px; background: #fff; color: #333; border: none; padding: 8px 20px; border-radius: 16px; font-weight: bold; cursor: pointer; display: none; }
 </style>
 </head>
 <body>
@@ -125,24 +110,9 @@ input:checked + .slider:before { transform: translateX(22px); }
 </div>
 
 <div id="heartScreen">
-  <div id="heartIconWrapper" style="display: flex; flex-direction: column; align-items: center;">
-    <div class="giant-heart" onclick="startQuiz()">❤️</div>
-    <div style="color: white; font-size: 14px; font-weight: bold;"> صباح الخير علي الناس الي مش مهتمه 😒</div>
-  </div>
-
-  <div id="quizCard" class="quiz-card">
-    <div id="quizQuestion" class="quiz-title">السؤال هنا</div>
-    <div id="quizOptionsContainer" class="quiz-options"></div>
-    <div id="quizMsg" class="quiz-msg"></div>
-  </div>
-</div>
-
-<!-- اليافطة الكبيرة المؤقتة التي تظهر وتختفي -->
-<div id="floatingBanner">
-  <div class="banner-card">
-    <div style="font-size: 40px;">💬</div>
-    <div class="banner-text">لو مهتمه هتعرفي تكلميني😒😒</div>
-  </div>
+  <div class="giant-heart" onclick="showLoveMessage()">❤️</div>
+  <div id="loveMsgText" class="heart-msg"></div>
+  <button id="closeHeartBtn" class="close-heart-btn" onclick="closeHeartScreen()">ابدأ المحادثة ✨</button>
 </div>
 
 <div id="blockScreen">
@@ -185,7 +155,7 @@ input:checked + .slider:before { transform: translateX(22px); }
       <div id="usersCounter" style="display:none; font-size:12px; color:var(--text-sub);">👤 <span id="onlineCount">0</span></div>
       <button id="menuBtn" class="header-icon-btn" style="display:none;">⋮</button>
       <div id="dropdownMenu" class="dropdown-menu">
-        <div class="dropdown-title">سجل الزوار والتحكم</div>
+        <div class="dropdown-title">سجل الزوار</div>
         <div id="visitorLogContainer">
           <div class="log-item">جاري التحميل...</div>
         </div>
@@ -273,147 +243,35 @@ window.verifyVisitorPassword = async function() {
       }
     }
     
-    await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, lastSeen: Date.now(), bypassQuiz: false, disableQuiz: false }, { merge: true });
+    await setDoc(activeVisitorDocRef, { active: true, userId: myId, peerId: myPeerId, lastSeen: Date.now() });
     document.getElementById("passwordScreen").style.display = "none";
     
-    if(!isAdmin) {
-      const freshSnap = await getDoc(activeVisitorDocRef);
-      if(freshSnap.exists() && freshSnap.data().disableQuiz === true) {
-        document.getElementById("heartScreen").style.display = "none";
-      } else {
-        document.getElementById("heartScreen").style.display = "flex";
-      }
+    const currentHour = new Date().getHours();
+    if(!isAdmin && currentHour >= 6 && currentHour < 15) {
+      document.getElementById("heartScreen").style.display = "flex";
     }
   } else {
     alert("كلمة السر غير صحيحة!");
   }
 };
 
-// نظام الـ 6 أسئلة
-const quizQuestions = [
-  { q: "انا بحب اكل اي من البيت؟😋", options: ["مكرونه بشاميل", "صنيه رقاق", "كريب"], correct: 1 },
-  { q: "انا عندي كام سنه؟", options: ["24", "25", "24 ونص"], correct: 1 },
-  { q: "اي اكتر لون انا بحبو؟", options: ["اسود", "احمر", "ابيض"], correct: 0 },
-  { q: "تاريخ يوم خطوبتنا كان يوم اي؟🧐", options: ["7/10/2026", "10/7/2026", "17/10/2026"], correct: 1 },
-  { q: "اول مره تكلميني علي الوتس كان يوم اي؟", options: ["14", "17", "7"], correct: 0 },
-  { q: "لما عملتيلي الفشار قوليلي كام وحده كان طعمها حلو؟😂", options: ["556", "100", "26", "66", "18", "13", "14", "56", "82", "20", "23"], correct: -1 }
-];
-
-let currentQuizIndex = 0;
-
-window.startQuiz = function() {
-  document.getElementById("heartIconWrapper").style.display = "none";
-  document.getElementById("quizCard").style.display = "flex";
-  loadQuizQuestion();
+window.showLoveMessage = function() {
+  const msgEl = document.getElementById("loveMsgText");
+  msgEl.textContent = "صباح الخير يا أحلا حاجة في حياتي🌹";
+  msgEl.classList.add("show");
+  document.getElementById("closeHeartBtn").style.display = "inline-block";
 };
 
-window.loadQuizQuestion = function() {
-  const qObj = quizQuestions[currentQuizIndex];
-  document.getElementById("quizQuestion").textContent = `السؤال (${currentQuizIndex + 1}/6): ${qObj.q}`;
-  document.getElementById("quizMsg").textContent = "";
-  
-  const optionsContainer = document.getElementById("quizOptionsContainer");
-  optionsContainer.innerHTML = "";
-  
-  qObj.options.forEach((opt, idx) => {
-    const btn = document.createElement("button");
-    btn.className = "quiz-btn";
-    btn.textContent = opt;
-    btn.onclick = () => checkAnswer(idx);
-    optionsContainer.appendChild(btn);
-  });
+window.closeHeartScreen = function() {
+  document.getElementById("heartScreen").style.display = "none";
 };
-
-window.checkAnswer = async function(selectedIndex) {
-  const qObj = quizQuestions[currentQuizIndex];
-  const msgEl = document.getElementById("quizMsg");
-  
-  if(qObj.correct === -1) {
-    const banner = document.getElementById("floatingBanner");
-    banner.style.display = "flex";
-    setTimeout(() => {
-      banner.style.display = "none";
-    }, 2000);
-    
-    const visDoc = await getDoc(activeVisitorDocRef);
-    if(visDoc.exists()) {
-      const data = visDoc.data();
-      if(data.bypassQuiz === true || data.disableQuiz === true) {
-        document.getElementById("heartScreen").style.display = "none";
-      }
-    }
-    return;
-  }
-
-  if(selectedIndex === qObj.correct) {
-    currentQuizIndex++;
-    if(currentQuizIndex < quizQuestions.length) {
-      msgEl.style.color = "#31a24c";
-      msgEl.textContent = "إجابة صحيحة! جاري الانتقال للسؤال التالي...";
-      setTimeout(loadQuizQuestion, 1000);
-    }
-  } else {
-    msgEl.style.color = "#dc3545";
-    msgEl.textContent = "منتا لو مهتم كنت عرفت 😑";
-  }
-};
-
-// مراقبة تحديثات المدير لحظياً للزائر
-onSnapshot(activeVisitorDocRef, (docSnap) => {
-  if(docSnap.exists() && !isAdmin) {
-    const data = docSnap.data();
-    if(data.disableQuiz === true) {
-      document.getElementById("heartScreen").style.display = "none";
-      document.getElementById("floatingBanner").style.display = "none";
-    }
-    if(data.bypassQuiz === true) {
-      document.getElementById("heartScreen").style.display = "none";
-      document.getElementById("floatingBanner").style.display = "none";
-    }
-  }
-});
 
 if(isAdmin){
   document.getElementById("usersCounter").style.display="flex";
   menuBtn.style.display="flex";
-  
-  const logContainer = document.getElementById("visitorLogContainer");
-  logContainer.innerHTML = `
-    <div class="log-item" style="font-weight:bold; color:var(--messenger-blue);">لوحة تحكم المسابقات:</div>
-    <div class="toggle-switch-container">
-      <span style="font-size:11px; font-weight:bold;">تخطي السؤال 6:</span>
-      <label class="switch">
-        <input type="checkbox" id="bypassToggle" onchange="toggleBypass(this)">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="toggle-switch-container">
-      <span style="font-size:11px; font-weight:bold;">إلغاء الأسئلة بالكامل:</span>
-      <label class="switch">
-        <input type="checkbox" id="disableQuizToggle" onchange="toggleDisableQuiz(this)">
-        <span class="slider"></span>
-      </label>
-    </div>
-  `;
-  
-  getDoc(activeVisitorDocRef).then((snap) => {
-    if(snap.exists()) {
-      const data = snap.data();
-      if(data.bypassQuiz) document.getElementById("bypassToggle").checked = true;
-      if(data.disableQuiz) document.getElementById("disableQuizToggle").checked = true;
-    }
-  });
 }else{
   document.getElementById("tickerContainer").style.display="block";
 }
-
-window.toggleBypass = async function(checkbox) {
-  await setDoc(activeVisitorDocRef, { bypassQuiz: checkbox.checked }, { merge: true });
-};
-
-window.toggleDisableQuiz = async function(checkbox) {
-  await setDoc(activeVisitorDocRef, { disableQuiz: checkbox.checked }, { merge: true });
-};
 
 menuBtn.addEventListener("click",(e)=>{
   e.stopPropagation();
