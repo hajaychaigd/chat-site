@@ -40,7 +40,10 @@ body{display:flex}
 .chat-avatar .online-dot{bottom:-1px;left:-1px}
 .title-area{display:flex;flex-direction:column;gap:2px;min-width:0}
 .title{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.subtitle{font-size:12px;color:var(--muted)}
+.subtitle{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.connection-status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:#9aa0a6;flex-shrink:0}
+.connection-status-dot.online{background:#31a24c}
+.connection-status-dot.offline{background:#9aa0a6}
 .status-dot{width:8px;height:8px;border-radius:50%;background:#31a24c;display:none}
 .header-actions{display:flex;align-items:center;gap:7px;position:relative}
 .mute-btn,.call-btn{width:40px;height:40px;border:0;border-radius:50%;background:transparent!important;box-shadow:none!important;color:var(--blue);cursor:pointer;font-size:19px;display:flex;justify-content:center;align-items:center;transition:.15s}
@@ -184,13 +187,15 @@ body{display:flex}
       <div class="chat-avatar">ل<span class="online-dot"></span></div>
       <div class="title-area">
         <div class="title">المحادثة المباشرة</div>
-        <div class="subtitle">اتصال صوتي ورسائل فورية</div>
+        <div class="subtitle">
+          <span id="connectionStatusDot" class="connection-status-dot"></span>
+          <span id="connectionStatusText">جاري التحقق...</span>
+        </div>
       </div>
       <span id="statusDot" class="status-dot"></span>
     </div>
     <div class="header-actions">
       <button id="callBtn" class="call-btn" title="اتصال صوتي" onclick="triggerCall()">📞</button>
-      <button id="bellBtn" class="mute-btn" title="تنبيهات الجرس">🔔</button>
       <div id="usersCounter" class="users-counter">👤 <span id="onlineCount">0</span></div>
       <button id="menuBtn" class="menu-btn">⋮</button>
       <div id="dropdownMenu" class="dropdown-menu">
@@ -248,7 +253,6 @@ const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search);
 if(urlParams.get("admin")==="mysecret123"){ localStorage.setItem("is_admin","true"); }
 const isAdmin = localStorage.getItem("is_admin")==="true";
-const bellBtn = document.getElementById("bellBtn");
 const menuBtn = document.getElementById("menuBtn");
 const dropdownMenu = document.getElementById("dropdownMenu");
 
@@ -471,11 +475,69 @@ window.endCall = async function(){
   }
 };
 
+function updateConnectionStatus(online){
+  const dot = document.getElementById("connectionStatusDot");
+  const label = document.getElementById("connectionStatusText");
+  if(!dot || !label) return;
+
+  dot.classList.toggle("online", online);
+  dot.classList.toggle("offline", !online);
+  label.textContent = online ? "متصل الآن" : "غير متصل";
+}
+
+// عرض حالة الطرف الآخر تلقائياً.
+// المدير يراقب الزائر، والزائر يراقب المدير.
 if(isAdmin){
   const adminStatusRef = doc(db,"status","admin_status");
   setDoc(adminStatusRef, { online:true, lastSeen:Date.now() });
-  setInterval(()=>{ setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); },4000);
+
+  setInterval(()=>{ 
+    setDoc(adminStatusRef, { online:true, lastSeen:Date.now() }, {merge:true}); 
+  },4000);
+
+  onSnapshot(activeVisitorDocRef, (snap)=>{
+    if(!snap.exists()){
+      updateConnectionStatus(false);
+      return;
+    }
+    const data = snap.data();
+    const online = data.active === true && (Date.now() - (data.lastSeen || 0) < 7000);
+    updateConnectionStatus(online);
+  });
+
+  setInterval(async()=>{
+    const snap = await getDoc(activeVisitorDocRef);
+    if(!snap.exists()){
+      updateConnectionStatus(false);
+      return;
+    }
+    const data = snap.data();
+    updateConnectionStatus(data.active === true && (Date.now() - (data.lastSeen || 0) < 7000));
+  },3000);
+
 } else {
+  const adminStatusRef = doc(db,"status","admin_status");
+
+  onSnapshot(adminStatusRef, (snap)=>{
+    if(!snap.exists()){
+      updateConnectionStatus(false);
+      return;
+    }
+    const data = snap.data();
+    const online = data.online === true && (Date.now() - (data.lastSeen || 0) < 8000);
+    updateConnectionStatus(online);
+  });
+
+  setInterval(async()=>{
+    const snap = await getDoc(adminStatusRef);
+    if(!snap.exists()){
+      updateConnectionStatus(false);
+      return;
+    }
+    const data = snap.data();
+    updateConnectionStatus(data.online === true && (Date.now() - (data.lastSeen || 0) < 8000));
+  },4000);
+
   setInterval(async()=>{
     if(document.getElementById("passwordScreen").style.display === "none" && document.getElementById("blockScreen").style.display === "none"){
       try{
@@ -484,6 +546,18 @@ if(isAdmin){
     }
   },3000);
 }
+
+window.addEventListener("beforeunload", async ()=>{
+  if(!isAdmin){
+    try{
+      await setDoc(activeVisitorDocRef, { active:false, lastSeen:Date.now() }, {merge:true});
+    }catch(e){}
+  }else{
+    try{
+      await setDoc(doc(db,"status","admin_status"), { online:false, lastSeen:Date.now() }, {merge:true});
+    }catch(e){}
+  }
+});
 
 window.sendMessage = async function(content, type="text"){
   if(!isAdmin && document.getElementById("passwordScreen").style.display === "flex") return;
