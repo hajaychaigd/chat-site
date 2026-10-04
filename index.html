@@ -234,7 +234,7 @@ body{display:flex}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, getDoc, deleteDoc, limit, startAfter } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBYcuxbU0QttsO1DfDF_qQZPbRYSfTj4fs",
@@ -654,120 +654,356 @@ window.toggleRecord = async function(){
   }
 };
 
-let q = query(collection(db,"messages"), orderBy("createdAt","asc"));
-const messageElements={};
+const messagesContainer = document.getElementById("messages");
+const messageElements = {};
+let oldestMessageDoc = null;
+let loadingOlderMessages = false;
+let noMoreOlderMessages = false;
+let initialMessagesLoaded = false;
 
-onSnapshot(q, (snapshot)=>{
-  const messagesContainer = document.getElementById("messages");
-  snapshot.docChanges().forEach((change)=>{
-    const docId = change.doc.id;
-    const data = change.doc.data();
-    if(change.type==="added"){
-      if(messageElements[docId]) return;
+/*
+  المدير:
+  - يبدأ بآخر 30 رسالة.
+  - عند Scroll لأعلى يستدعي 30 رسالة أقدم.
+  - يحافظ على مكان الـ Scroll أثناء إضافة الرسائل القديمة.
 
-      const wrapperDiv = document.createElement("div");
-      const isMyMessage = (data.senderId === myId);
-      wrapperDiv.className = "message-wrapper " + (isMyMessage ? "my-message" : "other-message");
-      wrapperDiv.id = "wrap_" + docId;
-      
-      const messageDiv = document.createElement("div");
-      messageDiv.className= "message";
-      
-      const avatarDiv = document.createElement("div");
-      avatarDiv.className= "comment-avatar";
-      avatarDiv.textContent = data.isAdminMessage ? "ل" : "ش";
-      avatarDiv.style.background = data.isAdminMessage ? "#5878a4" : "#6f9b7c";
-      messageDiv.appendChild(avatarDiv);
+  الزائر:
+  - يظل على النظام العادي الحالي.
+*/
 
-      const bodyDiv = document.createElement("div");
-      bodyDiv.className= "comment-body";
-      
-      const headerInfo = document.createElement("div");
-      headerInfo.className= "comment-header-info";
-      
-      const userSpan = document.createElement("span");
-      userSpan.className= "comment-username" + (data.isAdminMessage ? " admin-name" : "");
-      userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
-      headerInfo.appendChild(userSpan);
+function createMessageElement(docId, data, prepend = false) {
+  if(messageElements[docId]) return null;
 
-      const timeSpan = document.createElement("span");
-      timeSpan.className = "msg-time";
-      const messageDate = new Date(data.createdAt);
-      timeSpan.textContent = messageDate.toLocaleTimeString("ar-EG", { hour: '2-digit', minute: '2-digit' });
-      headerInfo.appendChild(timeSpan);
+  const wrapperDiv = document.createElement("div");
+  const isMyMessage = (data.senderId === myId);
 
-      bodyDiv.appendChild(headerInfo);
+  wrapperDiv.className = "message-wrapper " + (isMyMessage ? "my-message" : "other-message");
+  wrapperDiv.id = "wrap_" + docId;
 
-      if(data.isAudio){
-        const audioWrapper = document.createElement("div");
-        audioWrapper.className = "message-body-audio";
-        const audioEl = document.createElement("audio");
-        audioEl.controls = true;
-        audioEl.src = data.text;
-        audioWrapper.appendChild(audioEl);
-        bodyDiv.appendChild(audioWrapper);
-      } else if(data.isImage){
-        const imgWrapper = document.createElement("div");
-        imgWrapper.className = "message-body-image";
-        const imgEl = document.createElement("img");
-        imgEl.src = data.text;
-        imgWrapper.appendChild(imgEl);
-        bodyDiv.appendChild(imgWrapper);
-      } else {
-        const textSpan = document.createElement("span");
-        textSpan.className = "message-text";
-        textSpan.textContent = data.text;
-        bodyDiv.appendChild(textSpan);
-      }
+  const messageDiv = document.createElement("div");
+  messageDiv.className = "message";
 
-      if(!isAdmin){
-        const age = Date.now() - data.createdAt;
-        if(age >= 180000) return;
+  const avatarDiv = document.createElement("div");
+  avatarDiv.className = "comment-avatar";
+  avatarDiv.textContent = data.isAdminMessage ? "ل" : "ش";
+  avatarDiv.style.background = data.isAdminMessage ? "#5878a4" : "#6f9b7c";
+  messageDiv.appendChild(avatarDiv);
 
-        const actionsDiv = document.createElement("div");
-        actionsDiv.className = "comment-actions";
-        const timerSpan = document.createElement("span");
-        timerSpan.className = "timer-text";
-        timerSpan.id = "timer_" + docId;
-        actionsDiv.appendChild(timerSpan);
-        bodyDiv.appendChild(actionsDiv);
-        wrapperDiv.dataset.createdAt = data.createdAt;
-      }
+  const bodyDiv = document.createElement("div");
+  bodyDiv.className = "comment-body";
 
-      messageDiv.appendChild(bodyDiv);
-      wrapperDiv.appendChild(messageDiv);
-      messagesContainer.appendChild(wrapperDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      messageElements[docId] = { element: wrapperDiv, data: data };
-    } else if(change.type==="removed"){
-      if(messageElements[docId]){
-        messageElements[docId].element.remove();
-        delete messageElements[docId];
-      }
-    }
+  const headerInfo = document.createElement("div");
+  headerInfo.className = "comment-header-info";
+
+  const userSpan = document.createElement("span");
+  userSpan.className = "comment-username" + (data.isAdminMessage ? " admin-name" : "");
+  userSpan.textContent = data.isAdminMessage ? "@المدير" : "@زائر";
+  headerInfo.appendChild(userSpan);
+
+  const timeSpan = document.createElement("span");
+  timeSpan.className = "msg-time";
+  const messageDate = new Date(data.createdAt);
+  timeSpan.textContent = messageDate.toLocaleTimeString("ar-EG", {
+    hour: "2-digit",
+    minute: "2-digit"
   });
+  headerInfo.appendChild(timeSpan);
+
+  bodyDiv.appendChild(headerInfo);
+
+  if(data.isAudio){
+    const audioWrapper = document.createElement("div");
+    audioWrapper.className = "message-body-audio";
+
+    const audioEl = document.createElement("audio");
+    audioEl.controls = true;
+    audioEl.src = data.text;
+
+    audioWrapper.appendChild(audioEl);
+    bodyDiv.appendChild(audioWrapper);
+
+  }else if(data.isImage){
+    const imgWrapper = document.createElement("div");
+    imgWrapper.className = "message-body-image";
+
+    const imgEl = document.createElement("img");
+    imgEl.src = data.text;
+
+    imgWrapper.appendChild(imgEl);
+    bodyDiv.appendChild(imgWrapper);
+
+  }else{
+    const textSpan = document.createElement("span");
+    textSpan.className = "message-text";
+    textSpan.textContent = data.text;
+    bodyDiv.appendChild(textSpan);
+  }
+
+  // مؤقت حذف رسائل الزائر كما كان في الكود الأصلي
+  if(!isAdmin){
+    const age = Date.now() - data.createdAt;
+
+    if(age >= 180000) return null;
+
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "comment-actions";
+
+    const timerSpan = document.createElement("span");
+    timerSpan.className = "timer-text";
+    timerSpan.id = "timer_" + docId;
+
+    actionsDiv.appendChild(timerSpan);
+    bodyDiv.appendChild(actionsDiv);
+
+    wrapperDiv.dataset.createdAt = data.createdAt;
+  }
+
+  messageDiv.appendChild(bodyDiv);
+  wrapperDiv.appendChild(messageDiv);
+
+  if(prepend){
+    messagesContainer.insertBefore(wrapperDiv, messagesContainer.firstChild);
+  }else{
+    messagesContainer.appendChild(wrapperDiv);
+  }
+
+  messageElements[docId] = {
+    element: wrapperDiv,
+    data: data
+  };
+
+  return wrapperDiv;
+}
+
+
+// =========================
+// المدير: آخر 30 رسالة فقط
+// =========================
+let adminLatestUnsubscribe = null;
+
+function startAdminMessages(){
+
+  const latestQuery = query(
+    collection(db, "messages"),
+    orderBy("createdAt", "desc"),
+    limit(30)
+  );
+
+  adminLatestUnsubscribe = onSnapshot(latestQuery, (snapshot)=>{
+
+    const docs = snapshot.docs.slice().reverse();
+
+    if(docs.length){
+      oldestMessageDoc = snapshot.docs[snapshot.docs.length - 1];
+    }
+
+    docs.forEach(messageDoc=>{
+      createMessageElement(messageDoc.id, messageDoc.data(), false);
+    });
+
+    // عند أول تحميل ننزل لآخر الرسائل.
+    if(!initialMessagesLoaded){
+      initialMessagesLoaded = true;
+      setTimeout(()=>{
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 50);
+    }
+
+    // حذف الرسائل التي لم تعد ضمن آخر 30 من listener
+    // لا نحذف الرسائل القديمة المحملة يدويًا.
+  });
+}
+
+
+// ==========================================
+// المدير: تحميل الرسائل الأقدم عند Scroll لفوق
+// ==========================================
+async function loadOlderMessages(){
+
+  if(!isAdmin) return;
+  if(loadingOlderMessages) return;
+  if(noMoreOlderMessages) return;
+  if(!oldestMessageDoc) return;
+
+  loadingOlderMessages = true;
+
+  const oldScrollHeight = messagesContainer.scrollHeight;
+  const oldScrollTop = messagesContainer.scrollTop;
+
+  try{
+
+    const olderQuery = query(
+      collection(db, "messages"),
+      orderBy("createdAt", "desc"),
+      startAfter(oldestMessageDoc),
+      limit(30)
+    );
+
+    const snapshot = await new Promise((resolve, reject)=>{
+
+      const unsubscribe = onSnapshot(
+        olderQuery,
+        snap=>{
+          unsubscribe();
+          resolve(snap);
+        },
+        error=>{
+          unsubscribe();
+          reject(error);
+        }
+      );
+
+    });
+
+    if(snapshot.empty){
+      noMoreOlderMessages = true;
+      loadingOlderMessages = false;
+      return;
+    }
+
+    const olderDocs = snapshot.docs.slice().reverse();
+
+    // أقدم document في الدفعة الجديدة
+    oldestMessageDoc = snapshot.docs[snapshot.docs.length - 1];
+
+    olderDocs.forEach(messageDoc=>{
+      createMessageElement(
+        messageDoc.id,
+        messageDoc.data(),
+        true
+      );
+    });
+
+    // الحفاظ على مكان المستخدم بالضبط بعد إضافة الرسائل القديمة
+    const newScrollHeight = messagesContainer.scrollHeight;
+    messagesContainer.scrollTop =
+      oldScrollTop + (newScrollHeight - oldScrollHeight);
+
+    if(snapshot.size < 30){
+      noMoreOlderMessages = true;
+    }
+
+  }catch(error){
+
+    console.error("خطأ في تحميل الرسائل القديمة:", error);
+
+  }finally{
+
+    loadingOlderMessages = false;
+
+  }
+}
+
+
+// عند الوصول لأعلى المحادثة يتم استدعاء الرسائل القديمة
+messagesContainer.addEventListener("scroll", ()=>{
+
+  if(!isAdmin) return;
+
+  if(messagesContainer.scrollTop <= 80){
+    loadOlderMessages();
+  }
+
 });
 
+
+// =========================
+// الزائر: النظام القديم
+// =========================
+function startVisitorMessages(){
+
+  const q = query(
+    collection(db,"messages"),
+    orderBy("createdAt","asc")
+  );
+
+  onSnapshot(q, (snapshot)=>{
+
+    snapshot.docChanges().forEach((change)=>{
+
+      const docId = change.doc.id;
+      const data = change.doc.data();
+
+      if(change.type === "added"){
+
+        if(messageElements[docId]) return;
+
+        const wrapper = createMessageElement(docId, data, false);
+
+        if(wrapper){
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+      }else if(change.type === "removed"){
+
+        if(messageElements[docId]){
+
+          messageElements[docId].element.remove();
+
+          delete messageElements[docId];
+
+        }
+
+      }
+
+    });
+
+  });
+}
+
+
+// تشغيل النظام المناسب لكل طرف
+if(isAdmin){
+  startAdminMessages();
+}else{
+  startVisitorMessages();
+}
+
+
+// حذف رسائل الزائر بعد المدة المحددة
 if(!isAdmin){
+
   setInterval(()=>{
+
     const now = Date.now();
+
     for(const docId in messageElements){
+
       const item = messageElements[docId];
+
       const timeLeft = 120000 - (now - item.data.createdAt);
+
       if(timeLeft <= 0){
+
         item.element.remove();
         delete messageElements[docId];
+
       }else{
-        const timerSpan = document.getElementById("timer_" + docId);
+
+        const timerSpan =
+          document.getElementById("timer_" + docId);
+
         if(timerSpan){
-          const mins = Math.floor(timeLeft / 60000);
-          const secs = Math.ceil((timeLeft % 60000) / 1000);
-          timerSpan.textContent = `يحذف خلال: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+          const mins =
+            Math.floor(timeLeft / 60000);
+
+          const secs =
+            Math.ceil((timeLeft % 60000) / 1000);
+
+          timerSpan.textContent =
+            `يحذف خلال: ${mins}:${secs < 10 ? "0" : ""}${secs}`;
+
         }
+
       }
+
     }
-  }, 1000);
+
+  },1000);
+
 }
+
 </script>
 </body>
 </html>
