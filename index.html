@@ -169,10 +169,13 @@
             100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
         }
 
-        /* Control Button */
+        /* Control Buttons Layout */
         .controls {
             margin-bottom: 20px;
             z-index: 10;
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
         .btn-hit {
@@ -200,6 +203,32 @@
         .btn-hit:active {
             transform: translateY(2px) scale(0.98);
             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 16px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.15s ease;
+            outline: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-reset:active {
+            transform: translateY(1px);
         }
 
         /* Slap Mark */
@@ -263,10 +292,15 @@
             <span>اضرب بالشبشب!</span>
             <span>🩴</span>
         </button>
+        <button class="btn-reset" id="resetBtn">
+            <span>إعادة الضبط</span>
+            <span>🔄</span>
+        </button>
     </div>
 
     <script>
         const hitBtn = document.getElementById('hitBtn');
+        const resetBtn = document.getElementById('resetBtn');
         const slipper = document.getElementById('slipper');
         const flag = document.getElementById('flag');
         const stage = document.getElementById('stage');
@@ -407,6 +441,12 @@
         }
 
         hitBtn.addEventListener('click', slap);
+
+        // Reset Counter Function
+        resetBtn.addEventListener('click', () => {
+            score = 0;
+            counterEl.innerText = score;
+        });
 
         // Allow pressing space bar to hit
         window.addEventListener('keydown', (e) => {
