@@ -30,13 +30,17 @@
             text-align: center;
             margin-top: 10px;
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
 
         h1 {
             font-size: 2.2rem;
             color: #f87171;
             text-shadow: 0 0 10px rgba(248, 113, 113, 0.5);
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
 
         .score-board {
@@ -47,6 +51,7 @@
             font-size: 1.2rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: inline-block;
         }
 
         .counter {
@@ -55,36 +60,34 @@
             font-size: 1.5rem;
         }
 
-        /* Price Board Side Panel */
+        /* Price Board - قريبة من عدد الضربات */
         .price-board {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             border: 2px solid #fbbf24;
             border-radius: 15px;
-            padding: 12px 16px;
+            padding: 10px 15px;
             box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
             z-index: 20;
             backdrop-filter: blur(5px);
-            max-width: 200px;
+            width: 280px;
+            margin-top: 5px;
         }
 
         .price-board h3 {
             color: #fbbf24;
-            font-size: 1.1rem;
+            font-size: 1rem;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-bottom: 1px solid rgba(251, 191, 36, 0.3);
-            padding-bottom: 5px;
+            padding-bottom: 4px;
         }
 
         .price-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
         }
 
         .price-item:last-child {
@@ -96,11 +99,11 @@
             position: relative;
             width: 100%;
             max-width: 600px;
-            height: 380px;
+            height: 320px;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 20px 0;
+            margin: 10px 0;
         }
 
         /* Target Flag Container */
@@ -160,7 +163,7 @@
 
         /* Controls */
         .controls {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             z-index: 10;
             display: flex;
             gap: 15px;
@@ -170,9 +173,9 @@
         .btn-hit {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
-            padding: 16px 45px;
+            padding: 14px 40px;
             border: none;
             border-radius: 50px;
             cursor: pointer;
@@ -187,9 +190,9 @@
         .btn-reset {
             background: rgba(255, 255, 255, 0.15);
             color: #fff;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
-            padding: 16px 25px;
+            padding: 14px 20px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 50px;
             cursor: pointer;
@@ -200,31 +203,27 @@
 </head>
 <body>
 
-    <!-- يفطة قائمة الأسعار -->
-    <div class="price-board">
-        <h3>قائمة الهدايا 🎁</h3>
-        <div class="price-item">
-            <span>🌹 وردة:</span>
-            <strong>ضربة واحدة</strong>
-        </div>
-        <div class="price-item">
-            <span>🍦 أيس كريم:</span>
-            <strong>ضربة واحدة</strong>
-        </div>
-        <div class="price-item">
-            <span>🍩 دونات:</span>
-            <strong>30 ضربة</strong>
-        </div>
-        <div class="price-item">
-            <span>🫶 قلب وأيادي:</span>
-            <strong>100 ضربة</strong>
-        </div>
-    </div>
-
     <header>
         <h1>ضرب بالشبشب 🩴 - يوسف</h1>
         <div class="score-board">
             عدد الضربات: <span id="counter" class="counter">0</span>
+        </div>
+        
+        <!-- يفطة الأسعار أصبحت هنا بجانب العنوان وعدد الضربات -->
+        <div class="price-board">
+            <h3>قائمة الهدايا 🎁</h3>
+            <div class="price-item">
+                <span>🌹 وردة / 🍦 أيس كريم:</span>
+                <strong>ضربة واحدة</strong>
+            </div>
+            <div class="price-item">
+                <span>🍩 دونات:</span>
+                <strong>30 ضربة</strong>
+            </div>
+            <div class="price-item">
+                <span>🫶 قلب وأيادي:</span>
+                <strong>100 ضربة</strong>
+            </div>
         </div>
     </header>
 
@@ -266,7 +265,6 @@
         const hitBtn = document.getElementById('hitBtn');
         const resetBtn = document.getElementById('resetBtn');
         const slipper = document.getElementById('slipper');
-        const flag = document.getElementById('flag');
         const counterEl = document.getElementById('counter');
 
         let score = 0;
