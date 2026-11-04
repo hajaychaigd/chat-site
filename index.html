@@ -4,101 +4,71 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>صينية الرمل السحرية 3D</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
     * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
       user-select: none;
       -webkit-user-select: none;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
-      background: #0f172a;
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
       color: #f8fafc;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      overflow-x: hidden;
-      padding: 15px;
     }
 
-    header {
-      text-align: center;
-      margin-bottom: 10px;
+    /* تأثيرات التوهج للجواهر والزجاجات */
+    .glow-red { filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.6)); }
+    .glow-black { filter: drop-shadow(0 0 12px rgba(100, 116, 139, 0.5)); }
+    .glow-gold { filter: drop-shadow(0 0 14px rgba(234, 179, 8, 0.7)); }
+
+    /* أنيميشن الانزلاق لليفطة */
+    @keyframes pulseGlow {
+      0%, 100% { border-color: rgba(234, 179, 8, 0.4); box-shadow: 0 0 15px rgba(234, 179, 8, 0.2); }
+      50% { border-color: rgba(234, 179, 8, 0.8); box-shadow: 0 0 25px rgba(234, 179, 8, 0.5); }
     }
 
-    header h1 {
-      font-size: 1.8rem;
-      color: #f1f5f9;
-      margin-bottom: 4px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    .gift-sign-card {
+      animation: pulseGlow 3s infinite ease-in-out;
     }
 
-    header p {
-      font-size: 0.9rem;
-      color: #94a3b8;
-    }
-
-    /* Container Area */
-    .game-container {
-      position: relative;
-      width: 100%;
-      max-width: 600px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-    }
-
-    /* Bottles Display */
-    .bottles-rack {
-      display: flex;
-      justify-content: center;
-      gap: 25px;
-      width: 100%;
-      margin-bottom: 5px;
-    }
-
-    .bottle-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
+    /* زجاجات الرمل التفاعلية */
     .bottle-wrapper {
       position: relative;
-      width: 55px;
-      height: 100px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 12px 12px 25px 25px;
+      width: 60px;
+      height: 110px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      border-radius: 16px 16px 30px 30px;
       overflow: hidden;
-      backdrop-filter: blur(8px);
-      box-shadow: inset 0 0 10px rgba(255,255,255,0.2), 0 8px 20px rgba(0,0,0,0.4);
+      backdrop-filter: blur(10px);
+      box-shadow: inset 0 0 12px rgba(255,255,255,0.2), 0 10px 25px rgba(0,0,0,0.5);
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .bottle-wrapper:hover {
-      transform: translateY(-4px) scale(1.03);
+      transform: translateY(-6px) scale(1.05);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .bottle-wrapper:active {
+      transform: translateY(2px) scale(0.98);
     }
 
     .bottle-wrapper::before {
       content: '';
       position: absolute;
-      top: -6px;
+      top: -8px;
       left: 50%;
       transform: translateX(-50%);
-      width: 22px;
-      height: 10px;
-      background: #b91c1c;
-      border-radius: 3px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      width: 24px;
+      height: 12px;
+      background: #78350f;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
       z-index: 5;
     }
 
@@ -106,61 +76,29 @@
       position: absolute;
       bottom: 0;
       width: 100%;
-      height: 75%;
-      transition: height 0.3s ease;
+      height: 80%;
+      transition: height 0.4s ease;
     }
 
-    .sand-red {
-      background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
-    }
-
-    .sand-black {
-      background: linear-gradient(180deg, #475569 0%, #0f172a 100%);
-      box-shadow: 0 0 12px rgba(15, 23, 42, 0.8);
-    }
-
-    .sand-gold {
-      background: linear-gradient(180deg, #fde047 0%, #ca8a04 100%);
-      box-shadow: 0 0 12px rgba(250, 204, 21, 0.5);
-    }
-
-    .pour-btn {
-      padding: 8px 14px;
-      border: none;
-      border-radius: 20px;
-      font-weight: bold;
-      font-size: 0.85rem;
-      color: #fff;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    /* الأزرار التفاعلية */
+    .custom-btn {
       transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .custom-btn:active {
+      transform: scale(0.94);
     }
 
-    .pour-btn:active {
-      transform: scale(0.95);
-    }
-
-    .btn-red { background: linear-gradient(135deg, #ef4444, #991b1b); }
-    .btn-black { background: linear-gradient(135deg, #334155, #0f172a); }
-    .btn-gold { background: linear-gradient(135deg, #eab308, #854d0e); color: #000; }
-
-    /* Main Canvas Area */
-    .canvas-wrapper {
+    /* تحسين إطار الكانفاس */
+    .canvas-container {
       position: relative;
-      width: 340px;
-      height: 340px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      perspective: 1000px;
     }
 
     canvas {
+      touch-action: none;
       border-radius: 50%;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 255, 255, 0.08);
       cursor: grab;
     }
 
@@ -168,197 +106,181 @@
       cursor: grabbing;
     }
 
-    /* Speed Control Panel (10 Speeds) */
-    .controls-panel {
-      width: 100%;
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    /* نصوص وشارات التنبيه */
+    .badge-pop {
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .speed-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.9rem;
-      color: #cbd5e1;
-    }
-
-    .speed-header span.val {
-      color: #38bdf8;
-      font-weight: bold;
-    }
-
-    .speed-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
-    }
-
-    .speed-btn {
-      background: #334155;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #94a3b8;
-      padding: 6px 0;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .speed-btn:hover {
-      background: #475569;
-      color: #fff;
-    }
-
-    .speed-btn.active {
-      background: linear-gradient(135deg, #0284c7, #0369a1);
-      color: #fff;
-      border-color: #38bdf8;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-    }
-
-    .speed-btn.stop-btn {
-      grid-column: span 2;
-      background: #ef4444;
-      color: white;
-    }
-
-    .speed-btn.stop-btn.active {
-      background: #dc2626;
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-    }
-
-    .action-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 5px;
-    }
-
-    .clear-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 10px;
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #fca5a5;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .clear-btn:hover {
-      background: rgba(239, 68, 68, 0.4);
+    @keyframes popIn {
+      0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
   </style>
 </head>
-<body>
+<body class="flex flex-col items-center justify-between p-3 md:p-6 min-h-screen select-none">
 
-  <header>
-    <h1>صينية الرمل التفاعلية 3D</h1>
-    <p>اسكب الرمل الملون ودع الصينية البيضاء تدور لترسم لوحتك السحرية</p>
+  <!-- Header Section -->
+  <header class="text-center mb-3">
+    <h1 class="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-amber-400 drop-shadow-md">
+      ✨ صينية الرمل السحرية 3D ✨
+    </h1>
+    <p class="text-slate-400 text-xs md:text-sm mt-1">اسكب الرمل الملون، واجعل الصينية تدور لتشكل هداياك السحرية ثلاثية الأبعاد</p>
   </header>
 
-  <div class="game-container">
-    <!-- زجاجات الرمل -->
-    <div class="bottles-rack">
-      <!-- زجاجة الرمل الأحمر -->
-      <div class="bottle-card">
-        <div class="bottle-wrapper" onclick="pourSand('red')">
-          <div class="bottle-sand sand-red"></div>
+  <div class="w-full max-w-4xl flex flex-col items-center gap-4">
+
+    <!-- Top Grid: Gift Sign (يفطة الهدايا) + Bottle Selector -->
+    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+      
+      <!-- يفطة دليل الهدايا (Gift / Legend Sign) -->
+      <div class="lg:col-span-5 gift-sign-card bg-slate-800/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/30 flex flex-col gap-2">
+        <div class="flex items-center justify-between border-b border-slate-700/80 pb-2">
+          <span class="font-bold text-amber-300 text-sm flex items-center gap-2">
+            🏷️ دليل دليل الهدايا والمكافآت
+          </span>
+          <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold" id="totalGiftsBadge">
+            0/3 هدايا
+          </span>
         </div>
-        <button class="pour-btn btn-red" onclick="pourSand('red')">
-          <span>سكب أحمر</span>
-        </button>
+
+        <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+          <!-- هدية الوردة -->
+          <div class="bg-slate-900/60 p-2 rounded-xl border border-red-500/20 flex flex-col items-center gap-1 hover:border-red-500/50 transition-colors cursor-pointer" onclick="pourSand('red')">
+            <span class="text-2xl glow-red">🌹</span>
+            <span class="text-[11px] text-red-400 font-bold">وردة حمراء</span>
+            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden mt-1">
+              <div id="progress-red" class="bg-red-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+            <span id="label-red" class="text-[10px] text-slate-400">رمل أحمر</span>
+          </div>
+
+          <!-- هدية الدونات -->
+          <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-500/20 flex flex-col items-center gap-1 hover:border-slate-400/50 transition-colors cursor-pointer" onclick="pourSand('black')">
+            <span class="text-2xl glow-black">🍩</span>
+            <span class="text-[11px] text-slate-300 font-bold">دونات أسود</span>
+            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden mt-1">
+              <div id="progress-black" class="bg-slate-400 h-full w-0 transition-all duration-300"></div>
+            </div>
+            <span id="label-black" class="text-[10px] text-slate-400">رمل أسود</span>
+          </div>
+
+          <!-- هدية القلب -->
+          <div class="bg-slate-900/60 p-2 rounded-xl border border-amber-500/20 flex flex-col items-center gap-1 hover:border-amber-500/50 transition-colors cursor-pointer" onclick="pourSand('gold')">
+            <span class="text-2xl glow-gold">💛</span>
+            <span class="text-[11px] text-amber-300 font-bold">قلب ذهبي</span>
+            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden mt-1">
+              <div id="progress-gold" class="bg-amber-400 h-full w-0 transition-all duration-300"></div>
+            </div>
+            <span id="label-gold" class="text-[10px] text-slate-400">رمل ذهبي</span>
+          </div>
+        </div>
       </div>
 
-      <!-- زجاجة الرمل الأسود -->
-      <div class="bottle-card">
-        <div class="bottle-wrapper" onclick="pourSand('black')">
-          <div class="bottle-sand sand-black"></div>
+      <!-- زجاجات الرمل التفاعلية (Bottles Rack) -->
+      <div class="lg:col-span-7 bg-slate-800/60 backdrop-blur-md p-4 rounded-2xl border border-slate-700/60 flex justify-around items-center">
+        <!-- زجاجة الرمل الأحمر -->
+        <div class="flex flex-col items-center gap-2">
+          <div class="bottle-wrapper" onclick="pourSand('red')" title="انقر لسكب الرمل الأحمر">
+            <div class="bottle-sand bg-gradient-to-t from-red-700 to-red-500 glow-red"></div>
+          </div>
+          <button class="custom-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-red-600 to-rose-700 text-white flex items-center gap-1" onclick="pourSand('red')">
+            <span>سكب أحمر</span> 🌹
+          </button>
         </div>
-        <button class="pour-btn btn-black" onclick="pourSand('black')">
-          <span>سكب أسود</span>
-        </button>
+
+        <!-- زجاجة الرمل الأسود -->
+        <div class="flex flex-col items-center gap-2">
+          <div class="bottle-wrapper" onclick="pourSand('black')" title="انقر لسكب الرمل الأسود">
+            <div class="bottle-sand bg-gradient-to-t from-slate-950 via-slate-800 to-slate-600 glow-black"></div>
+          </div>
+          <button class="custom-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-slate-700 to-slate-900 text-white flex items-center gap-1 border border-slate-600" onclick="pourSand('black')">
+            <span>سكب أسود</span> 🍩
+          </button>
+        </div>
+
+        <!-- زجاجة الرمل الذهبي -->
+        <div class="flex flex-col items-center gap-2">
+          <div class="bottle-wrapper" onclick="pourSand('gold')" title="انقر لسكب الرمل الذهبي">
+            <div class="bottle-sand bg-gradient-to-t from-yellow-700 via-amber-500 to-yellow-300 glow-gold"></div>
+          </div>
+          <button class="custom-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 flex items-center gap-1" onclick="pourSand('gold')">
+            <span>سكب ذهبي</span> 💛
+          </button>
+        </div>
       </div>
 
-      <!-- زجاجة الرمل الذهبي -->
-      <div class="bottle-card">
-        <div class="bottle-wrapper" onclick="pourSand('gold')">
-          <div class="bottle-sand sand-gold"></div>
-        </div>
-        <button class="pour-btn btn-gold" onclick="pourSand('gold')">
-          <span>سكب ذهبي</span>
-        </button>
+    </div>
+
+    <!-- Main Canvas Area (الصينية الدائرية) -->
+    <div class="canvas-container my-2">
+      <canvas id="trayCanvas" width="360" height="360" class="max-w-full h-auto"></canvas>
+      
+      <!-- رسالة احتفالية تفاعلية عند ظهور الهدية -->
+      <div id="rewardBanner" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/90 border-2 border-amber-400 px-6 py-4 rounded-2xl text-center backdrop-blur-lg shadow-2xl pointer-events-none badge-pop z-30">
+        <div id="rewardIcon" class="text-5xl mb-1">🎁</div>
+        <div id="rewardTitle" class="text-amber-300 font-black text-lg">مبروك! ظهرت الهدية!</div>
+        <div id="rewardSub" class="text-slate-300 text-xs mt-1">تشكلت تحفة رملية ثلاثية الأبعاد</div>
       </div>
     </div>
 
-    <!-- الصينية الدائرية (Canvas) -->
-    <div class="canvas-wrapper">
-      <canvas id="trayCanvas" width="320" height="320"></canvas>
+    <!-- Control Panel: 10 Speeds & Actions -->
+    <div class="w-full bg-slate-800/80 backdrop-blur-md border border-slate-700/80 rounded-2xl p-4 flex flex-col gap-3">
+      
+      <div class="flex justify-between items-center text-sm font-bold text-slate-300">
+        <span class="flex items-center gap-2">⚙️ سرعة الدوران الدائم:</span>
+        <span class="text-sky-400 bg-sky-950/60 px-3 py-1 rounded-lg border border-sky-500/30" id="speedLabel">سرعة 2 (هادئة)</span>
+      </div>
+
+      <!-- 10 Speeds Grid -->
+      <div class="grid grid-cols-6 sm:grid-cols-12 gap-1.5" id="speedButtonsContainer">
+        <button class="col-span-2 sm:col-span-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded-xl text-xs custom-btn border border-red-400/30" onclick="setSpeed(0, 'متوقف 🛑')">إيقاف 🛑</button>
+        <!-- أزرار السرعات من 1 إلى 10 ستنشأ عبر JS -->
+      </div>
+
+      <!-- Actions Row -->
+      <div class="flex gap-3 pt-1">
+        <button class="flex-1 bg-gradient-to-r from-red-500/20 to-rose-600/20 hover:from-red-500/30 hover:to-rose-600/30 border border-red-500/40 text-red-300 font-bold py-2.5 rounded-xl text-xs sm:text-sm custom-btn flex justify-center items-center gap-2" onclick="clearTray()">
+          <span>تفريغ الصينية</span> 🧹
+        </button>
+        <button class="flex-1 bg-gradient-to-r from-amber-500/20 to-yellow-600/20 hover:from-amber-500/30 hover:to-yellow-600/30 border border-amber-500/40 text-amber-300 font-bold py-2.5 rounded-xl text-xs sm:text-sm custom-btn flex justify-center items-center gap-2" onclick="scatterGifts()">
+          <span>استعراض الهدايا السحرية</span> ✨
+        </button>
+      </div>
+
     </div>
 
-    <!-- لوحة التحكم في 10 سرعات الدوران -->
-    <div class="controls-panel">
-      <div class="speed-header">
-        <span>سرعة الدوران الدائم:</span>
-        <span class="val" id="speedLabel">سرعة 2 (هادئة)</span>
-      </div>
-
-      <div class="speed-grid">
-        <button class="speed-btn stop-btn" onclick="setSpeed(0, 'متوقف')">إيقاف 🛑</button>
-        <button class="speed-btn" onclick="setSpeed(1, 'سرعة 1')">1</button>
-        <button class="speed-btn active" onclick="setSpeed(2, 'سرعة 2')">2</button>
-        <button class="speed-btn" onclick="setSpeed(3, 'سرعة 3')">3</button>
-        <button class="speed-btn" onclick="setSpeed(4, 'سرعة 4')">4</button>
-        <button class="speed-btn" onclick="setSpeed(5, 'سرعة 5')">5</button>
-        <button class="speed-btn" onclick="setSpeed(6, 'سرعة 6')">6</button>
-        <button class="speed-btn" onclick="setSpeed(7, 'سرعة 7')">7</button>
-        <button class="speed-btn" onclick="setSpeed(8, 'سرعة 8')">8</button>
-        <button class="speed-btn" onclick="setSpeed(9, 'سرعة 9')">9</button>
-        <button class="speed-btn" onclick="setSpeed(10, 'سرعة 10 (فائقة)')">10 ⚡</button>
-      </div>
-
-      <div class="action-row">
-        <button class="clear-btn" onclick="clearTray()">تفريغ الصينية 🧹</button>
-      </div>
-    </div>
   </div>
 
   <script>
+    // الإعدادات الأساسية للكانفاس
     const canvas = document.getElementById('trayCanvas');
     const ctx = canvas.getContext('2d');
     const speedLabel = document.getElementById('speedLabel');
 
-    // أبعاد ومراكز الصينية
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const trayRadius = 145;
+    const trayRadius = 160;
 
     // حالة اللعبة والدوران
     let rotationAngle = 0;
-    let currentSpeed = 0.02; // السرعة الافتراضية (سرعة 2)
+    let currentSpeed = 0.02; // سرعة 2 افتراضية
     let speedLevel = 2;
     let sandParticles = [];
-    let isPouring = false;
-    let activeColor = 'red';
+    let spawnedGifts = []; // الهدايا الثلاثية الأبعاد المستقرة بالصينية
 
-    // الألوان المحسنة للرمل
+    // عدادات تجميع الرمل المكتسبة لفتح الهدايا
+    const colorCounts = { red: 0, black: 0, gold: 0 };
+    const NEEDED_SAND = 220; // العدد المطلوب للظهور تلقائياً
+    const unlockedGifts = { red: false, black: false, gold: false };
+
+    // الألوان للرمل
     const SAND_COLORS = {
       red: { base: '#ef4444', shadow: '#991b1b', shine: '#fca5a5' },
-      black: { base: '#334155', shadow: '#0f172a', shine: '#64748b' },
+      black: { base: '#475569', shadow: '#0f172a', shine: '#94a3b8' },
       gold: { base: '#eab308', shadow: '#854d0e', shine: '#fef08a' }
     };
 
-    // الصوتيات باستخدام Web Audio API
+    // Web Audio API لتوليد الأصوات
     let audioCtx = null;
     function initAudio() {
       if (!audioCtx) {
@@ -366,10 +288,11 @@
       }
     }
 
+    // صوت سكب الرمل
     function playPourSound() {
       if (!audioCtx) return;
       try {
-        const bufferSize = audioCtx.sampleRate * 0.1;
+        const bufferSize = audioCtx.sampleRate * 0.12;
         const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -381,11 +304,11 @@
 
         const filter = audioCtx.createBiquadFilter();
         filter.type = 'bandpass';
-        filter.frequency.value = 1200;
+        filter.frequency.value = 1400;
 
         const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.09, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
 
         noise.connect(filter);
         filter.connect(gain);
@@ -395,159 +318,417 @@
       } catch (e) {}
     }
 
-    // إضافة حبات رمل
-    function pourSand(color) {
-      initAudio();
-      activeColor = color;
-      playPourSound();
-
-      // سكب دفعة من حبات الرمل عشوائياً بالقرب من المركز مع انزلاق خفيف
-      const count = 35;
-      for (let i = 0; i < count; i++) {
-        const dist = Math.random() * 45;
-        const angle = Math.random() * Math.PI * 2;
-        
-        sandParticles.push({
-          r: dist, // البعد القمري عن المركز
-          angle: angle - rotationAngle, // زاوية ثابتة بالنسبة لشبكة الصينية
-          size: 1.5 + Math.random() * 2.5,
-          colorType: color,
-          drift: (Math.random() - 0.5) * 0.3
+    // صوت كشف الهدية
+    function playRewardSound() {
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // نغمات احتفالية C E G C
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.15, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.35);
         });
+      } catch (e) {}
+    }
+
+    // بناء أزرار السرعة العشرة
+    function initSpeedButtons() {
+      const container = document.getElementById('speedButtonsContainer');
+      for (let i = 1; i <= 10; i++) {
+        const btn = document.createElement('button');
+        btn.className = `speed-btn bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 rounded-xl text-xs custom-btn border border-slate-600/40 ${i === 2 ? 'active-speed bg-sky-600 text-white border-sky-400' : ''}`;
+        btn.textContent = i === 10 ? '10⚡' : i;
+        btn.onclick = () => setSpeed(i, `سرعة ${i} ${i === 10 ? '(فائقة ⚡)' : ''}`);
+        btn.id = `btn-speed-${i}`;
+        container.appendChild(btn);
       }
     }
 
-    // تحديد 10 سرعات مختلفة للدوران
+    // تعيين سرعة الدوران
     function setSpeed(level, labelText) {
       speedLevel = level;
-      // حساب السرعة الزاوية بناءً على المستوى (من 0 إلى 10)
-      currentSpeed = level * 0.01;
+      currentSpeed = level * 0.008;
       speedLabel.textContent = labelText;
 
-      // تحديث حالة الأزرار البصرية
-      document.querySelectorAll('.speed-btn').forEach((btn, idx) => {
-        btn.classList.remove('active');
+      document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.classList.remove('bg-sky-600', 'text-white', 'border-sky-400');
+        btn.classList.add('bg-slate-700', 'text-slate-300');
       });
 
-      const buttons = document.querySelectorAll('.speed-btn');
-      if (level === 0) {
-        buttons[0].classList.add('active');
-      } else {
-        buttons[level].classList.add('active');
+      if (level > 0) {
+        const activeBtn = document.getElementById(`btn-speed-${level}`);
+        if (activeBtn) {
+          activeBtn.classList.remove('bg-slate-700', 'text-slate-300');
+          activeBtn.classList.add('bg-sky-600', 'text-white', 'border-sky-400');
+        }
       }
     }
 
-    function clearTray() {
-      sandParticles = [];
+    // سكب الرمل والتجميع
+    function pourSand(color) {
+      initAudio();
+      playPourSound();
+
+      const batchCount = 40;
+      for (let i = 0; i < batchCount; i++) {
+        const dist = Math.random() * 50;
+        const angle = Math.random() * Math.PI * 2;
+
+        sandParticles.push({
+          r: dist,
+          angle: angle - rotationAngle,
+          size: 1.5 + Math.random() * 2.2,
+          colorType: color,
+          drift: (Math.random() - 0.5) * 0.4
+        });
+      }
+
+      // زيادة العداد وتحديث التقدم
+      colorCounts[color] += batchCount;
+      updateGiftProgress(color);
     }
 
-    // رسم الصينية البيضاء الفاخرة 3D
-    function drawWhiteTray() {
+    // تحديث مؤشرات التقدم وتوليد الهدايا عند الاكتفاء
+    function updateGiftProgress(color) {
+      const percentage = Math.min(100, Math.floor((colorCounts[color] / NEEDED_SAND) * 100));
+      const progressBar = document.getElementById(`progress-${color}`);
+      const progressLabel = document.getElementById(`label-${color}`);
+
+      if (progressBar) progressBar.style.width = `${percentage}%`;
+
+      if (colorCounts[color] >= NEEDED_SAND && !unlockedGifts[color]) {
+        unlockedGifts[color] = true;
+        if (progressLabel) {
+          progressLabel.textContent = '✨ تم فتح الهدية!';
+          progressLabel.className = 'text-[10px] text-amber-300 font-bold';
+        }
+        triggerReward(color);
+      } else if (!unlockedGifts[color] && progressLabel) {
+        progressLabel.textContent = `${percentage}% مكتمل`;
+      }
+
+      // تحديث شارة إجمالي الهدايا
+      const totalUnlocked = Object.values(unlockedGifts).filter(Boolean).length;
+      document.getElementById('totalGiftsBadge').textContent = `${totalUnlocked}/3 هدايا`;
+    }
+
+    // إظهار الهدية السحرية داخل الصينية
+    function triggerReward(color) {
+      playRewardSound();
+
+      let giftType = '🌹';
+      let title = 'وردة حمراء زاهية!';
+      if (color === 'black') { giftType = '🍩'; title = 'دونات أسود فاخر!'; }
+      if (color === 'gold') { giftType = '💛'; title = 'قلب ذهبي براق!'; }
+
+      // إشعار بصري للمستخدم
+      const banner = document.getElementById('rewardBanner');
+      document.getElementById('rewardIcon').textContent = giftType;
+      document.getElementById('rewardTitle').textContent = `مبروك! تشكلت ${title}`;
+      banner.classList.remove('hidden');
+
+      setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 3000);
+
+      // إضافة الهدية لتترسب في مكان استراتيجي بالصينية
+      spawnedGifts.push({
+        type: color,
+        r: Math.random() * 40,
+        angle: Math.random() * Math.PI * 2 - rotationAngle,
+        scale: 0.2,
+        maxScale: 1.0
+      });
+    }
+
+    // استعراض جميع الهدايا
+    function scatterGifts() {
+      ['red', 'black', 'gold'].forEach(c => pourSand(c));
+    }
+
+    // تفريغ الصينية
+    function clearTray() {
+      sandParticles = [];
+      spawnedGifts = [];
+      colorCounts.red = 0;
+      colorCounts.black = 0;
+      colorCounts.gold = 0;
+
+      ['red', 'black', 'gold'].forEach(color => {
+        unlockedGifts[color] = false;
+        document.getElementById(`progress-${color}`).style.width = '0%';
+        const label = document.getElementById(`label-${color}`);
+        if (label) {
+          label.textContent = color === 'red' ? 'رمل أحمر' : (color === 'black' ? 'رمل أسود' : 'رمل ذهبي');
+          label.className = 'text-[10px] text-slate-400';
+        }
+      });
+      document.getElementById('totalGiftsBadge').textContent = '0/3 هدايا';
+    }
+
+    // رسم الصينية البيضاء 3D
+    function drawTray() {
       ctx.save();
       ctx.translate(centerX, centerY);
 
-      // ظل الصينية الخارجي
+      // الظل الخارجي العميق للصينية
       ctx.beginPath();
-      ctx.arc(0, 0, trayRadius + 4, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.arc(0, 0, trayRadius + 6, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
       ctx.fill();
 
-      // حافة الصينية البيضاء الخارجية
-      const rimGradient = ctx.createLinearGradient(-trayRadius, -trayRadius, trayRadius, trayRadius);
-      rimGradient.addColorStop(0, '#ffffff');
-      rimGradient.addColorStop(0.5, '#e2e8f0');
-      rimGradient.addColorStop(1, '#cbd5e1');
+      // الإطار الخارجي اللامع
+      const rimGrad = ctx.createLinearGradient(-trayRadius, -trayRadius, trayRadius, trayRadius);
+      rimGrad.addColorStop(0, '#ffffff');
+      rimGrad.addColorStop(0.5, '#cbd5e1');
+      rimGrad.addColorStop(1, '#94a3b8');
 
       ctx.beginPath();
       ctx.arc(0, 0, trayRadius, 0, Math.PI * 2);
-      ctx.fillStyle = rimGradient;
+      ctx.fillStyle = rimGrad;
       ctx.fill();
 
-      // تجويف الصينية الداخلي (قاع أبيض عاجي فاخر)
-      const innerRadius = trayRadius - 12;
-      const innerGradient = ctx.createRadialGradient(0, 0, 5, 0, 0, innerRadius);
-      innerGradient.addColorStop(0, '#ffffff');
-      innerGradient.addColorStop(0.7, '#f8fafc');
-      innerGradient.addColorStop(1, '#e2e8f0');
+      // التجويف الداخلي العاجي
+      const innerRadius = trayRadius - 14;
+      const innerGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, innerRadius);
+      innerGrad.addColorStop(0, '#ffffff');
+      innerGrad.addColorStop(0.75, '#f8fafc');
+      innerGrad.addColorStop(1, '#e2e8f0');
 
       ctx.beginPath();
       ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
-      ctx.fillStyle = innerGradient;
+      ctx.fillStyle = innerGrad;
       ctx.fill();
 
-      // ظلال تجويف 3D داخلية
+      // ظل التجويف الداخلي العميق
       ctx.beginPath();
       ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.12)';
+      ctx.lineWidth = 6;
       ctx.stroke();
 
       ctx.restore();
     }
 
-    // رسم وتحديث حبات الرمل
+    // رسم حبيبات الرمل والفيزياء
     function updateAndDrawSand() {
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate(rotationAngle);
 
-      const maxDist = trayRadius - 16;
+      const maxDist = trayRadius - 18;
 
       for (let i = 0; i < sandParticles.length; i++) {
         let p = sandParticles[i];
 
-        // تأثير تسوية وتوزيع الرمل فيزيائياً مع دوران الصينية
+        // القوة الطاردة المركزية عند دوران الصينية
         if (currentSpeed > 0) {
-          // دفع الرمل نحو الخارج قليلاً بفعل القوة الطاردة للدوران
-          p.r += currentSpeed * 0.8 + (p.drift * 0.1);
-          p.angle += (p.drift * 0.01);
+          p.r += currentSpeed * 0.9 + p.drift * 0.1;
+          p.angle += p.drift * 0.01;
 
-          // الحد من خروج الرمل خارج حافة الصينية
           if (p.r > maxDist) {
             p.r = maxDist - Math.random() * 2;
           }
         }
 
-        // حساب الإحداثيات بالنسبة للصينية الدوارة
         const x = Math.cos(p.angle) * p.r;
         const y = Math.sin(p.angle) * p.r;
 
-        // رسم حبة الرمل
         const colors = SAND_COLORS[p.colorType];
         ctx.beginPath();
         ctx.arc(x, y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = colors.base;
         ctx.fill();
 
-        // لمسة بريق على الرمل
-        if (p.size > 2) {
+        // بريق حبة الرمل
+        if (p.size > 2.2) {
           ctx.beginPath();
-          ctx.arc(x - 0.5, y - 0.5, p.size * 0.3, 0, Math.PI * 2);
+          ctx.arc(x - 0.6, y - 0.6, p.size * 0.35, 0, Math.PI * 2);
           ctx.fillStyle = colors.shine;
           ctx.fill();
         }
       }
 
+      // رسم الهدايا ثلاثية الأبعاد التي تشكلت بالصينية
+      for (let g of spawnedGifts) {
+        if (g.scale < g.maxScale) g.scale += 0.04; // أنيميشن تكبير الهدايا
+
+        const gx = Math.cos(g.angle) * g.r;
+        const gy = Math.sin(g.angle) * g.r;
+
+        ctx.save();
+        ctx.translate(gx, gy);
+        ctx.scale(g.scale, g.scale);
+
+        if (g.type === 'red') draw3DRose(ctx);
+        if (g.type === 'black') draw3DDonut(ctx);
+        if (g.type === 'gold') draw3DHeart(ctx);
+
+        ctx.restore();
+      }
+
       ctx.restore();
     }
 
-    // حلقة الحركة الرئيسية (Animation Loop)
+    // رسم وردة حمراء 3D متدرجة
+    function draw3DRose(ctx) {
+      // ظلال
+      ctx.beginPath();
+      ctx.arc(0, 4, 18, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.fill();
+
+      // أوراق شجر خضراء
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.ellipse(-14, 0, 10, 5, Math.PI/4, 0, Math.PI*2);
+      ctx.ellipse(14, 0, 10, 5, -Math.PI/4, 0, Math.PI*2);
+      ctx.fill();
+
+      // بتلات الوردة
+      const grad = ctx.createRadialGradient(0, -3, 2, 0, 0, 16);
+      grad.addColorStop(0, '#fca5a5');
+      grad.addColorStop(0.5, '#ef4444');
+      grad.addColorStop(1, '#991b1b');
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 15, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // قلب الوردة الحلزوني
+      ctx.strokeStyle = '#f87171';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(0, -1, 7, 0, Math.PI * 1.5);
+      ctx.stroke();
+    }
+
+    // رسم دونات أسود 3D بالشكولاتة
+    function draw3DDonut(ctx) {
+      // ظل الدونات
+      ctx.beginPath();
+      ctx.ellipse(0, 5, 20, 14, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fill();
+
+      // قاعدة الكعكة
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 18, 14, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#d97706';
+      ctx.fill();
+
+      // تغطية الشكولاتة الداكنة
+      const dGrad = ctx.createRadialGradient(-3, -3, 3, 0, 0, 16);
+      dGrad.addColorStop(0, '#475569');
+      dGrad.addColorStop(0.7, '#1e293b');
+      dGrad.addColorStop(1, '#0f172a');
+
+      ctx.beginPath();
+      ctx.ellipse(0, -1, 16, 12, 0, 0, Math.PI * 2);
+      ctx.fillStyle = dGrad;
+      ctx.fill();
+
+      // ثقب الدونات الأوسط
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 6, 4, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fill();
+
+      // زينة الملبس (Sprinkles)
+      const colors = ['#f43f5e', '#38bdf8', '#facc15', '#4ade80'];
+      for (let i = 0; i < 6; i++) {
+        const ang = (i / 6) * Math.PI * 2;
+        const rx = Math.cos(ang) * 10;
+        const ry = Math.sin(ang) * 7;
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fillRect(rx - 1, ry - 1, 3, 3);
+      }
+    }
+
+    // رسم قلب ذهبي براق 3D
+    function draw3DHeart(ctx) {
+      // ظل القلب
+      ctx.beginPath();
+      ctx.arc(-6, -2, 8, 0, Math.PI * 2);
+      ctx.arc(6, -2, 8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.fill();
+
+      // القلب الذهبي
+      const hGrad = ctx.createLinearGradient(-10, -10, 10, 15);
+      hGrad.addColorStop(0, '#fef08a');
+      hGrad.addColorStop(0.4, '#eab308');
+      hGrad.addColorStop(1, '#854d0e');
+
+      ctx.save();
+      ctx.scale(1.1, 1.1);
+      ctx.beginPath();
+      ctx.moveTo(0, 12);
+      ctx.bezierCurveTo(-14, 2, -14, -10, -6, -10);
+      ctx.bezierCurveTo(-2, -10, 0, -6, 0, -4);
+      ctx.bezierCurveTo(0, -6, 2, -10, 6, -10);
+      ctx.bezierCurveTo(14, -10, 14, 2, 0, 12);
+      ctx.fillStyle = hGrad;
+      ctx.fill();
+
+      // لمعة الذهبي 3D
+      ctx.beginPath();
+      ctx.arc(-4, -5, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // الحلقة الرئيسية للحركة (Animation Loop)
     function animate() {
-      // تنظيف الكانفاس
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // تحديث زاوية الدوران التلقائي
       rotationAngle += currentSpeed;
 
-      // رسم العناصر
-      drawWhiteTray();
+      drawTray();
       updateAndDrawSand();
 
       requestAnimationFrame(animate);
     }
 
-    // بدء اللعبة
-    animate();
+    // إعداد التفاعل مع اللمس والضغط بالماوس مباشرة على الكانفاس
+    let isDragging = false;
+    canvas.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      pourActiveSand(e);
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (isDragging) pourActiveSand(e);
+    });
+
+    window.addEventListener('pointerup', () => { isDragging = false; });
+
+    function pourActiveSand(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // سكب رمل أحمر/أسود/ذهبي تلقائياً بحسب القرب من الماوس
+      const randColor = ['red', 'black', 'gold'][Math.floor(Math.random() * 3)];
+      pourSand(randColor);
+    }
+
+    // تشغيل التطبيق عند التحميل Complete Load
+    window.onload = function() {
+      initSpeedButtons();
+      animate();
+    };
   </script>
 </body>
 </html>
