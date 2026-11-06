@@ -6,7 +6,7 @@
   <title>بطاقات النصائح | بطاقة يومك</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -17,43 +17,45 @@
     }
 
     body {
-      background-color: #FAF7F2;
-      background-image: radial-gradient(#E8DFD5 1px, transparent 1px);
+      background-color: #0D0D0D;
+      background-image: radial-gradient(#262626 1px, transparent 1px);
       background-size: 24px 24px;
-      color: #4A403A;
+      color: #FFFFFF;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 16px;
+      padding: 24px 16px;
       overflow-x: hidden;
     }
 
     header {
       text-align: center;
-      margin-top: 15px;
+      margin-top: 10px;
       margin-bottom: 20px;
     }
 
     header h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #362D27;
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #FFFFFF;
       margin-bottom: 6px;
+      letter-spacing: -0.5px;
     }
 
     header p {
       font-size: 0.95rem;
-      color: #8C7A6B;
+      color: #A3A3A3;
     }
 
     .counter-badge {
       display: inline-block;
-      margin-top: 10px;
-      padding: 4px 12px;
-      background-color: #EFE8DE;
-      color: #6E5D4F;
+      margin-top: 12px;
+      padding: 5px 16px;
+      background-color: #1F1F1F;
+      color: #D4D4D4;
+      border: 1px solid #333333;
       border-radius: 20px;
       font-size: 0.85rem;
       font-weight: 500;
@@ -82,8 +84,8 @@
       position: relative;
       transform-style: preserve-3d;
       transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
-      border-radius: 24px;
-      box-shadow: 0 10px 30px rgba(74, 64, 58, 0.06), 0 2px 8px rgba(74, 64, 58, 0.04);
+      border-radius: 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.05);
     }
 
     .card.is-flipped {
@@ -95,86 +97,89 @@
       width: 100%;
       height: 100%;
       backface-visibility: hidden;
-      border-radius: 24px;
-      border: 1px solid #EFE8DE;
-      padding: 28px 24px;
+      border-radius: 28px;
+      padding: 30px 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
       text-align: center;
       background-color: #FFFFFF;
+      color: #171717;
+      border: 1px solid #FFFFFF;
     }
 
-    /* ظهر الكارت */
+    /* ظهر الكارت (أبيض ناصع) */
     .card-front {
-      background: linear-gradient(180deg, #FFFFFF 0%, #FAF5EF 100%);
+      background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
     }
 
     .support-tag {
       font-size: 0.85rem;
-      color: #9E8978;
-      background: rgba(239, 232, 222, 0.5);
-      padding: 6px 14px;
+      color: #737373;
+      background: #F5F5F5;
+      padding: 6px 16px;
       border-radius: 12px;
-      font-weight: 500;
+      font-weight: 600;
+      border: 1px solid #E5E5E5;
     }
 
     .rose-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       margin: auto 0;
     }
 
     .tiktok-rose {
-      width: 85px;
-      height: 85px;
-      filter: drop-shadow(0 4px 8px rgba(224, 112, 134, 0.15));
-      transition: transform 0.3s ease;
+      width: 90px;
+      height: 90px;
+      filter: drop-shadow(0 6px 12px rgba(224, 112, 134, 0.25));
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .card-scene:hover .tiktok-rose {
-      transform: scale(1.05);
+      transform: scale(1.08);
     }
 
     .support-text {
-      font-size: 1rem;
-      color: #6E5D4F;
-      font-weight: 500;
+      font-size: 1.05rem;
+      color: #262626;
+      font-weight: 700;
       line-height: 1.5;
     }
 
     .tap-hint {
       font-size: 0.85rem;
-      color: #B3A090;
+      color: #A3A3A3;
       display: flex;
       align-items: center;
       gap: 6px;
+      font-weight: 500;
     }
 
-    /* وجه الكارت (النصيحة) */
+    /* وجه الكارت (النصيحة - أبيض) */
     .card-back {
       transform: rotateY(180deg);
       background-color: #FFFFFF;
     }
 
     .advice-category {
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: #B39274;
-      letter-spacing: 0.5px;
-      background-color: #FAF4EE;
-      padding: 4px 12px;
-      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #262626;
+      background-color: #F5F5F5;
+      border: 1px solid #E5E5E5;
+      padding: 5px 14px;
+      border-radius: 10px;
     }
 
     .advice-text {
-      font-size: 1.15rem;
-      line-height: 1.7;
-      color: #362D27;
-      font-weight: 500;
+      font-size: 1.2rem;
+      line-height: 1.75;
+      color: #171717;
+      font-weight: 700;
       margin: auto 0;
       word-break: break-word;
     }
@@ -187,13 +192,13 @@
 
     .action-btn {
       flex: 1;
-      padding: 10px;
-      border: 1px solid #EFE8DE;
-      background-color: #FAF7F2;
-      color: #6E5D4F;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 500;
+      padding: 12px;
+      border: 1px solid #E5E5E5;
+      background-color: #F5F5F5;
+      color: #262626;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
@@ -203,27 +208,28 @@
     }
 
     .action-btn:hover {
-      background-color: #EFE8DE;
-      color: #362D27;
+      background-color: #E5E5E5;
+      color: #0A0A0A;
     }
 
     .primary-btn {
       width: 100%;
-      margin-top: 18px;
-      padding: 14px;
-      border: none;
-      background-color: #6E5D4F;
-      color: #FFFFFF;
-      border-radius: 16px;
-      font-size: 0.95rem;
-      font-weight: 600;
+      margin-top: 20px;
+      padding: 16px;
+      border: 1px solid #333333;
+      background-color: #FFFFFF;
+      color: #0D0D0D;
+      border-radius: 18px;
+      font-size: 1rem;
+      font-weight: 800;
       cursor: pointer;
-      transition: background-color 0.2s ease, transform 0.1s ease;
-      box-shadow: 0 4px 12px rgba(110, 93, 79, 0.15);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
     }
 
     .primary-btn:hover {
-      background-color: #5A4B3F;
+      background-color: #E5E5E5;
+      transform: translateY(-2px);
     }
 
     .primary-btn:active {
@@ -234,15 +240,17 @@
     .toast {
       position: fixed;
       bottom: 24px;
-      background-color: #362D27;
-      color: #FFFFFF;
-      padding: 10px 20px;
+      background-color: #FFFFFF;
+      color: #0D0D0D;
+      padding: 12px 24px;
       border-radius: 20px;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
+      font-weight: 700;
       opacity: 0;
       transform: translateY(10px);
       transition: all 0.3s ease;
       pointer-events: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
     .toast.show {
@@ -269,14 +277,14 @@
           <div class="rose-container">
             <!-- TikTok Rose SVG Icon -->
             <svg class="tiktok-rose" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M50 75C50 75 48 88 44 95" stroke="#7A9A60" stroke-width="4" stroke-linecap="round"/>
-              <path d="M49 80C55 80 62 76 65 72C58 70 51 74 49 80Z" fill="#8AB068"/>
-              <path d="M47 87C40 87 33 83 30 79C37 77 44 81 47 87Z" fill="#8AB068"/>
-              <path d="M42 42C30 42 22 52 25 64C28 76 40 80 50 80C60 80 72 76 75 64C78 52 70 42 58 42C55 42 52 44 50 47C48 44 45 42 42 42Z" fill="#E88295"/>
-              <path d="M50 47C43 38 35 38 30 43C25 48 26 56 34 60C42 64 50 56 50 47Z" fill="#ED95A5"/>
-              <path d="M50 47C57 38 65 38 70 43C75 48 74 56 66 60C58 64 50 56 50 47Z" fill="#E47086"/>
-              <path d="M50 47C46 40 47 32 50 28C53 32 54 40 50 47Z" fill="#D95B74"/>
-              <path d="M44 35C44 35 38 28 42 22C46 16 54 16 58 22C62 28 56 35 56 35C56 35 52 30 50 30C48 30 44 35 44 35Z" fill="#F2A6B4"/>
+              <path d="M50 75C50 75 48 88 44 95" stroke="#4ADE80" stroke-width="4" stroke-linecap="round"/>
+              <path d="M49 80C55 80 62 76 65 72C58 70 51 74 49 80Z" fill="#22C55E"/>
+              <path d="M47 87C40 87 33 83 30 79C37 77 44 81 47 87Z" fill="#22C55E"/>
+              <path d="M42 42C30 42 22 52 25 64C28 76 40 80 50 80C60 80 72 76 75 64C78 52 70 42 58 42C55 42 52 44 50 47C48 44 45 42 42 42Z" fill="#F43F5E"/>
+              <path d="M50 47C43 38 35 38 30 43C25 48 26 56 34 60C42 64 50 56 50 47Z" fill="#FB7185"/>
+              <path d="M50 47C57 38 65 38 70 43C75 48 74 56 66 60C58 64 50 56 50 47Z" fill="#E11D48"/>
+              <path d="M50 47C46 40 47 32 50 28C53 32 54 40 50 47Z" fill="#BE123C"/>
+              <path d="M44 35C44 35 38 28 42 22C46 16 54 16 58 22C62 28 56 35 56 35C56 35 52 30 50 30C48 30 44 35 44 35Z" fill="#FDA4AF"/>
             </svg>
             <div class="support-text">
               إذا أعجبتك النصيحة<br>
@@ -571,15 +579,12 @@
         
         osc.start();
         osc.stop(audioCtx.currentTime + 0.08);
-      } catch (e) {
-        // Audio fallback
-      }
+      } catch (e) {}
     }
 
     // Reset & Shuffle
     function resetIndexes() {
       availableIndexes = Array.from({ length: advices.length }, (_, i) => i);
-      // Shuffle array
       for (let i = availableIndexes.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [availableIndexes[i], availableIndexes[j]] = [availableIndexes[j], availableIndexes[i]];
@@ -612,7 +617,6 @@
       isFlipped = !isFlipped;
       
       if (isFlipped) {
-        // If turning to advice face for first time or new advice
         if (adviceText.textContent.includes('اضغط لتوليد')) {
           updateAdviceContent();
         }
@@ -625,7 +629,6 @@
     // Show Next Advice
     function handleNext() {
       if (isFlipped) {
-        // Flip back to front first, then update
         card.classList.remove('is-flipped');
         isFlipped = false;
         playFlipSound();
