@@ -3,732 +3,665 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>صينية الرمل السحرية 3D</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <title>بطاقات النصائح | بطاقة يومك</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     * {
-      font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
-      user-select: none;
-      -webkit-user-select: none;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
-      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-      color: #f8fafc;
+      background-color: #FAF7F2;
+      background-image: radial-gradient(#E8DFD5 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: #4A403A;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 16px;
+      overflow-x: hidden;
     }
 
-    /* تأثيرات التوهج للجواهر والزجاجات */
-    .glow-red { filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.6)); }
-    .glow-black { filter: drop-shadow(0 0 12px rgba(100, 116, 139, 0.5)); }
-    .glow-gold { filter: drop-shadow(0 0 14px rgba(234, 179, 8, 0.7)); }
-
-    /* أنيميشن الانزلاق لليفطة */
-    @keyframes pulseGlow {
-      0%, 100% { border-color: rgba(234, 179, 8, 0.4); box-shadow: 0 0 15px rgba(234, 179, 8, 0.2); }
-      50% { border-color: rgba(234, 179, 8, 0.8); box-shadow: 0 0 25px rgba(234, 179, 8, 0.5); }
+    header {
+      text-align: center;
+      margin-top: 15px;
+      margin-bottom: 20px;
     }
 
-    .gift-sign-card {
-      animation: pulseGlow 3s infinite ease-in-out;
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #362D27;
+      margin-bottom: 6px;
     }
 
-    /* زجاجات الرمل التفاعلية */
-    .bottle-wrapper {
-      position: relative;
-      width: 60px;
-      height: 110px;
-      background: rgba(255, 255, 255, 0.07);
-      border: 2px solid rgba(255, 255, 255, 0.25);
-      border-radius: 16px 16px 30px 30px;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      box-shadow: inset 0 0 12px rgba(255,255,255,0.2), 0 10px 25px rgba(0,0,0,0.5);
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    header p {
+      font-size: 0.95rem;
+      color: #8C7A6B;
     }
 
-    .bottle-wrapper:hover {
-      transform: translateY(-6px) scale(1.05);
-      border-color: rgba(255, 255, 255, 0.6);
+    .counter-badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 12px;
+      background-color: #EFE8DE;
+      color: #6E5D4F;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
     }
 
-    .bottle-wrapper:active {
-      transform: translateY(2px) scale(0.98);
-    }
-
-    .bottle-wrapper::before {
-      content: '';
-      position: absolute;
-      top: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 24px;
-      height: 12px;
-      background: #78350f;
-      border-radius: 4px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
-      z-index: 5;
-    }
-
-    .bottle-sand {
-      position: absolute;
-      bottom: 0;
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       width: 100%;
-      height: 80%;
-      transition: height 0.4s ease;
+      max-width: 360px;
+      flex-grow: 1;
     }
 
-    /* الأزرار التفاعلية */
-    .custom-btn {
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-    .custom-btn:active {
-      transform: scale(0.94);
-    }
-
-    /* تحسين إطار الكانفاس */
-    .canvas-container {
-      position: relative;
+    .card-scene {
+      width: 100%;
+      height: 440px;
       perspective: 1000px;
+      cursor: pointer;
     }
 
-    canvas {
-      touch-action: none;
-      border-radius: 50%;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 255, 255, 0.08);
-      cursor: grab;
+    .card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(74, 64, 58, 0.06), 0 2px 8px rgba(74, 64, 58, 0.04);
     }
 
-    canvas:active {
-      cursor: grabbing;
+    .card.is-flipped {
+      transform: rotateY(180deg);
     }
 
-    /* نصوص وشارات التنبيه */
-    .badge-pop {
-      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 24px;
+      border: 1px solid #EFE8DE;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      background-color: #FFFFFF;
     }
 
-    @keyframes popIn {
-      0% { transform: scale(0) rotate(-10deg); opacity: 0; }
-      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    /* ظهر الكارت */
+    .card-front {
+      background: linear-gradient(180deg, #FFFFFF 0%, #FAF5EF 100%);
+    }
+
+    .support-tag {
+      font-size: 0.85rem;
+      color: #9E8978;
+      background: rgba(239, 232, 222, 0.5);
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .rose-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin: auto 0;
+    }
+
+    .tiktok-rose {
+      width: 85px;
+      height: 85px;
+      filter: drop-shadow(0 4px 8px rgba(224, 112, 134, 0.15));
+      transition: transform 0.3s ease;
+    }
+
+    .card-scene:hover .tiktok-rose {
+      transform: scale(1.05);
+    }
+
+    .support-text {
+      font-size: 1rem;
+      color: #6E5D4F;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .tap-hint {
+      font-size: 0.85rem;
+      color: #B3A090;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* وجه الكارت (النصيحة) */
+    .card-back {
+      transform: rotateY(180deg);
+      background-color: #FFFFFF;
+    }
+
+    .advice-category {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #B39274;
+      letter-spacing: 0.5px;
+      background-color: #FAF4EE;
+      padding: 4px 12px;
+      border-radius: 8px;
+    }
+
+    .advice-text {
+      font-size: 1.15rem;
+      line-height: 1.7;
+      color: #362D27;
+      font-weight: 500;
+      margin: auto 0;
+      word-break: break-word;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #EFE8DE;
+      background-color: #FAF7F2;
+      color: #6E5D4F;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .action-btn:hover {
+      background-color: #EFE8DE;
+      color: #362D27;
+    }
+
+    .primary-btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      border: none;
+      background-color: #6E5D4F;
+      color: #FFFFFF;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 4px 12px rgba(110, 93, 79, 0.15);
+    }
+
+    .primary-btn:hover {
+      background-color: #5A4B3F;
+    }
+
+    .primary-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      background-color: #362D27;
+      color: #FFFFFF;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
-<body class="flex flex-col items-center justify-between p-3 md:p-6 min-h-screen select-none">
+<body>
 
-  <!-- Header Section -->
-  <header class="text-center mb-3">
-    <h1 class="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-amber-400 drop-shadow-md">
-      ✨ صينية الرمل السحرية 3D ✨
-    </h1>
-    <p class="text-slate-400 text-xs md:text-sm mt-1">اسكب الرمل الملون، واجعل الصينية تدور لتشكل هداياك السحرية ثلاثية الأبعاد</p>
+  <header>
+    <h1>نصيحة اليوم</h1>
+    <p>اضغط على الكارت لاكتشاف رسالتك</p>
+    <div class="counter-badge" id="counter">النصيحة: 0 / 200</div>
   </header>
 
-  <div class="w-full max-w-4xl flex flex-col items-center gap-4">
-
-    <!-- Top Grid: Gift Sign (يفطة الهدايا) + Bottle Selector -->
-    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-      
-      <!-- يفطة دليل الهدايا (Gift / Legend Sign) -->
-      <div class="lg:col-span-5 gift-sign-card bg-slate-800/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/30 flex flex-col gap-2">
-        <div class="flex items-center justify-between border-b border-slate-700/80 pb-2">
-          <span class="font-bold text-amber-300 text-sm flex items-center gap-2">
-            🏷️ دليل دليل الهدايا والمكافآت
-          </span>
-          <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold" id="totalGiftsBadge">
-            0/3 هدايا
-          </span>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 pt-1 text-center">
-          <!-- هدية الوردة -->
-          <div class="bg-slate-900/60 p-2 rounded-xl border border-red-500/20 flex flex-col items-center gap-1 hover:border-red-500/50 transition-colors cursor-pointer" onclick="pourSand('red')">
-            <span class="text-2xl glow-red">🌹</span>
-            <span class="text-[11px] text-red-400 font-bold">وردة حمراء</span>
-            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden mt-1">
-              <div id="progress-red" class="bg-red-500 h-full w-0 transition-all duration-300"></div>
+  <div class="main-container">
+    <div class="card-scene" id="cardScene">
+      <div class="card" id="card">
+        
+        <!-- ظهر الكارت -->
+        <div class="card-face card-front">
+          <div class="support-tag">لا تنسَ دعمنا 🤍</div>
+          <div class="rose-container">
+            <!-- TikTok Rose SVG Icon -->
+            <svg class="tiktok-rose" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M50 75C50 75 48 88 44 95" stroke="#7A9A60" stroke-width="4" stroke-linecap="round"/>
+              <path d="M49 80C55 80 62 76 65 72C58 70 51 74 49 80Z" fill="#8AB068"/>
+              <path d="M47 87C40 87 33 83 30 79C37 77 44 81 47 87Z" fill="#8AB068"/>
+              <path d="M42 42C30 42 22 52 25 64C28 76 40 80 50 80C60 80 72 76 75 64C78 52 70 42 58 42C55 42 52 44 50 47C48 44 45 42 42 42Z" fill="#E88295"/>
+              <path d="M50 47C43 38 35 38 30 43C25 48 26 56 34 60C42 64 50 56 50 47Z" fill="#ED95A5"/>
+              <path d="M50 47C57 38 65 38 70 43C75 48 74 56 66 60C58 64 50 56 50 47Z" fill="#E47086"/>
+              <path d="M50 47C46 40 47 32 50 28C53 32 54 40 50 47Z" fill="#D95B74"/>
+              <path d="M44 35C44 35 38 28 42 22C46 16 54 16 58 22C62 28 56 35 56 35C56 35 52 30 50 30C48 30 44 35 44 35Z" fill="#F2A6B4"/>
+            </svg>
+            <div class="support-text">
+              إذا أعجبتك النصيحة<br>
+              لا تنسَ دعمنا بوردة في التيك توك ✨
             </div>
-            <span id="label-red" class="text-[10px] text-slate-400">رمل أحمر</span>
           </div>
-
-          <!-- هدية الدونات -->
-          <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-500/20 flex flex-col items-center gap-1 hover:border-slate-400/50 transition-colors cursor-pointer" onclick="pourSand('black')">
-            <span class="text-2xl glow-black">🍩</span>
-            <span class="text-[11px] text-slate-300 font-bold">دونات أسود</span>
-            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden mt-1">
-              <div id="progress-black" class="bg-slate-400 h-full w-0 transition-all duration-300"></div>
-            </div>
-            <span id="label-black" class="text-[10px] text-slate-400">رمل أسود</span>
-          </div>
-
-          <!-- هدية القلب -->
-          <div class="bg-slate-900/60 p-2 rounded-xl border border-amber-500/20 flex flex-col items-center gap-1 hover:border-amber-500/50 transition-colors cursor-pointer" onclick="pourSand('gold')">
-            <span class="text-2xl glow-gold">💛</span>
-            <span class="text-[11px] text-amber-300 font-bold">قلب ذهبي</span>
-            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden mt-1">
-              <div id="progress-gold" class="bg-amber-400 h-full w-0 transition-all duration-300"></div>
-            </div>
-            <span id="label-gold" class="text-[10px] text-slate-400">رمل ذهبي</span>
+          <div class="tap-hint">
+            <span>انقر لإظهار النصيحة</span>
           </div>
         </div>
-      </div>
 
-      <!-- زجاجات الرمل التفاعلية (Bottles Rack) -->
-      <div class="lg:col-span-7 bg-slate-800/60 backdrop-blur-md p-4 rounded-2xl border border-slate-700/60 flex justify-around items-center">
-        <!-- زجاجة الرمل الأحمر -->
-        <div class="flex flex-col items-center gap-2">
-          <div class="bottle-wrapper" onclick="pourSand('red')" title="انقر لسكب الرمل الأحمر">
-            <div class="bottle-sand bg-gradient-to-t from-red-700 to-red-500 glow-red"></div>
+        <!-- وجه الكارت -->
+        <div class="card-face card-back">
+          <div class="advice-category" id="adviceCategory">تطوير الذات</div>
+          <div class="advice-text" id="adviceText">اضغط لتوليد أول نصيحة...</div>
+          <div class="actions-row">
+            <button class="action-btn" id="copyBtn">
+              <span>نسخ النصيحة</span>
+            </button>
           </div>
-          <button class="custom-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-red-600 to-rose-700 text-white flex items-center gap-1" onclick="pourSand('red')">
-            <span>سكب أحمر</span> 🌹
-          </button>
         </div>
 
-        <!-- زجاجة الرمل الأسود -->
-        <div class="flex flex-col items-center gap-2">
-          <div class="bottle-wrapper" onclick="pourSand('black')" title="انقر لسكب الرمل الأسود">
-            <div class="bottle-sand bg-gradient-to-t from-slate-950 via-slate-800 to-slate-600 glow-black"></div>
-          </div>
-          <button class="custom-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-slate-700 to-slate-900 text-white flex items-center gap-1 border border-slate-600" onclick="pourSand('black')">
-            <span>سكب أسود</span> 🍩
-          </button>
-        </div>
-
-        <!-- زجاجة الرمل الذهبي -->
-        <div class="flex flex-col items-center gap-2">
-          <div class="bottle-wrapper" onclick="pourSand('gold')" title="انقر لسكب الرمل الذهبي">
-            <div class="bottle-sand bg-gradient-to-t from-yellow-700 via-amber-500 to-yellow-300 glow-gold"></div>
-          </div>
-          <button class="custom-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 flex items-center gap-1" onclick="pourSand('gold')">
-            <span>سكب ذهبي</span> 💛
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Main Canvas Area (الصينية الدائرية) -->
-    <div class="canvas-container my-2">
-      <canvas id="trayCanvas" width="360" height="360" class="max-w-full h-auto"></canvas>
-      
-      <!-- رسالة احتفالية تفاعلية عند ظهور الهدية -->
-      <div id="rewardBanner" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/90 border-2 border-amber-400 px-6 py-4 rounded-2xl text-center backdrop-blur-lg shadow-2xl pointer-events-none badge-pop z-30">
-        <div id="rewardIcon" class="text-5xl mb-1">🎁</div>
-        <div id="rewardTitle" class="text-amber-300 font-black text-lg">مبروك! ظهرت الهدية!</div>
-        <div id="rewardSub" class="text-slate-300 text-xs mt-1">تشكلت تحفة رملية ثلاثية الأبعاد</div>
       </div>
     </div>
 
-    <!-- Control Panel: 10 Speeds & Actions -->
-    <div class="w-full bg-slate-800/80 backdrop-blur-md border border-slate-700/80 rounded-2xl p-4 flex flex-col gap-3">
-      
-      <div class="flex justify-between items-center text-sm font-bold text-slate-300">
-        <span class="flex items-center gap-2">⚙️ سرعة الدوران الدائم:</span>
-        <span class="text-sky-400 bg-sky-950/60 px-3 py-1 rounded-lg border border-sky-500/30" id="speedLabel">سرعة 2 (هادئة)</span>
-      </div>
-
-      <!-- 10 Speeds Grid -->
-      <div class="grid grid-cols-6 sm:grid-cols-12 gap-1.5" id="speedButtonsContainer">
-        <button class="col-span-2 sm:col-span-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded-xl text-xs custom-btn border border-red-400/30" onclick="setSpeed(0, 'متوقف 🛑')">إيقاف 🛑</button>
-        <!-- أزرار السرعات من 1 إلى 10 ستنشأ عبر JS -->
-      </div>
-
-      <!-- Actions Row -->
-      <div class="flex gap-3 pt-1">
-        <button class="flex-1 bg-gradient-to-r from-red-500/20 to-rose-600/20 hover:from-red-500/30 hover:to-rose-600/30 border border-red-500/40 text-red-300 font-bold py-2.5 rounded-xl text-xs sm:text-sm custom-btn flex justify-center items-center gap-2" onclick="clearTray()">
-          <span>تفريغ الصينية</span> 🧹
-        </button>
-        <button class="flex-1 bg-gradient-to-r from-amber-500/20 to-yellow-600/20 hover:from-amber-500/30 hover:to-yellow-600/30 border border-amber-500/40 text-amber-300 font-bold py-2.5 rounded-xl text-xs sm:text-sm custom-btn flex justify-center items-center gap-2" onclick="scatterGifts()">
-          <span>استعراض الهدايا السحرية</span> ✨
-        </button>
-      </div>
-
-    </div>
-
+    <button class="primary-btn" id="nextBtn">نصيحة أخرى</button>
   </div>
 
+  <div class="toast" id="toast">تم نسخ النصيحة بنجاح!</div>
+
   <script>
-    // الإعدادات الأساسية للكانفاس
-    const canvas = document.getElementById('trayCanvas');
-    const ctx = canvas.getContext('2d');
-    const speedLabel = document.getElementById('speedLabel');
+    const advices = [
+      // 1-20
+      { cat: "تطوير الذات", text: "لا تقارن فصلك الأول بالفصل الخمسين لشخص آخر، لكل منا مساره الخاص." },
+      { cat: "راحة نفسية", text: "الاستراحة ليست كاسلاً، بل هي جزء أساسي من مواصلة السعي." },
+      { cat: "علاقات", text: "اختر من يمرر لك الأعذار، ولا تتشبث بمن يبحث عن زلاتك." },
+      { cat: "نجاح وعمل", text: "الانضباط اليومي البسيط يغلب الشغف المؤقت والمتحمس." },
+      { cat: "حكمة اليوم", text: "ليس عليك أن تكون مثالياً لتبدأ، ولكن عليك أن تبدأ لتصبح أفضل." },
+      { cat: "صحة ونشاط", text: "شرب كوب من الماء عند الاستيقاظ يوقظ أجهزة جسمك فوراً." },
+      { cat: "تطوير الذات", text: "تعلم أن تقول 'لا' للأشياء التي تستهلك طاقتك دون فائدة." },
+      { cat: "راحة نفسية", text: "القلق لا يمنع مشاكل الغد، ولكنه يسلبك سكون اليوم." },
+      { cat: "علاقات", text: "الحدود الشخصية تحمي علاقاتك ولا تدمرها كما يعتقد البعض." },
+      { cat: "نجاح وعمل", text: "قسم الأهداف الكبيرة إلى خطوات صغيرة لا تستغرق أكثر من 15 دقيقة." },
+      { cat: "تطوير الذات", text: "القراءة لمدة 10 دقائق يومياً تعني كتاباً كاملاً كل شهرين." },
+      { cat: "تفاؤل", text: "كل يوم جديد هو فرصة جديدة لإعادة كتابة قصتك." },
+      { cat: "حكمة اليوم", text: "ما تجعله يتكرر في فكرك يصبح أسلوب حياتك." },
+      { cat: "صحة ونشاط", text: "المشي لمدة 20 دقيقة يحسن مزاجك ويعيد ترتيب أفكارك." },
+      { cat: "راحة نفسية", text: "توقف عن التفكير في نوايا البشر، ركز على تصرفاتك وأفعالك فقط." },
+      { cat: "علاقات", text: "الاستماع الواعي أبلغ وسيلة لإظهار الاحترام والمحبة." },
+      { cat: "نجاح وعمل", text: "الأخطاء ليست نهاية المطاف، بل هي دروس مدفوعة الأجر." },
+      { cat: "تطوير الذات", text: "استثمر في عقلك ومعرفتك، فهما الشيء الوحيد الذي لا يسلب منك." },
+      { cat: "تفاؤل", text: "الأوقات الصعبة تصنع أناساً أقوياء دائماً." },
+      { cat: "حكمة اليوم", text: "لا تترك يومك يمضي دون أن تترك أثراً طيّباً في حياة أحد." },
 
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const trayRadius = 160;
+      // 21-40
+      { cat: "تطوير الذات", text: "كن حريصاً على ترتيب بيئتك المحيطة، فنقاء المكان ينعكس على الذهن." },
+      { cat: "راحة نفسية", text: "منح نفسك حق الخطأ هو أول طريق للسلام الداخلي." },
+      { cat: "علاقات", text: "الاعتذار عند الخطأ دليل قوة ونضج، وليس ضعفاً أبداً." },
+      { cat: "نجاح وعمل", text: "التركيز في مهمة واحدة أفضل بمرتين من تشتيت الذات في عدة مهام." },
+      { cat: "صحة ونشاط", text: "النوم الجيد في الليل هو أساس الصحة النفسية والجسدية." },
+      { cat: "تفاؤل", text: "الفرص تتدفق لمن يستعد لها دائماً." },
+      { cat: "حكمة اليوم", text: "الصمت في لحظات الغضب يجنبك سنوات من الندم." },
+      { cat: "تطوير الذات", text: "جرب مهارة جديدة كل شهر لتكتشف شغفاً لم تكن تعرفه." },
+      { cat: "راحة نفسية", text: "لا تسمح لآراء الآخرين أن تصبح واقعك الشخصي." },
+      { cat: "علاقات", text: "تذكر التواريخ الهامة للمقربين منك، التفاصيل الصغيرة تصنع فارقاً كبيراً." },
+      { cat: "نجاح وعمل", text: "اكتب مهام الغد قبل أن تنام، وستبدأ صباحك بوضوح تام." },
+      { cat: "صحة ونشاط", text: "قلل من استخدام الشاشات قبل النوم بساعة لترتاح عينك وعقلك." },
+      { cat: "تفاؤل", text: "في قلب كل صعوبة توجد فرصة مخبأة." },
+      { cat: "حكمة اليوم", text: "الحياة أطول من أن تقضيها في الضغائن والأحقاد." },
+      { cat: "تطوير الذات", text: "لا تتوقف عندما تتعب، بل توقف عندما تنتهي من مهمتك." },
+      { cat: "راحة نفسية", text: "التنفس العميق لـ 3 دقائق يهدئ الجهاز العصبي فوراً." },
+      { cat: "علاقات", text: "الصداقة الحقيقية تقاس بالمواقف، لا بطول السنين." },
+      { cat: "نجاح وعمل", text: "ابسط الطرق للتميز هي أن تفعل عملك بإتقان وبدون استعجال." },
+      { cat: "صحة ونشاط", text: "تناول الخضروات والفواكه الطازجة يمنحك طاقة ناصعة طول اليوم." },
+      { cat: "تفاؤل", text: "الشمس تشرق كل يوم لترسل لك أملاً جديداً." },
 
-    // حالة اللعبة والدوران
-    let rotationAngle = 0;
-    let currentSpeed = 0.02; // سرعة 2 افتراضية
-    let speedLevel = 2;
-    let sandParticles = [];
-    let spawnedGifts = []; // الهدايا الثلاثية الأبعاد المستقرة بالصينية
+      // 41-60
+      { cat: "تطوير الذات", text: "خصص 15 دقيقة يومياً دون أي مشتتات لتقييم يومك." },
+      { cat: "راحة نفسية", text: "تقبل التغيرات في حياتك، فالثبات الوحيد في الكون هو التغير." },
+      { cat: "علاقات", text: "عبر عن تقديرك لمن تحب، فالكلمات الطيبة لا تكلف شيئاً." },
+      { cat: "نجاح وعمل", text: "الاستمرار والتكرار هو السر الحقيقي وراء الاحتراف." },
+      { cat: "حكمة اليوم", text: "قيمتك تتحدد بما تقدمه لغيرك، لا بما تملكه لنفسك." },
+      { cat: "صحة ونشاط", text: "ممارسة تمارين الاستطالة صباحاً تجدد دورتك الدموية." },
+      { cat: "تطوير الذات", text: "لا تصدق كل ما تفكر فيه، العقل أحياناً يبالغ في المخاوف." },
+      { cat: "راحة نفسية", text: "سامح الآخرين ليس لأجلهم، بل لكي ترتاح روحك أنت." },
+      { cat: "علاقات", text: "ابتعد عن المحادثات السلبية والغيظ والمقارنات الهدامة." },
+      { cat: "نجاح وعمل", text: "سجل نجاحاتك الصغيرة يومياً لتبني ثقتك بنفسك." },
+      { cat: "تفاؤل", text: "ما هو مقدر لك لن يخطئك، فاطمئن." },
+      { cat: "حكمة اليوم", text: "العطاء دون انتظار مقابل يملأ القلب بسعادة غير مشروطة." },
+      { cat: "تطوير الذات", text: "تعلم التحدث أمام الآخرين، فالإلقاء يقوي الشخصية." },
+      { cat: "راحة نفسية", text: "ابتعد عن الأشخاص المستنزفين لطاقتك بكل هدوء." },
+      { cat: "علاقات", text: "كن سنداً لمن يحتاجك، وستجد السند عندما تحتاج." },
+      { cat: "نجاح وعمل", text: "التخطيط الفعال يوفر 80% من الجهد والوقت." },
+      { cat: "صحة ونشاط", text: "الجلوس السليم يحمي ظهرك وعمودك الفقري على المدى الطويل." },
+      { cat: "تفاؤل", text: "القادم أجمل دائماً لمن يحسن الظن والعمل." },
+      { cat: "حكمة اليوم", text: "سرك أثيرك، فإن تكلمت به أصبحت أثيره." },
+      { cat: "تطوير الذات", text: "اقرأ في مجالات مختلفة لتوسع مداركك وتفكيرك." },
 
-    // عدادات تجميع الرمل المكتسبة لفتح الهدايا
-    const colorCounts = { red: 0, black: 0, gold: 0 };
-    const NEEDED_SAND = 220; // العدد المطلوب للظهور تلقائياً
-    const unlockedGifts = { red: false, black: false, gold: false };
+      // 61-80
+      { cat: "راحة نفسية", text: "لا تحمل نفسك فوق طاقتها، اطلب المساعدة عندما تحتاجها." },
+      { cat: "علاقات", text: "ابتسامتك بوجه الآخرين صدقة وجسر للمحبة." },
+      { cat: "نجاح وعمل", text: "لا تؤجل عمل اليوم إلى الغد، التسويف عدو الإنجاز." },
+      { cat: "صحة ونشاط", text: "قلل من السكريات والوجبات السريعة وستشعر بفرق هائل في طاقتك." },
+      { cat: "تفاؤل", text: "كل باب يغلق، يفتح الله بدلاً منه أبواباً أفضل." },
+      { cat: "حكمة اليوم", text: "لسانك حصانك، إن صنته صانك." },
+      { cat: "تطوير الذات", text: "الالتزام بالوعود يبني لك سمعة لا تقدر بثمن." },
+      { cat: "راحة نفسية", text: "خصص وقتاً لممارسة هواياتك المفضلة بعيداً عن العمل." },
+      { cat: "علاقات", text: "احترم آراء الآخرين حتى لو كنت تختلف معها تماماً." },
+      { cat: "نجاح وعمل", text: "ابحث عن الحلول بدلاً من التركيز في المشاكل وتكرار الشكوى." },
+      { cat: "صحة ونشاط", text: "الرياضة اليومية تحميك من الكثير من أمراض العصر." },
+      { cat: "تفاؤل", text: "مهما كانت الظروف صعبة، هناك دائماً شيء يستحق الشكر." },
+      { cat: "حكمة اليوم", text: "من تواضع لله رفعه." },
+      { cat: "تطوير الذات", text: "احرص على تعلم اللغة الثانية، فهي تفتح لك آفاقاً واسعة." },
+      { cat: "راحة نفسية", text: "عش اللحظة الحالية ولا تغرق في الماضي أو المستقبل." },
+      { cat: "علاقات", text: "كن صادقاً في تعاملاتك، فالصدق أقصر الطرق للقلوب." },
+      { cat: "نجاح وعمل", text: "التزم بالمواعيد بدقة، فهي تعكس مدى احترافيتك." },
+      { cat: "صحة ونشاط", text: "عرض جسمك لأشعة الشمس الصباحية للحصول على فيتامين د." },
+      { cat: "تفاؤل", text: "إيمانك بقدرتك هو نصف طريق النجاح." },
+      { cat: "حكمة اليوم", text: "خير الناس أنفعهم للناس." },
 
-    // الألوان للرمل
-    const SAND_COLORS = {
-      red: { base: '#ef4444', shadow: '#991b1b', shine: '#fca5a5' },
-      black: { base: '#475569', shadow: '#0f172a', shine: '#94a3b8' },
-      gold: { base: '#eab308', shadow: '#854d0e', shine: '#fef08a' }
-    };
+      // 81-100
+      { cat: "تطوير الذات", text: "تخلص من الكركبة والأشياء القديمة لتفتح مجالاً للجديد." },
+      { cat: "راحة نفسية", text: "البكاء أحياناً يغسل الروح، فلا تخجل من مشاعرك." },
+      { cat: "علاقات", text: "لا تتدخل فيما لا يعنيك لتسمع ما لا يرضيك." },
+      { cat: "نجاح وعمل", text: "استثمر في أدوات عملك لترفع من إنتاجيتك وصحتك." },
+      { cat: "صحة ونشاط", text: "الامتناع عن التدخين والمشروبات الضارة هو أفضل هدية لجسدك." },
+      { cat: "تفاؤل", text: "الابتسامة هي المفتاح السحري لجميع القلوب المغلقة." },
+      { cat: "حكمة اليوم", text: "من راقب الناس مات هماً." },
+      { cat: "تطوير الذات", text: "درب نفسك على التفكير النقدي وعدم تصديق الشائعات." },
+      { cat: "راحة نفسية", text: "السفر والمناظر الطبيعية يعيدان شحن طاقتك النفسية." },
+      { cat: "علاقات", text: "احفظ أسرار الناس لكي يحفظوا سرك ويحترموك." },
+      { cat: "نجاح وعمل", text: "التعلم المستمر هو ضمان بقائك ونجاحك في أي مجال." },
+      { cat: "صحة ونشاط", text: "ممارسة السباحة تقوي كافة عضلات الجسم وتحسن التنفس." },
+      { cat: "تفاؤل", text: "كل صباح يبدأ برحمة وفضل جديدين من الله." },
+      { cat: "حكمة اليوم", text: "العقل السليم في الجسم السليم." },
+      { cat: "تطوير الذات", text: "ضع لنفسك رؤية واضحة لأين تريد أن تكون بعد 5 سنوات." },
+      { cat: "راحة نفسية", text: "الامتنان اليومي لما تملك يزيد من شعورك بالرضا." },
+      { cat: "علاقات", text: "لا تجامل على حساب مبادئك وأخلاقك." },
+      { cat: "نجاح وعمل", text: "بناء علاقات عمل جيدة ومهنية يفتح لك أبواب الفرص." },
+      { cat: "صحة ونشاط", text: "الفحص الطبي الدوري يكتشف الأمور في بدايتها ويحميك." },
+      { cat: "تفاؤل", text: "الصبر مفتاح الفرج وسبب في نيل ما تتمنى." },
 
-    // Web Audio API لتوليد الأصوات
+      // 101-120
+      { cat: "تطوير الذات", text: "اكتب يومياتك بانتظام لتفريغ الأفكار وفهم ذاتك أكثر." },
+      { cat: "راحة نفسية", text: "تقبل اختيارات الآخرين ولا تحاول فرض رأيك عليهم." },
+      { cat: "علاقات", text: "كن مستمعاً جيداً قبل أن تكون متحدثاً لبقاً." },
+      { cat: "نجاح وعمل", text: "إدارة المال بحكمة هي أساس الاستقرار والحرية المالية." },
+      { cat: "حكمة اليوم", text: "رحلة الألف ميل تبدأ بصلابة الخطوة الأولى." },
+      { cat: "صحة ونشاط", text: "احرص على تناسق قوامك وممارسة التمارين الرياضية." },
+      { cat: "تطوير الذات", text: "لا تخف من الفشل، بل خف من قلة المحاولة." },
+      { cat: "راحة نفسية", text: "شامخاً كن كالنخيل، لا يؤثر فيك كلام الحاسدين." },
+      { cat: "علاقات", text: "الكلام الطيب يفتح القلوب القاسية ويؤلف الأمزجة." },
+      { cat: "نجاح وعمل", text: "استفادك من أخطاء السابقين يختصر عليك سنوات من التجربة." },
+      { cat: "تفاؤل", text: "الخير قادم، فقط تفاءل بالخير تجده." },
+      { cat: "حكمة اليوم", text: "الوقت كالسيف، إن لم تقطعه قطعك." },
+      { cat: "تطوير الذات", text: "نظم وقتك بين العمل والراحة والأسرة والتطوير." },
+      { cat: "راحة نفسية", text: "احيط نفسك بالأشخاص الإيجابيين والمشجعين." },
+      { cat: "علاقات", text: "الصراحة المقترنة بالذوق هي طريق العلاقات المستمرة." },
+      { cat: "نجاح وعمل", text: "احرص على أداء واجبك أكثر مما تطلب بحقوقك." },
+      { cat: "صحة ونشاط", text: "تناول وجبة الإفطار فهي يمدك بالإنتاجية." },
+      { cat: "تفاؤل", text: "امشِ بثقة، فالله معك في كل خطوة تخطوها." },
+      { cat: "حكمة اليوم", text: "ما طار طير وارتفع إلا كما طار وقع." },
+      { cat: "تطوير الذات", text: "لا تتجاهل الحدس الداخلي، فغرق العقل بالتحليل قد يضلل." },
+
+      // 121-140
+      { cat: "راحة نفسية", text: "دع أمور الأمس تمضي، وركز بكل طاقتك في اليوم." },
+      { cat: "علاقات", text: "كن متسامحاً، فالتسامح صفة الأقوياء فقط." },
+      { cat: "نجاح وعمل", text: "ابتكر طرقاً جديدة دائماً ولا تتصلب في الأساليب القديمة." },
+      { cat: "صحة ونشاط", text: "قلل من تناول الكافيين بعد فترة الظهيرة لتنام بهدوء." },
+      { cat: "تفاؤل", text: "كل حلم يبدأ بخطوة بسيطة وفكرة صغيرة." },
+      { cat: "حكمة اليوم", text: "اتق شر من أحسنت إليه بالنوايا الطيبة والأخلاق." },
+      { cat: "تطوير الذات", text: "كن شجاعاً وتحدث بصوتك الحقيقي دون تزييف." },
+      { cat: "راحة نفسية", text: "لا تجعل مواقع التواصل الاجتماعي تحكم شعورك بذاتك." },
+      { cat: "علاقات", text: "قدر جهود الآخرين واشكرهم ولو على الأمور البسيطة." },
+      { cat: "نجاح وعمل", text: "اصنع لنفسك اسماً يثق فيه الجميع بالأمانة والإتقان." },
+      { cat: "صحة ونشاط", text: "التمارين المنزلية البسيطة تفيد الجسم بقدر الصالات الرياضية." },
+      { cat: "تفاؤل", text: "ابتسم، فالحياة أقصر من أن تقضيها عبوساً." },
+      { cat: "حكمة اليوم", text: "من يدق الباب يوشك أن يفتح له." },
+      { cat: "تطوير الذات", text: "احتفل بإنجازاتك الصغيرة قبل الكبيرة لتشجع نفسك." },
+      { cat: "راحة نفسية", text: "جلسة هادئة مع كوب شاي قد تصلح ما أفسده النهار." },
+      { cat: "علاقات", text: "لا تكثر من العتاب، فكثرته تنفر القلوب." },
+      { cat: "نجاح وعمل", text: "ابحث عن الموجه والقدوة الذي يستطيع اختصار الطريق عليك." },
+      { cat: "صحة ونشاط", text: "حافظ على نظافة الفم والأسنان يومياً لتجنب المشاكل." },
+      { cat: "تفاؤل", text: "كل يوم هو صفحة بيضاء في كتاب حياتك." },
+      { cat: "حكمة اليوم", text: "القناعة كنز لا يفنى." },
+
+      // 141-160
+      { cat: "تطوير الذات", text: "لا تجعل الخوف يمنعك من تجربة ما تبغاه." },
+      { cat: "راحة نفسية", text: "ابتعد عن الجدال والنقاشات العقيمة التي تنزع السلام." },
+      { cat: "علاقات", text: "دع خطواتك تتكلم عنك أكثر من كلماتك." },
+      { cat: "نجاح وعمل", text: "احرص على أخذ استراحات قصيرة بين ساعات العمل." },
+      { cat: "صحة ونشاط", text: "تنفس الهواء النقي في الأماكن المفتوحة يومياً." },
+      { cat: "تفاؤل", text: "مع كل فجر جديد يولد أمل وتجدد في الحياة." },
+      { cat: "حكمة اليوم", text: "من تدخل فيما لا يعنيه لقي ما لا يرضيه." },
+      { cat: "تطوير الذات", text: "كن منفتحاً للتغذية الراجعة والملاحظات البناءة." },
+      { cat: "راحة نفسية", text: "عش ببساطة وتخفف من التعقيدات والمظاهر." },
+      { cat: "علاقات", text: "كن صديقاً لنفسك أولاً ليحبك ويتقبلك الآخرون." },
+      { cat: "نجاح وعمل", text: "طوّر قدرتك على حل المشكلات بهدوء وحكمة." },
+      { cat: "صحة ونشاط", text: "احرص على التغذية المتوازنة التي تمدك بالنشاط." },
+      { cat: "تفاؤل", text: "الإيجابية تفكير وسلوك تتدرب عليه كل يوم." },
+      { cat: "حكمة اليوم", text: "رب بعيد أنفع من قريب." },
+      { cat: "تطوير الذات", text: "تحدد أدوارك وأهدافك يجعلك أكثر حزمة وتنظيماً." },
+      { cat: "راحة نفسية", text: "تقبل قدرك واعمل على تحسين المتاح بيدك." },
+      { cat: "علاقات", text: "الوفاء بالعهد من أعلى صفات النبل." },
+      { cat: "نجاح وعمل", text: "كن مبادراً ولا تنتظر الأوامر لتصنع الفارق." },
+      { cat: "صحة ونشاط", text: "احم عينيك من الإجهاد بأخذ فترات راحة منتظمة." },
+      { cat: "تفاؤل", text: "الأمل هو الشمعة التي تضيء ظلام الأيام." },
+
+      // 161-180
+      { cat: "حكمة اليوم", text: "يد واحدة لا تصفق، التعاون أساس النجاح." },
+      { cat: "تطوير الذات", text: "اكتسب مهارة إدارة الوقت لتستمتع بحياتك أكثر." },
+      { cat: "راحة نفسية", text: "دع القلق جانباً وتوكل على الله في أمورك." },
+      { cat: "علاقات", text: "كن لطيفاً فكل شخص تقابله يخوض معركة لا تعلمها." },
+      { cat: "نجاح وعمل", text: "العمل الجماعي يحقق نتائج لا يستطيع الفرد تحقيقها." },
+      { cat: "صحة ونشاط", text: "قلل من استخدام المركبات وامشِ الكيلومترات القصيرة." },
+      { cat: "تفاؤل", text: "المستقبل ينتمي لأولئك الذين يؤمنون بجمال أحلامهم." },
+      { cat: "حكمة اليوم", text: "قطرة المطر تحفر الصخر لا بالقوة بل بالتكرار." },
+      { cat: "تطوير الذات", text: "ابحث عن الشغف الحقيقي الذي يجعلك تستيقظ بحماس." },
+      { cat: "راحة نفسية", text: "لا تبكِ على اللبن المسكوب، ركز في الحاضر." },
+      { cat: "علاقات", text: "الاحترام المتبادل هو أساس أي علاقة ناجحة ومستمرة." },
+      { cat: "نجاح وعمل", text: "تحديد الأولويات يضمن لك إنجاز الأهم ثم المهم." },
+      { cat: "صحة ونشاط", text: "الضحك والفكاهة يفرزان هرمونات السعادة والصحة." },
+      { cat: "تفاؤل", text: "كل صعوبة تمر بها تبني جزءاً من قوتك المستقبلي." },
+      { cat: "حكمة اليوم", text: "من حبس لسانه سلم من الفتن." },
+      { cat: "تطوير الذات", text: "كن قارئاً حصيفاً ومستمعاً ذكياً في كل مجال." },
+      { cat: "راحة نفسية", text: "الهدوء الداخلي ينبع من الرضا بما قسمه الله." },
+      { cat: "علاقات", text: "تودد لأقربائك وأهلك، فصلة الرحم بركة في العمر." },
+      { cat: "نجاح وعمل", text: "اطمح دائماً للقمة فالعادي متوفر في كل مكان." },
+      { cat: "صحة ونشاط", text: "تجنب الأكل المتأخر ليلاً لراحة جهازك الهضمي." },
+
+      // 181-200
+      { cat: "تفاؤل", text: "الثقة بالله هي محرك العجائب في حياتنا." },
+      { cat: "حكمة اليوم", text: "جمال الروح يعكس على الوجه نورا وجاذبية." },
+      { cat: "تطوير الذات", text: "طوّر نفسك لتعجب بك أنت، لا لتنبهر بك العيون." },
+      { cat: "راحة نفسية", text: "النوم في وقت مبكر يعيد صيانة أجهزة الجسم تتماماً." },
+      { cat: "علاقات", text: "احفظ غيبة إخوانك ليحفظ الله غيبتك." },
+      { cat: "نجاح وعمل", text: "التجربة أفضل معلم في الحياة." },
+      { cat: "صحة ونشاط", text: "تناول المكسرات النيئة يزود العقل بالدهون النافعة." },
+      { cat: "تفاؤل", text: "كل ضيق بعده فرج يسرك ويقر عينك." },
+      { cat: "حكمة اليوم", text: "من أعان ظالماً سلطه الله عليه." },
+      { cat: "تطوير الذات", text: "كن مرناً مع الحياة، فالأشجار المرنة تصمد أمام الرياح." },
+      { cat: "راحة نفسية", text: "لا تشغل بالك بما يتوقعه الناس منك، كن نفسك." },
+      { cat: "علاقات", text: "الكلمة الطيبة أصلها ثابت وفرعها في السماء." },
+      { cat: "نجاح وعمل", text: "سر النجاح هو الثبات على الهدف." },
+      { cat: "صحة ونشاط", text: "الاستحمام بالماء الدافيء يساعد على استرخاء العضلات." },
+      { cat: "تفاؤل", text: "لا يوجد شيء مستحيل أمام الإرادة القوية." },
+      { cat: "حكمة اليوم", text: "على قدر أهل العزم تأتي العزائم." },
+      { cat: "تطوير الذات", text: "تعلم من كل شخص تقابله، فكل فرد يتقن شيئاً لا تعرفه." },
+      { cat: "راحة نفسية", text: "التنزه في أحضان الطبيعة يريح الفكر والقلب." },
+      { cat: "علاقات", text: "كن بشوشاً، فالبشاشة تفتح لك القلوب المغلقة." },
+      { cat: "نجاح وعمل", text: "النجاح هو رحلة مستمرة وليس محطة وصول نهائية." }
+    ];
+
+    // State
+    let availableIndexes = [];
+    let viewedCount = 0;
+    let isFlipped = false;
     let audioCtx = null;
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-    }
 
-    // صوت سكب الرمل
-    function playPourSound() {
-      if (!audioCtx) return;
+    // Elements
+    const cardScene = document.getElementById('cardScene');
+    const card = document.getElementById('card');
+    const adviceCategory = document.getElementById('adviceCategory');
+    const adviceText = document.getElementById('adviceText');
+    const counter = document.getElementById('counter');
+    const nextBtn = document.getElementById('nextBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const toast = document.getElementById('toast');
+
+    // Web Audio Flip Sound
+    function playFlipSound() {
       try {
-        const bufferSize = audioCtx.sampleRate * 0.12;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
-
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 1400;
-
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        
+        const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.09, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-
-        noise.connect(filter);
-        filter.connect(gain);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.08);
+        
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        
+        osc.connect(gain);
         gain.connect(audioCtx.destination);
-
-        noise.start();
-      } catch (e) {}
-    }
-
-    // صوت كشف الهدية
-    function playRewardSound() {
-      if (!audioCtx) return;
-      try {
-        const now = audioCtx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // نغمات احتفالية C E G C
-        notes.forEach((freq, idx) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-          gain.gain.setValueAtTime(0.15, now + idx * 0.08);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now + idx * 0.08);
-          osc.stop(now + idx * 0.08 + 0.35);
-        });
-      } catch (e) {}
-    }
-
-    // بناء أزرار السرعة العشرة
-    function initSpeedButtons() {
-      const container = document.getElementById('speedButtonsContainer');
-      for (let i = 1; i <= 10; i++) {
-        const btn = document.createElement('button');
-        btn.className = `speed-btn bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 rounded-xl text-xs custom-btn border border-slate-600/40 ${i === 2 ? 'active-speed bg-sky-600 text-white border-sky-400' : ''}`;
-        btn.textContent = i === 10 ? '10⚡' : i;
-        btn.onclick = () => setSpeed(i, `سرعة ${i} ${i === 10 ? '(فائقة ⚡)' : ''}`);
-        btn.id = `btn-speed-${i}`;
-        container.appendChild(btn);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch (e) {
+        // Audio fallback
       }
     }
 
-    // تعيين سرعة الدوران
-    function setSpeed(level, labelText) {
-      speedLevel = level;
-      currentSpeed = level * 0.008;
-      speedLabel.textContent = labelText;
+    // Reset & Shuffle
+    function resetIndexes() {
+      availableIndexes = Array.from({ length: advices.length }, (_, i) => i);
+      // Shuffle array
+      for (let i = availableIndexes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [availableIndexes[i], availableIndexes[j]] = [availableIndexes[j], availableIndexes[i]];
+      }
+    }
 
-      document.querySelectorAll('.speed-btn').forEach(btn => {
-        btn.classList.remove('bg-sky-600', 'text-white', 'border-sky-400');
-        btn.classList.add('bg-slate-700', 'text-slate-300');
-      });
+    // Get Next Advice
+    function getRandomAdvice() {
+      if (availableIndexes.length === 0) {
+        resetIndexes();
+      }
+      const index = availableIndexes.pop();
+      return advices[index];
+    }
 
-      if (level > 0) {
-        const activeBtn = document.getElementById(`btn-speed-${level}`);
-        if (activeBtn) {
-          activeBtn.classList.remove('bg-slate-700', 'text-slate-300');
-          activeBtn.classList.add('bg-sky-600', 'text-white', 'border-sky-400');
+    // Update Advice Content
+    function updateAdviceContent() {
+      const advice = getRandomAdvice();
+      adviceCategory.textContent = advice.cat;
+      adviceText.textContent = advice.text;
+      
+      viewedCount++;
+      if (viewedCount > advices.length) viewedCount = 1;
+      counter.textContent = `النصيحة: ${viewedCount} / ${advices.length}`;
+    }
+
+    // Flip Card Logic
+    function flipCard() {
+      playFlipSound();
+      isFlipped = !isFlipped;
+      
+      if (isFlipped) {
+        // If turning to advice face for first time or new advice
+        if (adviceText.textContent.includes('اضغط لتوليد')) {
+          updateAdviceContent();
         }
+        card.classList.add('is-flipped');
+      } else {
+        card.classList.remove('is-flipped');
       }
     }
 
-    // سكب الرمل والتجميع
-    function pourSand(color) {
-      initAudio();
-      playPourSound();
-
-      const batchCount = 40;
-      for (let i = 0; i < batchCount; i++) {
-        const dist = Math.random() * 50;
-        const angle = Math.random() * Math.PI * 2;
-
-        sandParticles.push({
-          r: dist,
-          angle: angle - rotationAngle,
-          size: 1.5 + Math.random() * 2.2,
-          colorType: color,
-          drift: (Math.random() - 0.5) * 0.4
-        });
+    // Show Next Advice
+    function handleNext() {
+      if (isFlipped) {
+        // Flip back to front first, then update
+        card.classList.remove('is-flipped');
+        isFlipped = false;
+        playFlipSound();
+        setTimeout(() => {
+          updateAdviceContent();
+          card.classList.add('is-flipped');
+          isFlipped = true;
+          playFlipSound();
+        }, 350);
+      } else {
+        updateAdviceContent();
+        card.classList.add('is-flipped');
+        isFlipped = true;
+        playFlipSound();
       }
-
-      // زيادة العداد وتحديث التقدم
-      colorCounts[color] += batchCount;
-      updateGiftProgress(color);
     }
 
-    // تحديث مؤشرات التقدم وتوليد الهدايا عند الاكتفاء
-    function updateGiftProgress(color) {
-      const percentage = Math.min(100, Math.floor((colorCounts[color] / NEEDED_SAND) * 100));
-      const progressBar = document.getElementById(`progress-${color}`);
-      const progressLabel = document.getElementById(`label-${color}`);
-
-      if (progressBar) progressBar.style.width = `${percentage}%`;
-
-      if (colorCounts[color] >= NEEDED_SAND && !unlockedGifts[color]) {
-        unlockedGifts[color] = true;
-        if (progressLabel) {
-          progressLabel.textContent = '✨ تم فتح الهدية!';
-          progressLabel.className = 'text-[10px] text-amber-300 font-bold';
-        }
-        triggerReward(color);
-      } else if (!unlockedGifts[color] && progressLabel) {
-        progressLabel.textContent = `${percentage}% مكتمل`;
-      }
-
-      // تحديث شارة إجمالي الهدايا
-      const totalUnlocked = Object.values(unlockedGifts).filter(Boolean).length;
-      document.getElementById('totalGiftsBadge').textContent = `${totalUnlocked}/3 هدايا`;
-    }
-
-    // إظهار الهدية السحرية داخل الصينية
-    function triggerReward(color) {
-      playRewardSound();
-
-      let giftType = '🌹';
-      let title = 'وردة حمراء زاهية!';
-      if (color === 'black') { giftType = '🍩'; title = 'دونات أسود فاخر!'; }
-      if (color === 'gold') { giftType = '💛'; title = 'قلب ذهبي براق!'; }
-
-      // إشعار بصري للمستخدم
-      const banner = document.getElementById('rewardBanner');
-      document.getElementById('rewardIcon').textContent = giftType;
-      document.getElementById('rewardTitle').textContent = `مبروك! تشكلت ${title}`;
-      banner.classList.remove('hidden');
-
-      setTimeout(() => {
-        banner.classList.add('hidden');
-      }, 3000);
-
-      // إضافة الهدية لتترسب في مكان استراتيجي بالصينية
-      spawnedGifts.push({
-        type: color,
-        r: Math.random() * 40,
-        angle: Math.random() * Math.PI * 2 - rotationAngle,
-        scale: 0.2,
-        maxScale: 1.0
+    // Copy Advice
+    function copyAdvice(e) {
+      e.stopPropagation();
+      const textToCopy = `"${adviceText.textContent}" - ${adviceCategory.textContent}`;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2000);
       });
     }
 
-    // استعراض جميع الهدايا
-    function scatterGifts() {
-      ['red', 'black', 'gold'].forEach(c => pourSand(c));
-    }
+    // Initialize
+    resetIndexes();
 
-    // تفريغ الصينية
-    function clearTray() {
-      sandParticles = [];
-      spawnedGifts = [];
-      colorCounts.red = 0;
-      colorCounts.black = 0;
-      colorCounts.gold = 0;
-
-      ['red', 'black', 'gold'].forEach(color => {
-        unlockedGifts[color] = false;
-        document.getElementById(`progress-${color}`).style.width = '0%';
-        const label = document.getElementById(`label-${color}`);
-        if (label) {
-          label.textContent = color === 'red' ? 'رمل أحمر' : (color === 'black' ? 'رمل أسود' : 'رمل ذهبي');
-          label.className = 'text-[10px] text-slate-400';
-        }
-      });
-      document.getElementById('totalGiftsBadge').textContent = '0/3 هدايا';
-    }
-
-    // رسم الصينية البيضاء 3D
-    function drawTray() {
-      ctx.save();
-      ctx.translate(centerX, centerY);
-
-      // الظل الخارجي العميق للصينية
-      ctx.beginPath();
-      ctx.arc(0, 0, trayRadius + 6, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-      ctx.fill();
-
-      // الإطار الخارجي اللامع
-      const rimGrad = ctx.createLinearGradient(-trayRadius, -trayRadius, trayRadius, trayRadius);
-      rimGrad.addColorStop(0, '#ffffff');
-      rimGrad.addColorStop(0.5, '#cbd5e1');
-      rimGrad.addColorStop(1, '#94a3b8');
-
-      ctx.beginPath();
-      ctx.arc(0, 0, trayRadius, 0, Math.PI * 2);
-      ctx.fillStyle = rimGrad;
-      ctx.fill();
-
-      // التجويف الداخلي العاجي
-      const innerRadius = trayRadius - 14;
-      const innerGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, innerRadius);
-      innerGrad.addColorStop(0, '#ffffff');
-      innerGrad.addColorStop(0.75, '#f8fafc');
-      innerGrad.addColorStop(1, '#e2e8f0');
-
-      ctx.beginPath();
-      ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
-      ctx.fillStyle = innerGrad;
-      ctx.fill();
-
-      // ظل التجويف الداخلي العميق
-      ctx.beginPath();
-      ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(15, 23, 42, 0.12)';
-      ctx.lineWidth = 6;
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    // رسم حبيبات الرمل والفيزياء
-    function updateAndDrawSand() {
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(rotationAngle);
-
-      const maxDist = trayRadius - 18;
-
-      for (let i = 0; i < sandParticles.length; i++) {
-        let p = sandParticles[i];
-
-        // القوة الطاردة المركزية عند دوران الصينية
-        if (currentSpeed > 0) {
-          p.r += currentSpeed * 0.9 + p.drift * 0.1;
-          p.angle += p.drift * 0.01;
-
-          if (p.r > maxDist) {
-            p.r = maxDist - Math.random() * 2;
-          }
-        }
-
-        const x = Math.cos(p.angle) * p.r;
-        const y = Math.sin(p.angle) * p.r;
-
-        const colors = SAND_COLORS[p.colorType];
-        ctx.beginPath();
-        ctx.arc(x, y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = colors.base;
-        ctx.fill();
-
-        // بريق حبة الرمل
-        if (p.size > 2.2) {
-          ctx.beginPath();
-          ctx.arc(x - 0.6, y - 0.6, p.size * 0.35, 0, Math.PI * 2);
-          ctx.fillStyle = colors.shine;
-          ctx.fill();
-        }
-      }
-
-      // رسم الهدايا ثلاثية الأبعاد التي تشكلت بالصينية
-      for (let g of spawnedGifts) {
-        if (g.scale < g.maxScale) g.scale += 0.04; // أنيميشن تكبير الهدايا
-
-        const gx = Math.cos(g.angle) * g.r;
-        const gy = Math.sin(g.angle) * g.r;
-
-        ctx.save();
-        ctx.translate(gx, gy);
-        ctx.scale(g.scale, g.scale);
-
-        if (g.type === 'red') draw3DRose(ctx);
-        if (g.type === 'black') draw3DDonut(ctx);
-        if (g.type === 'gold') draw3DHeart(ctx);
-
-        ctx.restore();
-      }
-
-      ctx.restore();
-    }
-
-    // رسم وردة حمراء 3D متدرجة
-    function draw3DRose(ctx) {
-      // ظلال
-      ctx.beginPath();
-      ctx.arc(0, 4, 18, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0,0,0,0.25)';
-      ctx.fill();
-
-      // أوراق شجر خضراء
-      ctx.fillStyle = '#15803d';
-      ctx.beginPath();
-      ctx.ellipse(-14, 0, 10, 5, Math.PI/4, 0, Math.PI*2);
-      ctx.ellipse(14, 0, 10, 5, -Math.PI/4, 0, Math.PI*2);
-      ctx.fill();
-
-      // بتلات الوردة
-      const grad = ctx.createRadialGradient(0, -3, 2, 0, 0, 16);
-      grad.addColorStop(0, '#fca5a5');
-      grad.addColorStop(0.5, '#ef4444');
-      grad.addColorStop(1, '#991b1b');
-
-      ctx.beginPath();
-      ctx.arc(0, 0, 15, 0, Math.PI * 2);
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      // قلب الوردة الحلزوني
-      ctx.strokeStyle = '#f87171';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.arc(0, -1, 7, 0, Math.PI * 1.5);
-      ctx.stroke();
-    }
-
-    // رسم دونات أسود 3D بالشكولاتة
-    function draw3DDonut(ctx) {
-      // ظل الدونات
-      ctx.beginPath();
-      ctx.ellipse(0, 5, 20, 14, 0, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
-      ctx.fill();
-
-      // قاعدة الكعكة
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 18, 14, 0, 0, Math.PI * 2);
-      ctx.fillStyle = '#d97706';
-      ctx.fill();
-
-      // تغطية الشكولاتة الداكنة
-      const dGrad = ctx.createRadialGradient(-3, -3, 3, 0, 0, 16);
-      dGrad.addColorStop(0, '#475569');
-      dGrad.addColorStop(0.7, '#1e293b');
-      dGrad.addColorStop(1, '#0f172a');
-
-      ctx.beginPath();
-      ctx.ellipse(0, -1, 16, 12, 0, 0, Math.PI * 2);
-      ctx.fillStyle = dGrad;
-      ctx.fill();
-
-      // ثقب الدونات الأوسط
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 6, 4, 0, 0, Math.PI * 2);
-      ctx.fillStyle = '#f8fafc';
-      ctx.fill();
-
-      // زينة الملبس (Sprinkles)
-      const colors = ['#f43f5e', '#38bdf8', '#facc15', '#4ade80'];
-      for (let i = 0; i < 6; i++) {
-        const ang = (i / 6) * Math.PI * 2;
-        const rx = Math.cos(ang) * 10;
-        const ry = Math.sin(ang) * 7;
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.fillRect(rx - 1, ry - 1, 3, 3);
-      }
-    }
-
-    // رسم قلب ذهبي براق 3D
-    function draw3DHeart(ctx) {
-      // ظل القلب
-      ctx.beginPath();
-      ctx.arc(-6, -2, 8, 0, Math.PI * 2);
-      ctx.arc(6, -2, 8, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0,0,0,0.25)';
-      ctx.fill();
-
-      // القلب الذهبي
-      const hGrad = ctx.createLinearGradient(-10, -10, 10, 15);
-      hGrad.addColorStop(0, '#fef08a');
-      hGrad.addColorStop(0.4, '#eab308');
-      hGrad.addColorStop(1, '#854d0e');
-
-      ctx.save();
-      ctx.scale(1.1, 1.1);
-      ctx.beginPath();
-      ctx.moveTo(0, 12);
-      ctx.bezierCurveTo(-14, 2, -14, -10, -6, -10);
-      ctx.bezierCurveTo(-2, -10, 0, -6, 0, -4);
-      ctx.bezierCurveTo(0, -6, 2, -10, 6, -10);
-      ctx.bezierCurveTo(14, -10, 14, 2, 0, 12);
-      ctx.fillStyle = hGrad;
-      ctx.fill();
-
-      // لمعة الذهبي 3D
-      ctx.beginPath();
-      ctx.arc(-4, -5, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-
-      ctx.restore();
-    }
-
-    // الحلقة الرئيسية للحركة (Animation Loop)
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      rotationAngle += currentSpeed;
-
-      drawTray();
-      updateAndDrawSand();
-
-      requestAnimationFrame(animate);
-    }
-
-    // إعداد التفاعل مع اللمس والضغط بالماوس مباشرة على الكانفاس
-    let isDragging = false;
-    canvas.addEventListener('pointerdown', (e) => {
-      isDragging = true;
-      pourActiveSand(e);
-    });
-
-    canvas.addEventListener('pointermove', (e) => {
-      if (isDragging) pourActiveSand(e);
-    });
-
-    window.addEventListener('pointerup', () => { isDragging = false; });
-
-    function pourActiveSand(e) {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      // سكب رمل أحمر/أسود/ذهبي تلقائياً بحسب القرب من الماوس
-      const randColor = ['red', 'black', 'gold'][Math.floor(Math.random() * 3)];
-      pourSand(randColor);
-    }
-
-    // تشغيل التطبيق عند التحميل Complete Load
-    window.onload = function() {
-      initSpeedButtons();
-      animate();
-    };
+    // Event Listeners
+    cardScene.addEventListener('click', flipCard);
+    nextBtn.addEventListener('click', handleNext);
+    copyBtn.addEventListener('click', copyAdvice);
   </script>
 </body>
 </html>
